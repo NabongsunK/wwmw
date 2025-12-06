@@ -6,23 +6,43 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 WWE/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API 라우트 (RESTful endpoints)
+│   │   ├── db/            # 데이터베이스 관련 API
+│   │   │   └── test/
+│   │   │       └── route.ts
+│   │   └── users/         # 사용자 API
+│   │       └── route.ts
+│   ├── components/        # React 컴포넌트
+│   │   ├── BuildList.tsx
+│   │   ├── Footer.tsx
+│   │   ├── Header.tsx
+│   │   └── Layout.tsx
+│   ├── layout.tsx         # 루트 레이아웃
 │   ├── page.tsx           # 메인 페이지
-│   └── layout.tsx          # 레이아웃
-├── services/              # Service 레이어 (비즈니스 로직)
-│   └── README.md          # 서비스 사용 가이드
-├── repositories/          # Repository 레이어 (데이터 접근)
-│   └── README.md          # 레포지토리 사용 가이드
+│   └── globals.css        # 전역 스타일
+│
+├── service/               # Service 레이어 (비즈니스 로직)
+│   └── user.service.ts
+│
+├── repo/                  # Repository 레이어 (데이터 접근)
+│   └── user.repository.ts
+│
+├── types/                 # TypeScript 타입 정의
+│   └── user.ts
+│
 ├── lib/                   # 유틸리티 및 설정
-│   └── db.ts              # MySQL 연결 풀
+│   ├── db.ts              # MySQL 연결 풀
+│   └── db.example.ts      # 사용 예시
+│
 └── public/                # 정적 파일
 ```
 
 ### 아키텍처 레이어
 
 1. **API Routes** (`app/api/`) - HTTP 요청/응답 처리
-2. **Services** (`services/`) - 비즈니스 로직 및 검증
-3. **Repositories** (`repositories/`) - 데이터베이스 CRUD 작업
+2. **Services** (`service/`) - 비즈니스 로직 및 검증
+3. **Repositories** (`repo/`) - 데이터베이스 CRUD 작업
 4. **Database** (`lib/db.ts`) - MySQL 연결 관리
+5. **Types** (`types/`) - TypeScript 타입 정의
 
 ## Getting Started
 

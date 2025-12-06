@@ -1,4 +1,4 @@
-// 사용자 서비스 예시
+// 사용자 서비스
 
 import { UserRepository } from '@/repo/user.repository';
 import type { User, CreateUserDto, UpdateUserDto } from '@/types/user';

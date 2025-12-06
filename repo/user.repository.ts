@@ -1,6 +1,7 @@
-// 사용자 레포지토리 예시
+// 사용자 레포지토리
 
 import { query } from '@/lib/db';
+import type { User, CreateUserDto, UpdateUserDto } from '@/types/user';
 
 export class UserRepository {
   private tableName = 'users';
@@ -8,8 +9,8 @@ export class UserRepository {
   /**
    * 모든 사용자 조회 (삭제되지 않은)
    */
-  async findAll() {
-    return await query(
+  async findAll(): Promise<User[]> {
+    return await query<User>(
       `SELECT * FROM ${this.tableName} WHERE deleted_at IS NULL ORDER BY created_at DESC`
     );
   }
@@ -17,8 +18,8 @@ export class UserRepository {
   /**
    * ID로 사용자 조회
    */
-  async findById(id: number) {
-    const users = await query(
+  async findById(id: number): Promise<User | null> {
+    const users = await query<User>(
       `SELECT * FROM ${this.tableName} WHERE id = ? AND deleted_at IS NULL`,
       [id]
     );
@@ -28,9 +29,8 @@ export class UserRepository {
   /**
    * 이메일로 사용자 조회
    */
-  async findByEmail(email: string) {  
-
-      const users = await query(
+  async findByEmail(email: string): Promise<User | null> {
+    const users = await query<User>(
       `SELECT * FROM ${this.tableName} WHERE email = ? AND deleted_at IS NULL`,
       [email]
     );
@@ -40,8 +40,8 @@ export class UserRepository {
   /**
    * 사용자 생성
    */
-  async create(data: any) {
-    const result = await query(
+  async create(data: CreateUserDto): Promise<User> {
+    const result = await query<{ insertId: number }>(
       `INSERT INTO ${this.tableName} (name, email, created_at, updated_at) VALUES (?, ?, NOW(), NOW())`,
       [data.name, data.email]
     );
@@ -56,7 +56,7 @@ export class UserRepository {
   /**
    * 사용자 업데이트
    */
-  async update(id: number, data: any) {
+  async update(id: number, data: UpdateUserDto): Promise<User> {
     const fields: string[] = [];
     const values: any[] = [];
 
@@ -70,7 +70,11 @@ export class UserRepository {
     }
 
     if (fields.length === 0) {
-        return await this.findById(id);
+      const user = await this.findById(id);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      return user;
     }
 
     fields.push('updated_at = NOW()');
@@ -91,7 +95,7 @@ export class UserRepository {
   /**
    * 사용자 삭제 (소프트 삭제)
    */
-  async delete(id: number) {
+  async delete(id: number): Promise<void> {
     await query(
       `UPDATE ${this.tableName} SET deleted_at = NOW() WHERE id = ?`,
       [id]
@@ -101,7 +105,7 @@ export class UserRepository {
   /**
    * 사용자 영구 삭제
    */
-  async hardDelete(id: number) {
+  async hardDelete(id: number): Promise<void> {
     await query(
       `DELETE FROM ${this.tableName} WHERE id = ?`,
       [id]

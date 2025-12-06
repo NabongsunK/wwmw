@@ -1,4 +1,4 @@
-// 사용자 API 라우트 예시
+// 사용자 API 라우트
 
 import { NextRequest, NextResponse } from 'next/server';
 import { UserService } from '@/service/user.service';
