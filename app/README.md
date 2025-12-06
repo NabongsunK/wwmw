@@ -2,7 +2,33 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+### 1. 의존성 설치
+
+```bash
+npm install
+```
+
+### 2. MySQL 데이터베이스 설정
+
+프로젝트 루트에 `.env.local` 파일을 생성하고 다음 내용을 추가하세요:
+
+```env
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=wwe_user
+MYSQL_PASSWORD=wwe_password
+MYSQL_DATABASE=z
+```
+
+또는 Docker를 사용하는 경우:
+
+```bash
+cd ../deploy
+docker build -t wwe-mysql .
+docker run -d -p 3306:3306 --name wwe-mysql wwe-mysql
+```
+
+### 3. 개발 서버 실행
 
 ```bash
 npm run dev
@@ -15,6 +41,10 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+### 4. 데이터베이스 연결 테스트
+
+브라우저에서 [http://localhost:3000/api/db/test](http://localhost:3000/api/db/test)를 열어 연결을 테스트할 수 있습니다.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
