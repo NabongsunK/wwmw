@@ -1,29 +1,5 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## 프로젝트 구조 (Layered Architecture)
-
-```
-WWE/
-├── app/                    # Next.js App Router
-│   ├── api/               # API 라우트 (RESTful endpoints)
-│   ├── page.tsx           # 메인 페이지
-│   └── layout.tsx          # 레이아웃
-├── services/              # Service 레이어 (비즈니스 로직)
-│   └── README.md          # 서비스 사용 가이드
-├── repositories/          # Repository 레이어 (데이터 접근)
-│   └── README.md          # 레포지토리 사용 가이드
-├── lib/                   # 유틸리티 및 설정
-│   └── db.ts              # MySQL 연결 풀
-└── public/                # 정적 파일
-```
-
-### 아키텍처 레이어
-
-1. **API Routes** (`app/api/`) - HTTP 요청/응답 처리
-2. **Services** (`services/`) - 비즈니스 로직 및 검증
-3. **Repositories** (`repositories/`) - 데이터베이스 CRUD 작업
-4. **Database** (`lib/db.ts`) - MySQL 연결 관리
-
 ## Getting Started
 
 ### 1. 의존성 설치
@@ -55,7 +31,8 @@ docker run -d -p 3306:3306 --name wwe-mysql wwe-mysql
 ### 3. 개발 서버 실행
 
 ```bash
-cd 'F:\Users\user\sideProject\wwe\'
+cd F:\Users\user\sideProject\wwe
+
 npm run dev
 # or
 yarn dev
