@@ -1,10 +1,14 @@
 // 빌드 관련 타입 정의
 
+export type BuildCategory = 'PVE' | 'PVP' | 'RVR' | '시련';
+
 export interface Build {
   id: number;
   name: string;
   description?: string;
-  version?: string;
+  category: BuildCategory;      // 빌드 용도 구분
+  version_id?: number;          // 게임 버전 ID (자동 설정)
+  version_name?: string;        // 게임 버전명 (조회용)
   status?: 'active' | 'inactive' | 'archived';
   무술들?: BuildItem[];
   심법들?: BuildItem[];
@@ -27,7 +31,8 @@ export interface BuildItem {
 export interface CreateBuildDto {
   name: string;
   description?: string;
-  version?: string;
+  category: BuildCategory;      // 필수: 빌드 용도 선택
+  // version은 서버에서 자동으로 현재 활성 버전으로 설정
   status?: 'active' | 'inactive' | 'archived';
   무술들?: BuildItem[];
   심법들?: BuildItem[];
@@ -37,11 +42,23 @@ export interface CreateBuildDto {
 export interface UpdateBuildDto {
   name?: string;
   description?: string;
-  version?: string;
+  category?: BuildCategory;
   status?: 'active' | 'inactive' | 'archived';
   무술들?: BuildItem[];
   심법들?: BuildItem[];
   비결들?: BuildItem[];
+}
+
+// 게임 버전 타입
+export interface GameVersion {
+  id: number;
+  version: string;
+  description?: string;
+  is_active: boolean;
+  start_date: Date;
+  end_date?: Date | null;
+  created_at: Date;
+  updated_at: Date;
 }
 
 // 인기도 관련 타입

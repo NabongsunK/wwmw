@@ -1,0 +1,405 @@
+### WWE API 테스트 파일
+### VS Code REST Client 확장 또는 IntelliJ HTTP Client에서 사용 가능
+### 기본 URL
+@baseUrl = http://localhost:3000
+
+###############################################
+# 데이터베이스 연결 테스트
+###############################################
+
+### DB 연결 테스트
+GET {{baseUrl}}/api/db/test
+
+###############################################
+# 빌드보드 API (schema_simple.sql 기반)
+###############################################
+
+### 모든 빌드보드 조회
+GET {{baseUrl}}/api/builds
+
+### 카테고리별 빌드보드 조회 - PVE
+GET {{baseUrl}}/api/builds?category=PVE
+
+### 카테고리별 빌드보드 조회 - PVP
+GET {{baseUrl}}/api/builds?category=PVP
+
+### 카테고리별 빌드보드 조회 - RVR
+GET {{baseUrl}}/api/builds?category=RVR
+
+### 카테고리별 빌드보드 조회 - 시련
+GET {{baseUrl}}/api/builds?category=시련
+
+### 빌드보드 ID로 조회 (무술, 비결, 심법 포함)
+GET {{baseUrl}}/api/builds/1
+
+### 빌드보드 생성 (무술 2개, 비결 8개, 심법 4개)
+POST {{baseUrl}}/api/builds
+Content-Type: application/json
+
+{
+  "name": "테스트 빌드보드",
+  "description": "테스트용 빌드보드 설명입니다",
+  "category": "PVP",
+  "status": "active",
+  "무술들": [
+    { "id": 1, "순서": 1 },
+    { "id": 2, "순서": 2 }
+  ],
+  "비결들": [
+    { "id": 1, "순서": 1 },
+    { "id": 2, "순서": 2 },
+    { "id": 3, "순서": 3 },
+    { "id": 4, "순서": 4 },
+    { "id": 5, "순서": 5 },
+    { "id": 6, "순서": 6 },
+    { "id": 7, "순서": 7 },
+    { "id": 8, "순서": 8 }
+  ],
+  "심법들": [
+    { "id": 1, "순서": 1 },
+    { "id": 2, "순서": 2 },
+    { "id": 3, "순서": 3 },
+    { "id": 4, "순서": 4 }
+  ]
+}
+
+### 빌드보드 생성 - PVE 예시
+POST {{baseUrl}}/api/builds
+Content-Type: application/json
+
+{
+  "name": "PVE 던전 특화 빌드",
+  "description": "던전 공략용 빌드입니다",
+  "category": "PVE",
+  "status": "active",
+  "무술들": [
+    { "id": 1, "순서": 1 },
+    { "id": 2, "순서": 2 }
+  ],
+  "비결들": [
+    { "id": 1, "순서": 1 },
+    { "id": 2, "순서": 2 },
+    { "id": 3, "순서": 3 },
+    { "id": 4, "순서": 4 },
+    { "id": 5, "순서": 5 },
+    { "id": 6, "순서": 6 },
+    { "id": 7, "순서": 7 },
+    { "id": 8, "순서": 8 }
+  ],
+  "심법들": [
+    { "id": 1, "순서": 1 },
+    { "id": 2, "순서": 2 },
+    { "id": 3, "순서": 3 },
+    { "id": 4, "순서": 4 }
+  ]
+}
+
+### 빌드보드 생성 - 시련 예시
+POST {{baseUrl}}/api/builds
+Content-Type: application/json
+
+{
+  "name": "시련의 탑 공략 빌드",
+  "description": "시련의 탑 고층 공략용입니다",
+  "category": "시련",
+  "status": "active",
+  "무술들": [
+    { "id": 1, "순서": 1 },
+    { "id": 2, "순서": 2 }
+  ],
+  "비결들": [
+    { "id": 1, "순서": 1 },
+    { "id": 2, "순서": 2 },
+    { "id": 3, "순서": 3 },
+    { "id": 4, "순서": 4 },
+    { "id": 5, "순서": 5 },
+    { "id": 6, "순서": 6 },
+    { "id": 7, "순서": 7 },
+    { "id": 8, "순서": 8 }
+  ],
+  "심법들": [
+    { "id": 1, "순서": 1 },
+    { "id": 2, "순서": 2 },
+    { "id": 3, "순서": 3 },
+    { "id": 4, "순서": 4 }
+  ]
+}
+
+### 빌드보드 업데이트
+PUT {{baseUrl}}/api/builds/1
+Content-Type: application/json
+
+{
+  "name": "업데이트된 빌드보드",
+  "description": "업데이트된 설명",
+  "category": "RVR",
+  "무술들": [
+    { "id": 3, "순서": 1 },
+    { "id": 4, "순서": 2 }
+  ]
+}
+
+### 빌드보드 삭제 (소프트 삭제)
+DELETE {{baseUrl}}/api/builds/1
+
+### 인기 빌드 조회 - 전체
+GET {{baseUrl}}/api/builds/popular?period=all
+
+### 인기 빌드 조회 - 최근 24시간
+GET {{baseUrl}}/api/builds/popular?period=24h
+
+### 인기 빌드 조회 - 최근 7일
+GET {{baseUrl}}/api/builds/popular?period=7d
+
+### 인기 빌드 조회 - 트렌딩
+GET {{baseUrl}}/api/builds/popular?period=trending
+
+### 빌드 조회수 증가 (ID: 1)
+POST {{baseUrl}}/api/builds/1/view
+
+### 빌드 좋아요 상태 확인 (ID: 1, userId: 123)
+GET {{baseUrl}}/api/builds/1/like?userId=123
+
+### 빌드 좋아요 추가 (ID: 1)
+POST {{baseUrl}}/api/builds/1/like
+Content-Type: application/json
+
+{
+  "action": "add",
+  "userId": "123"
+}
+
+### 빌드 좋아요 제거 (ID: 1)
+POST {{baseUrl}}/api/builds/1/like
+Content-Type: application/json
+
+{
+  "action": "remove",
+  "userId": "123"
+}
+
+###############################################
+# 무술계층 API (다국어 지원: lang=ko|en|ja|zh)
+###############################################
+
+### 모든 무술계층 조회 (한국어)
+GET {{baseUrl}}/api/martials?lang=ko
+
+### 모든 무술계층 조회 (영어)
+GET {{baseUrl}}/api/martials?lang=en
+
+### 모든 무술계층 조회 (일본어)
+GET {{baseUrl}}/api/martials?lang=ja
+
+### 모든 무술계층 조회 (중국어)
+GET {{baseUrl}}/api/martials?lang=zh
+
+### 유파 코드로 무술계층 조회 (한국어)
+GET {{baseUrl}}/api/martials?lang=ko&유파_code=1001000
+
+### 무술계층 ID로 조회 (한국어)
+GET {{baseUrl}}/api/martials/1?lang=ko
+
+### 무술계층 ID로 조회 (영어)
+GET {{baseUrl}}/api/martials/1?lang=en
+
+###############################################
+# 비결 API (mystics) - 조회 전용
+###############################################
+
+### 모든 비결 조회
+GET {{baseUrl}}/api/mystics
+
+### 비결 ID로 조회
+GET {{baseUrl}}/api/mystics/1
+
+###############################################
+# 심법 API (innerways) - 조회 전용
+###############################################
+
+### 모든 심법 조회
+GET {{baseUrl}}/api/innerways
+
+### 유파 코드로 심법 조회
+GET {{baseUrl}}/api/innerways?유파_code=YP0001
+
+### 등급별 심법 조회
+GET {{baseUrl}}/api/innerways?등급=1
+
+### 심법 ID로 조회
+GET {{baseUrl}}/api/innerways/1
+
+###############################################
+# 이미지 API
+###############################################
+
+### 모든 이미지 조회
+GET {{baseUrl}}/api/images
+
+### 코드와 타입으로 이미지 조회
+GET {{baseUrl}}/api/images?code=YP0001&image_type=유파
+
+### 코드로 모든 이미지 조회
+GET {{baseUrl}}/api/images?code=YP0001
+
+### 타입별 이미지 조회 - 유파
+GET {{baseUrl}}/api/images?image_type=유파
+
+### 타입별 이미지 조회 - 장비
+GET {{baseUrl}}/api/images?image_type=장비
+
+### 타입별 이미지 조회 - 무술
+GET {{baseUrl}}/api/images?image_type=무술
+
+### 타입별 이미지 조회 - 스킬
+GET {{baseUrl}}/api/images?image_type=스킬
+
+### 타입별 이미지 조회 - 비결
+GET {{baseUrl}}/api/images?image_type=비결
+
+### 타입별 이미지 조회 - 심법
+GET {{baseUrl}}/api/images?image_type=심법
+
+### 이미지 ID로 조회
+GET {{baseUrl}}/api/images/1
+
+### 이미지 생성
+POST {{baseUrl}}/api/images
+Content-Type: application/json
+
+{
+  "code": "YP0001",
+  "image_type": "유파",
+  "img_path": "/images/factions/yp0001.png"
+}
+
+### 이미지 업데이트
+PUT {{baseUrl}}/api/images/1
+Content-Type: application/json
+
+{
+  "img_path": "/images/factions/yp0001_updated.png"
+}
+
+### 이미지 삭제
+DELETE {{baseUrl}}/api/images/1
+
+###############################################
+# 리더보드 API
+###############################################
+
+### 모든 리더보드 조회
+GET {{baseUrl}}/api/leaderboard
+
+### 전체 랭킹 조회
+GET {{baseUrl}}/api/leaderboard?ranking=true
+
+### 전체 랭킹 조회 (상위 10명)
+GET {{baseUrl}}/api/leaderboard?ranking=true&limit=10
+
+### 유파별 랭킹 조회
+GET {{baseUrl}}/api/leaderboard?ranking=true&유파_code=YP0001
+
+### 유파별 랭킹 조회 (상위 5명)
+GET {{baseUrl}}/api/leaderboard?ranking=true&유파_code=YP0001&limit=5
+
+### 일별 랭킹 조회
+GET {{baseUrl}}/api/leaderboard?ranking=true&기록일=2024-01-01
+
+### 일별 랭킹 조회 (상위 10명)
+GET {{baseUrl}}/api/leaderboard?ranking=true&기록일=2024-01-01&limit=10
+
+### 사용자별 리더보드 조회
+GET {{baseUrl}}/api/leaderboard?user_id=user123
+
+### 유파별 리더보드 조회
+GET {{baseUrl}}/api/leaderboard?유파_code=YP0001
+
+### 기록일별 리더보드 조회
+GET {{baseUrl}}/api/leaderboard?기록일=2024-01-01
+
+### 리더보드 ID로 조회
+GET {{baseUrl}}/api/leaderboard/1
+
+### 사용자별 최고 점수 조회
+GET {{baseUrl}}/api/leaderboard/users/user123?best=true
+
+### 리더보드 기록 생성 (무술/심법 사용 - 유파 포함)
+POST {{baseUrl}}/api/leaderboard
+Content-Type: application/json
+
+{
+  "user_id": "user123",
+  "빌드보드_id": 1,
+  "점수": 10000,
+  "유파_code": "YP0001",
+  "기록일": "2024-01-01"
+}
+
+### 리더보드 기록 생성 (비결만 사용 - 유파 없음)
+POST {{baseUrl}}/api/leaderboard
+Content-Type: application/json
+
+{
+  "user_id": "user456",
+  "빌드보드_id": 2,
+  "점수": 9500,
+  "기록일": "2024-01-01"
+}
+
+###############################################
+# 사용자 API
+###############################################
+
+### 모든 사용자 조회
+GET {{baseUrl}}/api/users
+
+### 사용자 생성
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "name": "홍길동",
+  "email": "test@example.com"
+}
+
+###############################################
+# 변수 사용 예시
+###############################################
+
+### 변수 설정 (필요시 수정)
+@buildId = 1
+@userId = user123
+@martialId = 1
+@mysticId = 1
+@innerwayId = 1
+@imageId = 1
+@leaderboardId = 1
+@유파Code = YP0001
+
+### 변수를 사용한 빌드보드 조회
+GET {{baseUrl}}/api/builds/{{buildId}}
+
+### 변수를 사용한 무술계층 조회
+GET {{baseUrl}}/api/martials/{{martialId}}
+
+### 변수를 사용한 비결 조회
+GET {{baseUrl}}/api/mystics/{{mysticId}}
+
+### 변수를 사용한 심법 조회
+GET {{baseUrl}}/api/innerways/{{innerwayId}}
+
+### 변수를 사용한 이미지 조회
+GET {{baseUrl}}/api/images/{{imageId}}
+
+### 변수를 사용한 리더보드 조회
+GET {{baseUrl}}/api/leaderboard/{{leaderboardId}}
+
+### 변수를 사용한 유파별 심법 조회
+GET {{baseUrl}}/api/innerways?유파_code={{유파Code}}
+
+### 변수를 사용한 유파별 랭킹 조회
+GET {{baseUrl}}/api/leaderboard?ranking=true&유파_code={{유파Code}}&limit=10
+
+### 변수를 사용한 사용자별 최고 점수 조회
+GET {{baseUrl}}/api/leaderboard/users/{{userId}}?best=true

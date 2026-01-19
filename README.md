@@ -70,6 +70,8 @@ MYSQL_DATABASE=z
 cd ../deploy
 docker build -t wwe-mysql .
 docker run -d -p 3306:3306 --name wwe-mysql wwe-mysql
+
+docker start wwe-mysql
 ```
 
 ### 3. 개발 서버 실행

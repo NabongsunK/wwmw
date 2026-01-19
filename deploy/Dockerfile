@@ -3,7 +3,7 @@ FROM mysql:8.0
 
 # 환경 변수 설정
 ENV MYSQL_ROOT_PASSWORD=rootpassword
-ENV MYSQL_DATABASE=z
+ENV MYSQL_DATABASE=wwe_db
 ENV MYSQL_USER=wwe_user
 ENV MYSQL_PASSWORD=wwe_password
 
