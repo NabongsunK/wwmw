@@ -1,20 +1,20 @@
 // 심법 서비스 (조회 전용)
 
-import { InnerwayRepository } from '@/repo/innerway.repository';
-import type { Innerway } from '@/types/innerway';
+import { InnerwayRepository } from '@/repo/innerway.repository'
+import type { Innerway } from '@/types/innerway'
 
 export class InnerwayService {
-  private innerwayRepository: InnerwayRepository;
+  private innerwayRepository: InnerwayRepository
 
   constructor() {
-    this.innerwayRepository = new InnerwayRepository();
+    this.innerwayRepository = new InnerwayRepository()
   }
 
   /**
    * 모든 심법 조회
    */
   async getAll(): Promise<Innerway[]> {
-    return await this.innerwayRepository.findAll();
+    return await this.innerwayRepository.findAll()
   }
 
   /**
@@ -22,28 +22,28 @@ export class InnerwayService {
    */
   async getById(id: number): Promise<Innerway> {
     if (id <= 0) {
-      throw new Error('Invalid ID');
+      throw new Error('Invalid ID')
     }
 
-    const innerway = await this.innerwayRepository.findById(id);
+    const innerway = await this.innerwayRepository.findById(id)
     if (!innerway) {
-      throw new Error('Innerway not found');
+      throw new Error('Innerway not found')
     }
 
-    return innerway;
+    return innerway
   }
 
   /**
    * 유파 코드로 심법 조회
    */
   async getBy유파Code(유파_code: string): Promise<Innerway[]> {
-    return await this.innerwayRepository.findBy유파Code(유파_code);
+    return await this.innerwayRepository.findBy유파Code(유파_code)
   }
 
   /**
    * 등급별 조회
    */
   async getBy등급(등급: number): Promise<Innerway[]> {
-    return await this.innerwayRepository.findBy등급(등급);
+    return await this.innerwayRepository.findBy등급(등급)
   }
 }

@@ -1,20 +1,20 @@
 // 사용자 서비스
 
-import { UserRepository } from '@/repo/user.repository';
-import type { User, CreateUserDto, UpdateUserDto } from '@/types/user';
+import { UserRepository } from '@/repo/user.repository'
+import type { User, CreateUserDto, UpdateUserDto } from '@/types/user'
 
 export class UserService {
-  private userRepository: UserRepository;
+  private userRepository: UserRepository
 
   constructor() {
-    this.userRepository = new UserRepository();
+    this.userRepository = new UserRepository()
   }
 
   /**
    * 모든 사용자 조회
    */
   async getAllUsers(): Promise<User[]> {
-    return await this.userRepository.findAll();
+    return await this.userRepository.findAll()
   }
 
   /**
@@ -22,15 +22,15 @@ export class UserService {
    */
   async getUserById(id: number): Promise<User> {
     if (id <= 0) {
-      throw new Error('Invalid user ID');
+      throw new Error('Invalid user ID')
     }
 
-    const user = await this.userRepository.findById(id);
+    const user = await this.userRepository.findById(id)
     if (!user) {
-      throw new Error('User not found');
+      throw new Error('User not found')
     }
 
-    return user;
+    return user
   }
 
   /**
@@ -38,10 +38,10 @@ export class UserService {
    */
   async getUserByEmail(email: string): Promise<User | null> {
     if (!email || !email.includes('@')) {
-      throw new Error('Invalid email format');
+      throw new Error('Invalid email format')
     }
 
-    return await this.userRepository.findByEmail(email);
+    return await this.userRepository.findByEmail(email)
   }
 
   /**
@@ -50,21 +50,21 @@ export class UserService {
   async createUser(data: CreateUserDto): Promise<User> {
     // 비즈니스 검증
     if (!data.name || data.name.trim().length === 0) {
-      throw new Error('Name is required');
+      throw new Error('Name is required')
     }
 
     if (!data.email || !data.email.includes('@')) {
-      throw new Error('Valid email is required');
+      throw new Error('Valid email is required')
     }
 
     // 이메일 중복 체크
-    const existingUser = await this.userRepository.findByEmail(data.email);
+    const existingUser = await this.userRepository.findByEmail(data.email)
     if (existingUser) {
-      throw new Error('Email already exists');
+      throw new Error('Email already exists')
     }
 
     // 사용자 생성
-    return await this.userRepository.create(data);
+    return await this.userRepository.create(data)
   }
 
   /**
@@ -72,29 +72,29 @@ export class UserService {
    */
   async updateUser(id: number, data: UpdateUserDto): Promise<User> {
     if (id <= 0) {
-      throw new Error('Invalid user ID');
+      throw new Error('Invalid user ID')
     }
 
     // 사용자 존재 확인
-    const existingUser = await this.userRepository.findById(id);
+    const existingUser = await this.userRepository.findById(id)
     if (!existingUser) {
-      throw new Error('User not found');
+      throw new Error('User not found')
     }
 
     // 이메일 변경 시 중복 체크
     if (data.email && data.email !== existingUser.email) {
-      const emailExists = await this.userRepository.findByEmail(data.email);
+      const emailExists = await this.userRepository.findByEmail(data.email)
       if (emailExists) {
-        throw new Error('Email already exists');
+        throw new Error('Email already exists')
       }
     }
 
     // 이메일 형식 검증
     if (data.email && !data.email.includes('@')) {
-      throw new Error('Invalid email format');
+      throw new Error('Invalid email format')
     }
 
-    return await this.userRepository.update(id, data);
+    return await this.userRepository.update(id, data)
   }
 
   /**
@@ -102,15 +102,14 @@ export class UserService {
    */
   async deleteUser(id: number): Promise<void> {
     if (id <= 0) {
-      throw new Error('Invalid user ID');
+      throw new Error('Invalid user ID')
     }
 
-    const user = await this.userRepository.findById(id);
+    const user = await this.userRepository.findById(id)
     if (!user) {
-      throw new Error('User not found');
+      throw new Error('User not found')
     }
 
-    await this.userRepository.delete(id);
+    await this.userRepository.delete(id)
   }
 }
-

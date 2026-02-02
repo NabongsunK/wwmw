@@ -1,6 +1,7 @@
 # MySQL 권한 문제 해결 가이드
 
 ## 문제
+
 `Access denied for user 'wwe_user'@'%' to database 'wwe_db'`
 
 ## 해결 방법
@@ -45,6 +46,7 @@ ENV MYSQL_DATABASE=wwe_db
 ```
 
 그 다음 컨테이너 재빌드:
+
 ```powershell
 docker stop wwe-mysql
 docker rm wwe-mysql

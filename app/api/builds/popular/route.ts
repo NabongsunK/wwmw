@@ -1,8 +1,8 @@
 // 인기 빌드 API
 
-import { NextResponse } from 'next/server';
-import { query } from '@/lib/db';
-import type { Build } from '@/types/build';
+import { NextResponse } from 'next/server'
+import { query } from '@/lib/db'
+import type { Build } from '@/types/build'
 
 /**
  * GET /api/builds/popular - 인기 빌드 조회
@@ -10,11 +10,11 @@ import type { Build } from '@/types/build';
  */
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') || 'all';
+    const { searchParams } = new URL(request.url)
+    const period = searchParams.get('period') || 'all'
 
-    let querySql = '';
-    
+    let querySql = ''
+
     switch (period) {
       case '24h':
         // 최근 24시간 인기
@@ -29,8 +29,8 @@ export async function GET(request: Request) {
           WHERE s.최근24시간_조회수 > 0
           ORDER BY s.최근24시간_조회수 DESC, s.인기도_점수 DESC
           LIMIT 10
-        `;
-        break;
+        `
+        break
       case '7d':
         // 최근 7일 인기
         querySql = `
@@ -44,8 +44,8 @@ export async function GET(request: Request) {
           WHERE s.최근7일_조회수 > 0
           ORDER BY s.인기도_점수 DESC
           LIMIT 10
-        `;
-        break;
+        `
+        break
       case 'trending':
         // 트렌딩 (최근 활동이 많은 빌드)
         querySql = `
@@ -58,8 +58,8 @@ export async function GET(request: Request) {
           INNER JOIN T_빌드보드 b ON t.id = b.id
           INNER JOIN V_빌드보드_통계 s ON b.id = s.빌드보드_id
           LIMIT 10
-        `;
-        break;
+        `
+        break
       default:
         // 전체 인기
         querySql = `
@@ -71,27 +71,26 @@ export async function GET(request: Request) {
           FROM V_빌드보드_인기 b
           INNER JOIN V_빌드보드_통계 s ON b.id = s.빌드보드_id
           LIMIT 10
-        `;
+        `
     }
 
-    const builds = await query<Build>(querySql);
+    const builds = await query<Build>(querySql)
 
     return NextResponse.json(
-      { 
-        success: true, 
+      {
+        success: true,
         data: builds,
-        period 
+        period,
       },
-      { status: 200 }
-    );
+      { status: 200 },
+    )
   } catch (error) {
     return NextResponse.json(
       {
         success: false,
         message: error instanceof Error ? error.message : 'Failed to fetch popular builds',
       },
-      { status: 500 }
-    );
+      { status: 500 },
+    )
   }
 }
-

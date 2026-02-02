@@ -1,4 +1,4 @@
-import mysql from 'mysql2/promise';
+import mysql from 'mysql2/promise'
 
 // 데이터베이스 연결 풀 생성
 const pool = mysql.createPool({
@@ -12,55 +12,51 @@ const pool = mysql.createPool({
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
-});
+})
 
 // 연결 테스트 함수
 export async function testConnection() {
   try {
-    const connection = await pool.getConnection();
-    await connection.ping();
-    connection.release();
-    return { success: true, message: 'MySQL 연결 성공' };
+    const connection = await pool.getConnection()
+    await connection.ping()
+    connection.release()
+    return { success: true, message: 'MySQL 연결 성공' }
   } catch (error) {
-    return { 
-      success: false, 
-      message: error instanceof Error ? error.message : 'MySQL 연결 실패' 
-    };
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'MySQL 연결 실패',
+    }
   }
 }
 
 // 쿼리 실행 헬퍼 함수
-export async function query<T = any>(
-  sql: string,
-  params?: any[]
-): Promise<T[]> {
+export async function query<T = any>(sql: string, params?: any[]): Promise<T[]> {
   try {
-    const [rows] = await pool.execute(sql, params);
-    return rows as T[];
+    const [rows] = await pool.execute(sql, params)
+    return rows as T[]
   } catch (error) {
-    console.error('Database query error:', error);
-    throw error;
+    console.error('Database query error:', error)
+    throw error
   }
 }
 
 // 트랜잭션 헬퍼 함수
 export async function transaction<T>(
-  callback: (connection: mysql.PoolConnection) => Promise<T>
+  callback: (connection: mysql.PoolConnection) => Promise<T>,
 ): Promise<T> {
-  const connection = await pool.getConnection();
-  await connection.beginTransaction();
-  
+  const connection = await pool.getConnection()
+  await connection.beginTransaction()
+
   try {
-    const result = await callback(connection);
-    await connection.commit();
-    return result;
+    const result = await callback(connection)
+    await connection.commit()
+    return result
   } catch (error) {
-    await connection.rollback();
-    throw error;
+    await connection.rollback()
+    throw error
   } finally {
-    connection.release();
+    connection.release()
   }
 }
 
-export default pool;
-
+export default pool

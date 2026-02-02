@@ -1,10 +1,10 @@
 // 무술계층 레포지토리 (조회 전용)
 
-import { query } from '@/lib/db';
-import type { MartialHierarchyWithNames, Lang } from '@/types/martial';
+import { query } from '@/lib/db'
+import type { MartialHierarchyWithNames, Lang } from '@/types/martial'
 
 export class MartialRepository {
-  private tableName = 'T_무술계층';
+  private tableName = 'T_무술계층'
 
   /**
    * 모든 무술계층 조회 (다국어 지원)
@@ -44,8 +44,8 @@ export class MartialRepository {
       LEFT JOIN T_이미지 img_무술 ON m.무술_img = img_무술.id
       LEFT JOIN T_이미지 img_스킬 ON m.스킬_img = img_스킬.id
       ORDER BY m.순서 ASC, m.created_at DESC`,
-      [lang, lang, lang, lang]
-    );
+      [lang, lang, lang, lang],
+    )
   }
 
   /**
@@ -86,9 +86,9 @@ export class MartialRepository {
       LEFT JOIN T_이미지 img_무술 ON m.무술_img = img_무술.id
       LEFT JOIN T_이미지 img_스킬 ON m.스킬_img = img_스킬.id
       WHERE m.id = ?`,
-      [lang, lang, lang, lang, id]
-    );
-    return results[0] || null;
+      [lang, lang, lang, lang, id],
+    )
+    return results[0] || null
   }
 
   /**
@@ -130,7 +130,7 @@ export class MartialRepository {
       LEFT JOIN T_이미지 img_스킬 ON m.스킬_img = img_스킬.id
       WHERE m.유파_code = ?
       ORDER BY m.순서 ASC`,
-      [lang, lang, lang, lang, 유파_code]
-    );
+      [lang, lang, lang, lang, 유파_code],
+    )
   }
 }

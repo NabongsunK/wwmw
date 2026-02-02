@@ -10,7 +10,8 @@
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "type-check": "tsc --noEmit",
     "type-check:watch": "tsc --noEmit --watch",
-    "check": "npm run type-check && npm run lint"
+    "check": "npm run type-check && npm run lint",
+    "format": "prettier \"**/*.{ts,tsx,js,jsx,json,md,css,html}\" --write"
   },
   "dependencies": {
     "mysql2": "^3.15.3",
