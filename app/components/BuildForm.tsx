@@ -6,6 +6,7 @@ import type { CreateBuildDto, BuildItem } from '@/types/build'
 import type { MartialHierarchyWithNames } from '@/types/martial'
 import type { Mystic } from '@/types/mystic'
 import type { Innerway } from '@/types/innerway'
+import Button from './ui/Button'
 
 interface BuildFormProps {
   editBuildId?: number // 수정 모드: 빌드 ID 전달
@@ -779,37 +780,26 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                 {selectedInnerways.length}/4
               </div>
               <div className="flex gap-2">
-                <button
-                  type="button"
+                <Button
+                  variant="outline"
                   onClick={currentStep === 'weapons' ? onClose : goPrev}
-                  className="px-4 py-2 border border-border rounded-md hover:bg-muted"
                   disabled={loading}
+                  className="px-4"
                 >
                   {currentStep === 'weapons' ? '취소' : '이전'}
-                </button>
+                </Button>
 
                 {currentStep === 'info' ? (
-                  <button
+                  <Button
                     type="submit"
-                    className="px-6 py-2 bg-foreground text-background rounded-md hover:opacity-90 disabled:opacity-50"
-                    disabled={loading || !formData.name}
+                    isLoading={loading}
+                    loadingText={isEditMode ? '수정 중...' : '등록 중...'}
+                    disabled={!formData.name}
                   >
-                    {loading
-                      ? isEditMode
-                        ? '수정 중...'
-                        : '등록 중...'
-                      : isEditMode
-                        ? '빌드 수정'
-                        : '빌드 등록'}
-                  </button>
+                    {isEditMode ? '빌드 수정' : '빌드 등록'}
+                  </Button>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={goNext}
-                    className="px-6 py-2 bg-foreground text-background rounded-md hover:opacity-90"
-                  >
-                    다음
-                  </button>
+                  <Button onClick={goNext}>다음</Button>
                 )}
               </div>
             </div>
