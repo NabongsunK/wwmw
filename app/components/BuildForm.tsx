@@ -1,31 +1,31 @@
-'use client';
+'use client'
 
-import { useState, useEffect, useMemo } from 'react';
-import Image from 'next/image';
-import type { CreateBuildDto, BuildItem } from '@/types/build';
-import type { MartialHierarchyWithNames } from '@/types/martial';
-import type { Mystic } from '@/types/mystic';
-import type { Innerway } from '@/types/innerway';
+import { useState, useEffect, useMemo } from 'react'
+import Image from 'next/image'
+import type { CreateBuildDto, BuildItem } from '@/types/build'
+import type { MartialHierarchyWithNames } from '@/types/martial'
+import type { Mystic } from '@/types/mystic'
+import type { Innerway } from '@/types/innerway'
 
 interface BuildFormProps {
-  editBuildId?: number;  // 수정 모드: 빌드 ID 전달
-  onClose: () => void;
-  onSuccess: () => void;
+  editBuildId?: number // 수정 모드: 빌드 ID 전달
+  onClose: () => void
+  onSuccess: () => void
 }
 
 // 무기 + 무술 선택 정보
 interface WeaponSelection {
-  weaponCode: string;
-  weaponName: string;
-  martialId: number | null;
-  martialName: string | null;
+  weaponCode: string
+  weaponName: string
+  martialId: number | null
+  martialName: string | null
 }
 
-type StepType = 'weapons' | 'mystic' | 'innerway' | 'info';
+type StepType = 'weapons' | 'mystic' | 'innerway' | 'info'
 
 export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
-  const isEditMode = !!editBuildId;
-  
+  const isEditMode = !!editBuildId
+
   const [formData, setFormData] = useState<CreateBuildDto>({
     name: '',
     description: '',
@@ -34,86 +34,86 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
     무술들: [],
     비결들: [],
     심법들: [],
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
   // 데이터 로딩 상태
-  const [dataLoading, setDataLoading] = useState(true);
-  const [martials, setMartials] = useState<MartialHierarchyWithNames[]>([]);
-  const [mystics, setMystics] = useState<Mystic[]>([]);
-  const [innerways, setInnerways] = useState<Innerway[]>([]);
+  const [dataLoading, setDataLoading] = useState(true)
+  const [martials, setMartials] = useState<MartialHierarchyWithNames[]>([])
+  const [mystics, setMystics] = useState<Mystic[]>([])
+  const [innerways, setInnerways] = useState<Innerway[]>([])
 
   // 무기+무술 선택 (2개)
-  const [weaponSelections, setWeaponSelections] = useState<WeaponSelection[]>([]);
-  const [currentWeaponSlot, setCurrentWeaponSlot] = useState<0 | 1>(0); // 현재 선택 중인 슬롯
+  const [weaponSelections, setWeaponSelections] = useState<WeaponSelection[]>([])
+  const [currentWeaponSlot, setCurrentWeaponSlot] = useState<0 | 1>(0) // 현재 선택 중인 슬롯
 
   // 선택된 항목들
-  const [selectedMystics, setSelectedMystics] = useState<BuildItem[]>([]);
-  const [selectedInnerways, setSelectedInnerways] = useState<BuildItem[]>([]);
+  const [selectedMystics, setSelectedMystics] = useState<BuildItem[]>([])
+  const [selectedInnerways, setSelectedInnerways] = useState<BuildItem[]>([])
 
   // 단계 상태 (무기+무술 → 비결 → 심법 → 기본정보)
-  const [currentStep, setCurrentStep] = useState<StepType>('weapons');
+  const [currentStep, setCurrentStep] = useState<StepType>('weapons')
 
   // 무기 목록 추출 (고유한 장비_code만)
   const weapons = useMemo(() => {
-    const weaponMap = new Map<string, MartialHierarchyWithNames>();
+    const weaponMap = new Map<string, MartialHierarchyWithNames>()
     martials.forEach((m) => {
       if (m.장비_code && !weaponMap.has(m.장비_code)) {
-        weaponMap.set(m.장비_code, m);
+        weaponMap.set(m.장비_code, m)
       }
-    });
-    return Array.from(weaponMap.values());
-  }, [martials]);
+    })
+    return Array.from(weaponMap.values())
+  }, [martials])
 
   // 현재 슬롯에서 선택된 무기에 해당하는 무술 목록
-  const currentSlotWeapon = weaponSelections[currentWeaponSlot];
+  const currentSlotWeapon = weaponSelections[currentWeaponSlot]
   const filteredMartials = useMemo(() => {
-    if (!currentSlotWeapon?.weaponCode) return [];
-    return martials.filter((m) => m.장비_code === currentSlotWeapon.weaponCode && m.무술_code);
-  }, [martials, currentSlotWeapon?.weaponCode]);
+    if (!currentSlotWeapon?.weaponCode) return []
+    return martials.filter((m) => m.장비_code === currentSlotWeapon.weaponCode && m.무술_code)
+  }, [martials, currentSlotWeapon?.weaponCode])
 
   // 데이터 로드
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setDataLoading(true);
+        setDataLoading(true)
         const [martialsRes, mysticsRes, innerwaysRes] = await Promise.all([
           fetch('/api/martials?lang=ko'),
           fetch('/api/mystics'),
           fetch('/api/innerways'),
-        ]);
+        ])
 
-        const martialsData = await martialsRes.json();
-        const mysticsData = await mysticsRes.json();
-        const innerwaysData = await innerwaysRes.json();
+        const martialsData = await martialsRes.json()
+        const mysticsData = await mysticsRes.json()
+        const innerwaysData = await innerwaysRes.json()
 
-        if (martialsData.success) setMartials(martialsData.data);
-        if (mysticsData.success) setMystics(mysticsData.data);
-        if (innerwaysData.success) setInnerways(innerwaysData.data);
+        if (martialsData.success) setMartials(martialsData.data)
+        if (mysticsData.success) setMystics(mysticsData.data)
+        if (innerwaysData.success) setInnerways(innerwaysData.data)
       } catch (err) {
-        console.error('Failed to fetch data:', err);
+        console.error('Failed to fetch data:', err)
       } finally {
-        setDataLoading(false);
+        setDataLoading(false)
       }
-    };
+    }
 
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   // 수정 모드: 기존 빌드 데이터 로드
   useEffect(() => {
-    if (!isEditMode || !editBuildId) return;
+    if (!isEditMode || !editBuildId) return
 
     const fetchBuildData = async () => {
       try {
-        setDataLoading(true);
-        const response = await fetch(`/api/builds/${editBuildId}`);
-        const result = await response.json();
+        setDataLoading(true)
+        const response = await fetch(`/api/builds/${editBuildId}`)
+        const result = await response.json()
 
         if (result.success && result.data) {
-          const build = result.data;
-          
+          const build = result.data
+
           // 기본 정보 설정
           setFormData({
             name: build.name || '',
@@ -123,17 +123,17 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
             무술들: [],
             비결들: [],
             심법들: [],
-          });
+          })
 
           // 무술 데이터 복원
           if (build.무술들 && Array.isArray(build.무술들)) {
             const restoredWeapons: WeaponSelection[] = build.무술들.slice(0, 2).map((m: any) => ({
               weaponCode: m.장비_code || '',
-              weaponName: martials.find(mart => mart.장비_code === m.장비_code)?.장비_name || '',
+              weaponName: martials.find((mart) => mart.장비_code === m.장비_code)?.장비_name || '',
               martialId: m.id || null,
               martialName: m.무술_code || '',
-            }));
-            setWeaponSelections(restoredWeapons);
+            }))
+            setWeaponSelections(restoredWeapons)
           }
 
           // 비결 데이터 복원
@@ -141,8 +141,8 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
             const restoredMystics: BuildItem[] = build.비결들.map((m: any, idx: number) => ({
               id: m.id,
               순서: idx + 1,
-            }));
-            setSelectedMystics(restoredMystics);
+            }))
+            setSelectedMystics(restoredMystics)
           }
 
           // 심법 데이터 복원
@@ -150,56 +150,56 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
             const restoredInnerways: BuildItem[] = build.심법들.map((i: any, idx: number) => ({
               id: i.id,
               순서: idx + 1,
-            }));
-            setSelectedInnerways(restoredInnerways);
+            }))
+            setSelectedInnerways(restoredInnerways)
           }
         }
       } catch (err) {
-        console.error('Failed to fetch build data:', err);
-        setError('빌드 데이터를 불러오는데 실패했습니다.');
+        console.error('Failed to fetch build data:', err)
+        setError('빌드 데이터를 불러오는데 실패했습니다.')
       } finally {
-        setDataLoading(false);
+        setDataLoading(false)
       }
-    };
+    }
 
     // martials 데이터가 로드된 후에 빌드 데이터 로드
     if (martials.length > 0) {
-      fetchBuildData();
+      fetchBuildData()
     }
-  }, [isEditMode, editBuildId, martials]);
+  }, [isEditMode, editBuildId, martials])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+    e.preventDefault()
+
     // 유효성 검사
-    const validWeapons = weaponSelections.filter(w => w.martialId !== null);
+    const validWeapons = weaponSelections.filter((w) => w.martialId !== null)
     if (validWeapons.length === 0) {
-      setError('무기와 무술을 최소 1개 이상 선택해주세요.');
-      setCurrentStep('weapons');
-      return;
+      setError('무기와 무술을 최소 1개 이상 선택해주세요.')
+      setCurrentStep('weapons')
+      return
     }
     if (selectedMystics.length > 8) {
-      setError('비결은 최대 8개까지 선택할 수 있습니다.');
-      return;
+      setError('비결은 최대 8개까지 선택할 수 있습니다.')
+      return
     }
     if (selectedInnerways.length > 4) {
-      setError('심법은 최대 4개까지 선택할 수 있습니다.');
-      return;
+      setError('심법은 최대 4개까지 선택할 수 있습니다.')
+      return
     }
 
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
 
     // 무술 목록 생성
     const selectedMartials: BuildItem[] = validWeapons.map((w, index) => ({
       id: w.martialId!,
       순서: index + 1,
-    }));
+    }))
 
     try {
-      const url = isEditMode ? `/api/builds/${editBuildId}` : '/api/builds';
-      const method = isEditMode ? 'PUT' : 'POST';
-      
+      const url = isEditMode ? `/api/builds/${editBuildId}` : '/api/builds'
+      const method = isEditMode ? 'PUT' : 'POST'
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -211,136 +211,138 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
           비결들: selectedMystics,
           심법들: selectedInnerways,
         }),
-      });
+      })
 
-      const result = await response.json();
+      const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.message || (isEditMode ? '빌드 수정에 실패했습니다' : '빌드 생성에 실패했습니다'));
+        throw new Error(
+          result.message || (isEditMode ? '빌드 수정에 실패했습니다' : '빌드 생성에 실패했습니다'),
+        )
       }
 
-      onSuccess();
-      onClose();
+      onSuccess()
+      onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : '오류가 발생했습니다');
+      setError(err instanceof Error ? err.message : '오류가 발생했습니다')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // 무기 선택 (같은 무기 2개 선택 가능)
   const selectWeapon = (weaponCode: string, weaponName: string) => {
-    const newSelections = [...weaponSelections];
+    const newSelections = [...weaponSelections]
 
     newSelections[currentWeaponSlot] = {
       weaponCode,
       weaponName,
       martialId: null,
       martialName: null,
-    };
-    setWeaponSelections(newSelections);
-    setError(null);
-  };
+    }
+    setWeaponSelections(newSelections)
+    setError(null)
+  }
 
   // 무술 선택 (같은 무술 중복 선택 불가)
   const selectMartial = (martialId: number, martialName: string) => {
     // 다른 슬롯에서 이미 선택한 무술인지 확인
-    const otherSlot = currentWeaponSlot === 0 ? 1 : 0;
+    const otherSlot = currentWeaponSlot === 0 ? 1 : 0
     if (weaponSelections[otherSlot]?.martialId === martialId) {
-      setError('이미 선택한 무술입니다. 다른 무술을 선택해주세요.');
-      return;
+      setError('이미 선택한 무술입니다. 다른 무술을 선택해주세요.')
+      return
     }
 
-    const newSelections = [...weaponSelections];
+    const newSelections = [...weaponSelections]
     if (newSelections[currentWeaponSlot]) {
       newSelections[currentWeaponSlot] = {
         ...newSelections[currentWeaponSlot],
         martialId,
         martialName,
-      };
-      setWeaponSelections(newSelections);
-      setError(null);
+      }
+      setWeaponSelections(newSelections)
+      setError(null)
     }
-  };
+  }
 
   // 비결 선택/해제
   const toggleMystic = (id: number) => {
-    const exists = selectedMystics.find(m => m.id === id);
+    const exists = selectedMystics.find((m) => m.id === id)
     if (exists) {
-      setSelectedMystics(selectedMystics.filter(m => m.id !== id));
+      setSelectedMystics(selectedMystics.filter((m) => m.id !== id))
     } else {
       if (selectedMystics.length >= 8) {
-        setError('비결은 최대 8개까지 선택할 수 있습니다.');
-        return;
+        setError('비결은 최대 8개까지 선택할 수 있습니다.')
+        return
       }
-      setError(null);
-      setSelectedMystics([...selectedMystics, { id, 순서: selectedMystics.length + 1 }]);
+      setError(null)
+      setSelectedMystics([...selectedMystics, { id, 순서: selectedMystics.length + 1 }])
     }
-  };
+  }
 
   // 심법 선택/해제
   const toggleInnerway = (id: number) => {
-    const exists = selectedInnerways.find(m => m.id === id);
+    const exists = selectedInnerways.find((m) => m.id === id)
     if (exists) {
-      setSelectedInnerways(selectedInnerways.filter(m => m.id !== id));
+      setSelectedInnerways(selectedInnerways.filter((m) => m.id !== id))
     } else {
       if (selectedInnerways.length >= 4) {
-        setError('심법은 최대 4개까지 선택할 수 있습니다.');
-        return;
+        setError('심법은 최대 4개까지 선택할 수 있습니다.')
+        return
       }
-      setError(null);
-      setSelectedInnerways([...selectedInnerways, { id, 순서: selectedInnerways.length + 1 }]);
+      setError(null)
+      setSelectedInnerways([...selectedInnerways, { id, 순서: selectedInnerways.length + 1 }])
     }
-  };
+  }
 
   // 다음 단계로
   const goNext = () => {
-    setError(null);
+    setError(null)
     switch (currentStep) {
       case 'weapons':
-        const validWeapons = weaponSelections.filter(w => w.martialId !== null);
+        const validWeapons = weaponSelections.filter((w) => w.martialId !== null)
         if (validWeapons.length === 0) {
-          setError('무기와 무술을 최소 1개 이상 선택해주세요.');
-          return;
+          setError('무기와 무술을 최소 1개 이상 선택해주세요.')
+          return
         }
-        setCurrentStep('mystic');
-        break;
+        setCurrentStep('mystic')
+        break
       case 'mystic':
-        setCurrentStep('innerway');
-        break;
+        setCurrentStep('innerway')
+        break
       case 'innerway':
-        setCurrentStep('info');
-        break;
+        setCurrentStep('info')
+        break
     }
-  };
+  }
 
   // 이전 단계로
   const goPrev = () => {
-    setError(null);
+    setError(null)
     switch (currentStep) {
       case 'mystic':
-        setCurrentStep('weapons');
-        break;
+        setCurrentStep('weapons')
+        break
       case 'innerway':
-        setCurrentStep('mystic');
-        break;
+        setCurrentStep('mystic')
+        break
       case 'info':
-        setCurrentStep('innerway');
-        break;
+        setCurrentStep('innerway')
+        break
     }
-  };
+  }
 
   const steps: { id: StepType; label: string; icon: string }[] = [
     { id: 'weapons', label: '무기/무술', icon: '⚔️' },
     { id: 'mystic', label: '비결', icon: '📜' },
     { id: 'innerway', label: '심법', icon: '🧘' },
     { id: 'info', label: '정보', icon: '📝' },
-  ];
+  ]
 
-  const currentStepIndex = steps.findIndex(s => s.id === currentStep);
+  const currentStepIndex = steps.findIndex((s) => s.id === currentStep)
 
   // 선택 완료된 무기/무술 수
-  const completedWeapons = weaponSelections.filter(w => w.martialId !== null).length;
+  const completedWeapons = weaponSelections.filter((w) => w.martialId !== null).length
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -350,7 +352,7 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
           <h2 className="text-2xl font-bold">{isEditMode ? '빌드 수정' : '새 빌드 등록'}</h2>
           <button
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground text-2xl"
+            className="text-muted-foreground hover:text-foreground text-2xl cursor-pointer"
             type="button"
           >
             ✕
@@ -365,7 +367,7 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                 type="button"
                 onClick={() => {
                   if (index <= currentStepIndex) {
-                    setCurrentStep(step.id);
+                    setCurrentStep(step.id)
                   }
                 }}
                 disabled={index > currentStepIndex}
@@ -373,15 +375,17 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                   currentStep === step.id
                     ? 'bg-foreground text-background'
                     : index < currentStepIndex
-                    ? 'bg-foreground/20 text-foreground cursor-pointer hover:bg-foreground/30'
-                    : 'text-muted-foreground'
+                      ? 'bg-foreground/20 text-foreground cursor-pointer hover:bg-foreground/30'
+                      : 'text-muted-foreground'
                 }`}
               >
                 <span>{step.icon}</span>
                 <span className="text-sm font-medium hidden sm:inline">{step.label}</span>
               </button>
               {index < steps.length - 1 && (
-                <div className={`w-8 h-0.5 mx-1 ${index < currentStepIndex ? 'bg-foreground/30' : 'bg-border'}`} />
+                <div
+                  className={`w-8 h-0.5 mx-1 ${index < currentStepIndex ? 'bg-foreground/30' : 'bg-border'}`}
+                />
               )}
             </div>
           ))}
@@ -407,8 +411,8 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                     {/* 슬롯 선택 탭 */}
                     <div className="flex gap-2 mb-6">
                       {[0, 1].map((slot) => {
-                        const selection = weaponSelections[slot as 0 | 1];
-                        const isComplete = selection?.martialId !== null;
+                        const selection = weaponSelections[slot as 0 | 1]
+                        const isComplete = selection?.martialId !== null
                         return (
                           <button
                             key={slot}
@@ -418,8 +422,8 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                               currentWeaponSlot === slot
                                 ? 'border-foreground bg-foreground/10'
                                 : isComplete
-                                ? 'border-green-500 bg-green-500/10'
-                                : 'border-border hover:border-foreground/50'
+                                  ? 'border-green-500 bg-green-500/10'
+                                  : 'border-border hover:border-foreground/50'
                             }`}
                           >
                             <div className="flex items-center justify-between mb-1">
@@ -430,14 +434,16 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                               <div className="text-sm">
                                 <div>🗡️ {selection.weaponName}</div>
                                 {selection.martialName && (
-                                  <div className="text-muted-foreground">⚔️ {selection.martialName}</div>
+                                  <div className="text-muted-foreground">
+                                    ⚔️ {selection.martialName}
+                                  </div>
                                 )}
                               </div>
                             ) : (
                               <div className="text-sm text-muted-foreground">선택 안됨</div>
                             )}
                           </button>
-                        );
+                        )
                       })}
                     </div>
 
@@ -446,12 +452,17 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                       <h4 className="font-medium mb-3">1. 무기 선택</h4>
                       <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
                         {weapons.map((weapon) => {
-                          const isSelected = currentSlotWeapon?.weaponCode === weapon.장비_code;
+                          const isSelected = currentSlotWeapon?.weaponCode === weapon.장비_code
                           return (
                             <button
                               key={weapon.장비_code}
                               type="button"
-                              onClick={() => selectWeapon(weapon.장비_code!, weapon.장비_name || weapon.장비_code!)}
+                              onClick={() =>
+                                selectWeapon(
+                                  weapon.장비_code!,
+                                  weapon.장비_name || weapon.장비_code!,
+                                )
+                              }
                               className={`p-4 border-2 rounded-lg text-center transition-all ${
                                 isSelected
                                   ? 'border-foreground bg-foreground/10 ring-2 ring-foreground'
@@ -460,9 +471,9 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                             >
                               {weapon.장비_img_path ? (
                                 <div className="w-12 h-12 mx-auto mb-1 bg-slate-800 rounded-lg p-1">
-                                  <Image 
-                                    src={weapon.장비_img_path} 
-                                    alt={weapon.장비_name || ''} 
+                                  <Image
+                                    src={weapon.장비_img_path}
+                                    alt={weapon.장비_name || ''}
                                     width={48}
                                     height={48}
                                     className="object-contain w-full h-full"
@@ -475,7 +486,7 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                                 {weapon.장비_name || weapon.장비_code}
                               </div>
                             </button>
-                          );
+                          )
                         })}
                       </div>
                     </div>
@@ -484,46 +495,56 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                     {currentSlotWeapon?.weaponCode && (
                       <div>
                         <h4 className="font-medium mb-3">
-                          2. 무술 선택 
+                          2. 무술 선택
                           <span className="text-muted-foreground font-normal ml-2">
                             ({currentSlotWeapon.weaponName} 전용)
                           </span>
                         </h4>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                           {filteredMartials.map((martial) => {
-                            const isSelected = currentSlotWeapon?.martialId === martial.id;
-                            const otherSlot = currentWeaponSlot === 0 ? 1 : 0;
-                            const isUsedInOtherSlot = weaponSelections[otherSlot]?.martialId === martial.id;
+                            const isSelected = currentSlotWeapon?.martialId === martial.id
+                            const otherSlot = currentWeaponSlot === 0 ? 1 : 0
+                            const isUsedInOtherSlot =
+                              weaponSelections[otherSlot]?.martialId === martial.id
                             return (
                               <button
                                 key={martial.id}
                                 type="button"
-                                onClick={() => selectMartial(martial.id, martial.무술_name || martial.무술_code || `무술 #${martial.id}`)}
+                                onClick={() =>
+                                  selectMartial(
+                                    martial.id,
+                                    martial.무술_name || martial.무술_code || `무술 #${martial.id}`,
+                                  )
+                                }
                                 disabled={isUsedInOtherSlot}
                                 className={`p-4 border-2 rounded-lg text-left transition-all flex items-center gap-3 ${
                                   isSelected
                                     ? 'border-foreground bg-foreground/10 ring-2 ring-foreground'
                                     : isUsedInOtherSlot
-                                    ? 'border-border bg-muted/50 opacity-50 cursor-not-allowed'
-                                    : 'border-border hover:border-foreground/50'
+                                      ? 'border-border bg-muted/50 opacity-50 cursor-not-allowed'
+                                      : 'border-border hover:border-foreground/50'
                                 }`}
                               >
                                 {martial.무술_img_path ? (
                                   <div className="w-14 h-14 bg-slate-800 rounded-lg p-1 flex-shrink-0">
-                                    <Image 
-                                      src={martial.무술_img_path} 
-                                      alt={martial.무술_name || ''} 
+                                    <Image
+                                      src={martial.무술_img_path}
+                                      alt={martial.무술_name || ''}
                                       width={56}
                                       height={56}
                                       className="object-contain w-full h-full"
                                     />
                                   </div>
                                 ) : (
-                                  <div className="w-14 h-14 flex items-center justify-center text-2xl flex-shrink-0">⚔️</div>
+                                  <div className="w-14 h-14 flex items-center justify-center text-2xl flex-shrink-0">
+                                    ⚔️
+                                  </div>
                                 )}
                                 <div>
                                   <div className="font-medium">
-                                    {martial.무술_name || martial.무술_code || `무술 #${martial.id}`}
+                                    {martial.무술_name ||
+                                      martial.무술_code ||
+                                      `무술 #${martial.id}`}
                                   </div>
                                   {martial.유파_name && (
                                     <div className="text-sm text-muted-foreground mt-1">
@@ -532,7 +553,7 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                                   )}
                                 </div>
                               </button>
-                            );
+                            )
                           })}
                         </div>
                         {filteredMartials.length === 0 && (
@@ -554,8 +575,8 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {mystics.map((mystic) => {
-                        const isSelected = selectedMystics.some(m => m.id === mystic.id);
-                        const order = selectedMystics.find(m => m.id === mystic.id)?.순서;
+                        const isSelected = selectedMystics.some((m) => m.id === mystic.id)
+                        const order = selectedMystics.find((m) => m.id === mystic.id)?.순서
                         return (
                           <button
                             key={mystic.id}
@@ -576,7 +597,7 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                               {mystic.title || `비결 #${mystic.id}`}
                             </div>
                           </button>
-                        );
+                        )
                       })}
                     </div>
                     {mystics.length === 0 && (
@@ -596,8 +617,8 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                     </p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {innerways.map((innerway) => {
-                        const isSelected = selectedInnerways.some(m => m.id === innerway.id);
-                        const order = selectedInnerways.find(m => m.id === innerway.id)?.순서;
+                        const isSelected = selectedInnerways.some((m) => m.id === innerway.id)
+                        const order = selectedInnerways.find((m) => m.id === innerway.id)?.순서
                         return (
                           <button
                             key={innerway.id}
@@ -621,7 +642,7 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                               등급: {innerway.등급}
                             </div>
                           </button>
-                        );
+                        )
                       })}
                     </div>
                     {innerways.length === 0 && (
@@ -636,21 +657,22 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                 {currentStep === 'info' && (
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold mb-4">빌드 정보</h3>
-                    
+
                     {/* 선택 요약 */}
                     <div className="p-4 bg-muted rounded-lg mb-6">
                       <h4 className="font-medium mb-3">선택 요약</h4>
                       <div className="space-y-2 text-sm">
                         <div className="grid grid-cols-2 gap-4">
-                          {weaponSelections.map((selection, idx) => (
-                            selection?.martialId && (
-                              <div key={idx} className="p-2 bg-background rounded">
-                                <div className="text-muted-foreground">무기 {idx + 1}</div>
-                                <div className="font-medium">🗡️ {selection.weaponName}</div>
-                                <div className="font-medium">⚔️ {selection.martialName}</div>
-                              </div>
-                            )
-                          ))}
+                          {weaponSelections.map(
+                            (selection, idx) =>
+                              selection?.martialId && (
+                                <div key={idx} className="p-2 bg-background rounded">
+                                  <div className="text-muted-foreground">무기 {idx + 1}</div>
+                                  <div className="font-medium">🗡️ {selection.weaponName}</div>
+                                  <div className="font-medium">⚔️ {selection.martialName}</div>
+                                </div>
+                              ),
+                          )}
                         </div>
                         <div className="grid grid-cols-2 gap-4 mt-3">
                           <div>
@@ -753,7 +775,8 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
 
             <div className="flex gap-3 justify-between items-center">
               <div className="text-sm text-muted-foreground">
-                무기/무술 {completedWeapons}/2 · 비결 {selectedMystics.length}/8 · 심법 {selectedInnerways.length}/4
+                무기/무술 {completedWeapons}/2 · 비결 {selectedMystics.length}/8 · 심법{' '}
+                {selectedInnerways.length}/4
               </div>
               <div className="flex gap-2">
                 <button
@@ -771,9 +794,13 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                     className="px-6 py-2 bg-foreground text-background rounded-md hover:opacity-90 disabled:opacity-50"
                     disabled={loading || !formData.name}
                   >
-                    {loading 
-                      ? (isEditMode ? '수정 중...' : '등록 중...') 
-                      : (isEditMode ? '빌드 수정' : '빌드 등록')}
+                    {loading
+                      ? isEditMode
+                        ? '수정 중...'
+                        : '등록 중...'
+                      : isEditMode
+                        ? '빌드 수정'
+                        : '빌드 등록'}
                   </button>
                 ) : (
                   <button
@@ -790,5 +817,5 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
         </form>
       </div>
     </div>
-  );
+  )
 }
