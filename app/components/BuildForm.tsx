@@ -8,6 +8,7 @@ import type { Mystic } from '@/types/mystic';
 import type { Innerway } from '@/types/innerway';
 
 interface BuildFormProps {
+  editBuildId?: number;  // 수정 모드: 빌드 ID 전달
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -22,7 +23,9 @@ interface WeaponSelection {
 
 type StepType = 'weapons' | 'mystic' | 'innerway' | 'info';
 
-export function BuildForm({ onClose, onSuccess }: BuildFormProps) {
+export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
+  const isEditMode = !!editBuildId;
+  
   const [formData, setFormData] = useState<CreateBuildDto>({
     name: '',
     description: '',
@@ -98,6 +101,73 @@ export function BuildForm({ onClose, onSuccess }: BuildFormProps) {
     fetchData();
   }, []);
 
+  // 수정 모드: 기존 빌드 데이터 로드
+  useEffect(() => {
+    if (!isEditMode || !editBuildId) return;
+
+    const fetchBuildData = async () => {
+      try {
+        setDataLoading(true);
+        const response = await fetch(`/api/builds/${editBuildId}`);
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          const build = result.data;
+          
+          // 기본 정보 설정
+          setFormData({
+            name: build.name || '',
+            description: build.description || '',
+            category: build.category || 'PVE',
+            status: build.status || 'active',
+            무술들: [],
+            비결들: [],
+            심법들: [],
+          });
+
+          // 무술 데이터 복원
+          if (build.무술들 && Array.isArray(build.무술들)) {
+            const restoredWeapons: WeaponSelection[] = build.무술들.slice(0, 2).map((m: any) => ({
+              weaponCode: m.장비_code || '',
+              weaponName: martials.find(mart => mart.장비_code === m.장비_code)?.장비_name || '',
+              martialId: m.id || null,
+              martialName: m.무술_code || '',
+            }));
+            setWeaponSelections(restoredWeapons);
+          }
+
+          // 비결 데이터 복원
+          if (build.비결들 && Array.isArray(build.비결들)) {
+            const restoredMystics: BuildItem[] = build.비결들.map((m: any, idx: number) => ({
+              id: m.id,
+              순서: idx + 1,
+            }));
+            setSelectedMystics(restoredMystics);
+          }
+
+          // 심법 데이터 복원
+          if (build.심법들 && Array.isArray(build.심법들)) {
+            const restoredInnerways: BuildItem[] = build.심법들.map((i: any, idx: number) => ({
+              id: i.id,
+              순서: idx + 1,
+            }));
+            setSelectedInnerways(restoredInnerways);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch build data:', err);
+        setError('빌드 데이터를 불러오는데 실패했습니다.');
+      } finally {
+        setDataLoading(false);
+      }
+    };
+
+    // martials 데이터가 로드된 후에 빌드 데이터 로드
+    if (martials.length > 0) {
+      fetchBuildData();
+    }
+  }, [isEditMode, editBuildId, martials]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -127,8 +197,11 @@ export function BuildForm({ onClose, onSuccess }: BuildFormProps) {
     }));
 
     try {
-      const response = await fetch('/api/builds', {
-        method: 'POST',
+      const url = isEditMode ? `/api/builds/${editBuildId}` : '/api/builds';
+      const method = isEditMode ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -143,13 +216,13 @@ export function BuildForm({ onClose, onSuccess }: BuildFormProps) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to create build');
+        throw new Error(result.message || (isEditMode ? '빌드 수정에 실패했습니다' : '빌드 생성에 실패했습니다'));
       }
 
       onSuccess();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : '오류가 발생했습니다');
     } finally {
       setLoading(false);
     }
@@ -274,7 +347,7 @@ export function BuildForm({ onClose, onSuccess }: BuildFormProps) {
       <div className="bg-background rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
         {/* 헤더 */}
         <div className="flex justify-between items-center p-6 border-b border-border">
-          <h2 className="text-2xl font-bold">새 빌드 등록</h2>
+          <h2 className="text-2xl font-bold">{isEditMode ? '빌드 수정' : '새 빌드 등록'}</h2>
           <button
             onClick={onClose}
             className="text-muted-foreground hover:text-foreground text-2xl"
@@ -698,7 +771,9 @@ export function BuildForm({ onClose, onSuccess }: BuildFormProps) {
                     className="px-6 py-2 bg-foreground text-background rounded-md hover:opacity-90 disabled:opacity-50"
                     disabled={loading || !formData.name}
                   >
-                    {loading ? '등록 중...' : '빌드 등록'}
+                    {loading 
+                      ? (isEditMode ? '수정 중...' : '등록 중...') 
+                      : (isEditMode ? '빌드 수정' : '빌드 등록')}
                   </button>
                 ) : (
                   <button

@@ -34,11 +34,17 @@ export class BuildboardRepository {
    */
   async create(data: CreateBuildDto): Promise<Build> {
     return await transaction(async (conn) => {
+      // 현재 활성 버전 조회
+      const [versionResult] = await conn.execute(
+        `SELECT id FROM T_게임버전 WHERE is_active = TRUE LIMIT 1`
+      ) as any;
+      const version_id = versionResult && versionResult[0] ? versionResult[0].id : null;
+
       // 빌드보드 생성
       const [buildResult] = await conn.execute(
-        `INSERT INTO ${this.tableName} (name, description, version, status, created_at, updated_at) 
-         VALUES (?, ?, ?, ?, NOW(), NOW())`,
-        [data.name, data.description || null, data.version || null, data.status || 'active']
+        `INSERT INTO ${this.tableName} (name, description, category, version_id, status, created_at, updated_at) 
+         VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+        [data.name, data.description || null, data.category, version_id, data.status || 'active']
       ) as any;
 
       const 빌드보드_id = buildResult.insertId;
@@ -109,9 +115,9 @@ export class BuildboardRepository {
         fields.push('description = ?');
         values.push(data.description);
       }
-      if (data.version !== undefined) {
-        fields.push('version = ?');
-        values.push(data.version);
+      if (data.category !== undefined) {
+        fields.push('category = ?');
+        values.push(data.category);
       }
       if (data.status !== undefined) {
         fields.push('status = ?');
