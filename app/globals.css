@@ -1,37 +1,77 @@
 @import 'tailwindcss';
 
-:root {
+@font-face {
+  font-family: 'Soonbatang';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_eight@1.0/SunBatang-Light.woff')
+    format('woff');
+  font-weight: 300;
+  font-display: swap;
+}
+
+/* :root {
   --background: #ffffff;
   --foreground: #171717;
   --muted: #f4f4f5;
   --muted-foreground: #71717a;
   --border: #e4e4e7;
+} */
+
+/* .dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --border: #3f3f46;
+} */
+
+:root {
+  /* 기본 */
+  --background: 248 250 252;
+  --foreground: 15 23 42;
+
+  /* 표면 */
+  --surface: 255 255 255;
+  --border: 226 232 240;
+
+  /* 텍스트 */
+  --muted-foreground: 100 116 139;
+
+  /* 포인트 */
+  --accent: 16 185 129;
+  --accent-soft: 209 250 229;
+}
+
+html.dark {
+  --background: 2 6 23;
+  --foreground: 226 232 240;
+
+  --surface: 10 18 40;
+  --border: 51 65 85;
+
+  --muted-foreground: 148 163 184;
+
+  --accent: 52 211 153;
+  --accent-soft: 6 95 70;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-background: rgb(var(--background));
+  --color-foreground: rgb(var(--foreground));
+  --color-surface: rgb(var(--surface));
+  --color-border: rgb(var(--border));
+  --color-accent: rgb(var(--accent));
+  --color-muted-foreground: rgb(var(--muted-foreground));
+  --color-muted: rgb(var(--muted));
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
-    --border: #3f3f46;
-  }
+  /* --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono); */
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  background: rgb(var(--background));
+  color: rgb(var(--foreground));
+  /* font-family: var(--font-sans), Arial, Helvetica, sans-serif; */
+  font-family: 'Soonbatang', Arial, Helvetica, sans-serif;
 }
 
 .container {

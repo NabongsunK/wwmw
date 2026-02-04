@@ -1,5 +1,7 @@
+'use client'
 import { Header } from './Header'
 import { Footer } from './Footer'
+import { ThemeProvider } from 'next-themes'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -7,10 +9,12 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 container py-6">{children}</main>
-      <Footer />
-    </div>
+    <ThemeProvider attribute="class" defaultTheme="system">
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1 container py-6">{children}</main>
+        <Footer />
+      </div>
+    </ThemeProvider>
   )
 }
