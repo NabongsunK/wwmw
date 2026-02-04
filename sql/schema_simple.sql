@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS `T_이미지` (
 CREATE TABLE IF NOT EXISTS `T_비결` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `title` VARCHAR(7) NOT NULL COMMENT '제목',
+  `type` VARCHAR(7) NOT NULL COMMENT '타입',
   `body` VARCHAR(7) NOT NULL COMMENT '설명',
   `순서` INT DEFAULT 0 COMMENT '정렬 순서',
   `img` INT NOT NULL COMMENT '비결 이미지 ID (T_이미지 참조)',
@@ -77,6 +78,19 @@ CREATE TABLE IF NOT EXISTS `T_비결` (
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (`img`) REFERENCES `T_이미지` (`id`),
   INDEX idx_순서 (`순서`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `T_비결_돌파` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `비결_id` INT NOT NULL COMMENT '비결 ID (T_비결 참조)',
+  `level` TINYINT NOT NULL COMMENT '돌파레벨',
+  `body` VARCHAR(7) NOT NULL COMMENT '돌파 효과 설명',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`비결_id`) REFERENCES `T_비결` (`id`) ON DELETE CASCADE,
+  UNIQUE KEY `unique_비결_돌파레벨` (`비결_id`, `level`),
+  INDEX idx_비결_id (`비결_id`),
+  INDEX idx_level (`level`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
