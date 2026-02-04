@@ -26,6 +26,14 @@ export interface Build {
 export interface BuildItem {
   id: number
   순서?: number
+  무술_img?: string
+  유파_img?: string
+  장비_img?: string
+  패드_키?: string
+  무술_code?: string
+  유파_code?: string
+  장비_code?: string
+  키보드_키?: string
 }
 
 export interface CreateBuildDto {

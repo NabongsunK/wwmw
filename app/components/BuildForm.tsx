@@ -128,18 +128,21 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
 
           // 무술 데이터 복원
           if (build.무술들 && Array.isArray(build.무술들)) {
-            const restoredWeapons: WeaponSelection[] = build.무술들.slice(0, 2).map((m: any) => ({
-              weaponCode: m.장비_code || '',
-              weaponName: martials.find((mart) => mart.장비_code === m.장비_code)?.장비_name || '',
-              martialId: m.id || null,
-              martialName: m.무술_code || '',
-            }))
+            const restoredWeapons: WeaponSelection[] = build.무술들
+              .slice(0, 2)
+              .map((m: BuildItem) => ({
+                weaponCode: m.장비_code || '',
+                weaponName:
+                  martials.find((mart) => mart.장비_code === m.장비_code)?.장비_name || '',
+                martialId: m.id || null,
+                martialName: m.무술_code || '',
+              }))
             setWeaponSelections(restoredWeapons)
           }
 
           // 비결 데이터 복원
           if (build.비결들 && Array.isArray(build.비결들)) {
-            const restoredMystics: BuildItem[] = build.비결들.map((m: any, idx: number) => ({
+            const restoredMystics: BuildItem[] = build.비결들.map((m: BuildItem, idx: number) => ({
               id: m.id,
               순서: idx + 1,
             }))
@@ -148,10 +151,12 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
 
           // 심법 데이터 복원
           if (build.심법들 && Array.isArray(build.심법들)) {
-            const restoredInnerways: BuildItem[] = build.심법들.map((i: any, idx: number) => ({
-              id: i.id,
-              순서: idx + 1,
-            }))
+            const restoredInnerways: BuildItem[] = build.심법들.map(
+              (i: BuildItem, idx: number) => ({
+                id: i.id,
+                순서: idx + 1,
+              }),
+            )
             setSelectedInnerways(restoredInnerways)
           }
         }
@@ -169,65 +174,76 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
     }
   }, [isEditMode, editBuildId, martials])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    // 유효성 검사
-    const validWeapons = weaponSelections.filter((w) => w.martialId !== null)
+  // 유효성 검사
+  const checkFormValidity = (validWeapons: WeaponSelection[]) => {
     if (validWeapons.length === 0) {
       setError('무기와 무술을 최소 1개 이상 선택해주세요.')
       setCurrentStep('weapons')
-      return
+      return false
     }
     if (selectedMystics.length > 8) {
       setError('비결은 최대 8개까지 선택할 수 있습니다.')
-      return
+      return false
     }
     if (selectedInnerways.length > 4) {
       setError('심법은 최대 4개까지 선택할 수 있습니다.')
+      return false
+    }
+    return true
+  }
+
+  const handleSubmit = async (e: React.FormEvent, isCheck: boolean) => {
+    e.preventDefault()
+    const validWeapons = weaponSelections.filter((w) => w.martialId !== null)
+
+    // 유효성 검사
+    if (!checkFormValidity(validWeapons)) {
       return
     }
 
-    setLoading(true)
     setError(null)
 
-    // 무술 목록 생성
-    const selectedMartials: BuildItem[] = validWeapons.map((w, index) => ({
-      id: w.martialId!,
-      순서: index + 1,
-    }))
+    if (currentStep === 'info' && !isCheck) {
+      try {
+        setLoading(true)
+        // 무술 목록 생성
+        const selectedMartials: BuildItem[] = validWeapons.map((w, index) => ({
+          id: w.martialId!,
+          순서: index + 1,
+        }))
 
-    try {
-      const url = isEditMode ? `/api/builds/${editBuildId}` : '/api/builds'
-      const method = isEditMode ? 'PUT' : 'POST'
+        const url = isEditMode ? `/api/builds/${editBuildId}` : '/api/builds'
+        const method = isEditMode ? 'PUT' : 'POST'
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          무술들: selectedMartials,
-          비결들: selectedMystics,
-          심법들: selectedInnerways,
-        }),
-      })
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...formData,
+            무술들: selectedMartials,
+            비결들: selectedMystics,
+            심법들: selectedInnerways,
+          }),
+        })
 
-      const result = await response.json()
+        const result = await response.json()
 
-      if (!response.ok) {
-        throw new Error(
-          result.message || (isEditMode ? '빌드 수정에 실패했습니다' : '빌드 생성에 실패했습니다'),
-        )
+        if (!response.ok) {
+          throw new Error(
+            result.message ||
+              (isEditMode ? '빌드 수정에 실패했습니다' : '빌드 생성에 실패했습니다'),
+          )
+        }
+
+        onSuccess()
+        onClose()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '오류가 발생했습니다')
+      } finally {
+        setLoading(false)
       }
-
-      onSuccess()
-      onClose()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '오류가 발생했습니다')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -393,7 +409,10 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
         </div>
 
         {/* 컨텐츠 영역 */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
+        <form
+          onSubmit={(e) => handleSubmit(e, true)}
+          className="flex-1 overflow-hidden flex flex-col"
+        >
           <div className="flex-1 overflow-y-auto p-6">
             {dataLoading ? (
               <div className="flex items-center justify-center h-full">
@@ -419,7 +438,7 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                             key={slot}
                             type="button"
                             onClick={() => setCurrentWeaponSlot(slot as 0 | 1)}
-                            className={`flex-1 p-4 border-2 rounded-lg text-left transition-all ${
+                            className={`flex-1 p-4 border-2 rounded-lg text-left transition-all cursor-pointer ${
                               currentWeaponSlot === slot
                                 ? 'border-foreground bg-foreground/10'
                                 : isComplete
@@ -464,7 +483,7 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                                   weapon.장비_name || weapon.장비_code!,
                                 )
                               }
-                              className={`p-4 border-2 rounded-lg text-center transition-all ${
+                              className={`p-4 border-2 rounded-lg text-center transition-all cursor-pointer ${
                                 isSelected
                                   ? 'border-foreground bg-foreground/10 ring-2 ring-foreground'
                                   : 'border-border hover:border-foreground/50'
@@ -518,7 +537,7 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                                   )
                                 }
                                 disabled={isUsedInOtherSlot}
-                                className={`p-4 border-2 rounded-lg text-left transition-all flex items-center gap-3 ${
+                                className={`p-4 border-2 rounded-lg text-left transition-all flex items-center gap-3 cursor-pointer ${
                                   isSelected
                                     ? 'border-foreground bg-foreground/10 ring-2 ring-foreground'
                                     : isUsedInOtherSlot
@@ -791,10 +810,10 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
 
                 {currentStep === 'info' ? (
                   <Button
-                    type="submit"
                     isLoading={loading}
                     loadingText={isEditMode ? '수정 중...' : '등록 중...'}
                     disabled={!formData.name}
+                    onClick={(e) => handleSubmit(e, false)}
                   >
                     {isEditMode ? '빌드 수정' : '빌드 등록'}
                   </Button>

@@ -22,12 +22,12 @@ export class BuildService {
    */
   async getBuildById(id: number): Promise<Build> {
     if (id <= 0) {
-      throw new Error('Invalid build ID')
+      throw new Error('유효하지 않은 빌드 ID입니다')
     }
 
     const build = await this.buildboardRepository.findById(id)
     if (!build) {
-      throw new Error('Build not found')
+      throw new Error('빌드를 찾을 수 없습니다')
     }
 
     return build
@@ -39,7 +39,7 @@ export class BuildService {
   async createBuild(data: CreateBuildDto): Promise<Build> {
     // 비즈니스 검증
     if (!data.name || data.name.trim().length === 0) {
-      throw new Error('Build name is required')
+      throw new Error('빌드 이름은 필수입니다')
     }
 
     // 무술 개수 검증 (최대 2개)
@@ -66,13 +66,13 @@ export class BuildService {
    */
   async updateBuild(id: number, data: UpdateBuildDto): Promise<Build> {
     if (id <= 0) {
-      throw new Error('Invalid build ID')
+      throw new Error('유효하지 않은 빌드 ID입니다')
     }
 
     // 빌드 존재 확인
     const existingBuild = await this.buildboardRepository.findById(id)
     if (!existingBuild) {
-      throw new Error('Build not found')
+      throw new Error('빌드를 찾을 수 없습니다')
     }
 
     // 개수 검증
@@ -94,12 +94,12 @@ export class BuildService {
    */
   async deleteBuild(id: number): Promise<void> {
     if (id <= 0) {
-      throw new Error('Invalid build ID')
+      throw new Error('유효하지 않은 빌드 ID입니다')
     }
 
     const build = await this.buildboardRepository.findById(id)
     if (!build) {
-      throw new Error('Build not found')
+      throw new Error('빌드를 찾을 수 없습니다')
     }
 
     await this.buildboardRepository.delete(id)
