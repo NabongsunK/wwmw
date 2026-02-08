@@ -1,6 +1,12 @@
 // 이미지 API 라우트
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import {
+  responseOk,
+  responseCreated,
+  responseBadRequest,
+  responseServerError,
+} from '@/lib/api-response'
 import { ImageService } from '@/service/image.service'
 
 /**
@@ -52,30 +58,25 @@ export async function GET(request: NextRequest) {
     const image_type = searchParams.get('image_type')
 
     if (code && image_type) {
-      const image = await imageService.getByCodeAndType(code, image_type as any)
-      return NextResponse.json({ success: true, data: image }, { status: 200 })
+      const image = await imageService.getByCodeAndType(code, image_type as never)
+      return responseOk(image)
     }
 
     if (code) {
       const images = await imageService.getByCode(code)
-      return NextResponse.json({ success: true, data: images }, { status: 200 })
+      return responseOk(images)
     }
 
     if (image_type) {
-      const images = await imageService.getByType(image_type as any)
-      return NextResponse.json({ success: true, data: images }, { status: 200 })
+      const images = await imageService.getByType(image_type as never)
+      return responseOk(images)
     }
 
     const images = await imageService.getAll()
-    return NextResponse.json({ success: true, data: images }, { status: 200 })
+    return responseOk(images)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch images',
-      },
-      { status: 500 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to fetch images'
+    return responseServerError(message)
   }
 }
 
@@ -86,14 +87,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const image = await imageService.create(body)
-    return NextResponse.json({ success: true, data: image }, { status: 201 })
+    return responseCreated(image)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to create image',
-      },
-      { status: 400 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to create image'
+    return responseBadRequest(message)
   }
 }

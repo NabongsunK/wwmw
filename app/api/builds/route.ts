@@ -1,6 +1,12 @@
 // 빌드 API 라우트
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import {
+  responseOk,
+  responseCreated,
+  responseBadRequest,
+  responseServerError,
+} from '@/lib/api-response'
 import { BuildService } from '@/service/build.service'
 
 /**
@@ -37,15 +43,10 @@ const buildService = new BuildService()
 export async function GET() {
   try {
     const builds = await buildService.getAllBuilds()
-    return NextResponse.json({ success: true, data: builds }, { status: 200 })
+    return responseOk(builds)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch builds',
-      },
-      { status: 500 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to fetch builds'
+    return responseServerError(message)
   }
 }
 
@@ -56,14 +57,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const build = await buildService.createBuild(body)
-    return NextResponse.json({ success: true, data: build }, { status: 201 })
+    return responseCreated(build)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to create build',
-      },
-      { status: 400 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to create build'
+    return responseBadRequest(message)
   }
 }

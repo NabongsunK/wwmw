@@ -1,6 +1,12 @@
 // 빌드 개별 API 라우트 (조회, 수정, 삭제)
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import {
+  responseOk,
+  responseBadRequest,
+  responseNotFound,
+  responseServerError,
+} from '@/lib/api-response'
 import { BuildService } from '@/service/build.service'
 
 /**
@@ -70,23 +76,18 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id: idStr } = await params
     const id = parseInt(idStr, 10)
     if (isNaN(id)) {
-      return NextResponse.json({ success: false, message: 'Invalid build ID' }, { status: 400 })
+      return responseBadRequest('Invalid build ID')
     }
 
     const build = await buildService.getBuildById(id)
     if (!build) {
-      return NextResponse.json({ success: false, message: 'Build not found' }, { status: 404 })
+      return responseNotFound('Build not found')
     }
 
-    return NextResponse.json({ success: true, data: build }, { status: 200 })
+    return responseOk(build)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch build',
-      },
-      { status: 500 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to fetch build'
+    return responseServerError(message)
   }
 }
 
@@ -98,21 +99,16 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { id: idStr } = await params
     const id = parseInt(idStr, 10)
     if (isNaN(id)) {
-      return NextResponse.json({ success: false, message: 'Invalid build ID' }, { status: 400 })
+      return responseBadRequest('Invalid build ID')
     }
 
     const body = await request.json()
     const build = await buildService.updateBuild(id, body)
 
-    return NextResponse.json({ success: true, data: build }, { status: 200 })
+    return responseOk(build)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to update build',
-      },
-      { status: 400 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to update build'
+    return responseBadRequest(message)
   }
 }
 
@@ -127,22 +123,14 @@ export async function DELETE(
     const { id: idStr } = await params
     const id = parseInt(idStr, 10)
     if (isNaN(id)) {
-      return NextResponse.json({ success: false, message: 'Invalid build ID' }, { status: 400 })
+      return responseBadRequest('Invalid build ID')
     }
 
     await buildService.deleteBuild(id)
 
-    return NextResponse.json(
-      { success: true, message: 'Build deleted successfully' },
-      { status: 200 },
-    )
+    return responseOk({ message: 'Build deleted successfully' })
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to delete build',
-      },
-      { status: 400 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to delete build'
+    return responseBadRequest(message)
   }
 }

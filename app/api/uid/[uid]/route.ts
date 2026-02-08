@@ -1,12 +1,19 @@
 // 사용자 API 라우트 (uid 기준)
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import {
+  responseOk,
+  responseCreated,
+  responseBadRequest,
+  responseNotFound,
+  responseServerError,
+} from '@/lib/api-response'
 
 /**
  * @swagger
  * /api/uid/{uid}:
  *   get:
- *     summary: uid로 프로필(닉네임 등) 조회
+ *     summary: uid 조회(검증). 조회 시 서비스에서 updated_at 터치.
  *     tags: [Uid]
  *     parameters:
  *       - in: path
@@ -33,84 +40,36 @@ import { NextRequest, NextResponse } from 'next/server'
  *         description: 생성됨
  *       400:
  *         description: 잘못된 요청
- *   patch:
- *     summary: uid로 프로필(닉네임 등) 수정
- *     tags: [Uid]
- *     parameters:
- *       - in: path
- *         name: uid
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *     responses:
- *       200:
- *         description: 수정됨
- *       400:
- *         description: 잘못된 요청
  */
-import { UserService } from '@/service/user.service'
+import { UidService } from '@/service/uid.service'
 
-const userService = new UserService()
+const uidService = new UidService()
 
 /**
- * GET /api/uid/[uid] - uid로 프로필(닉네임 등) 조회
+ * GET /api/uid/[uid] - uid 조회(검증)
  */
-export async function GET(request: NextRequest) {
-  const { uid } = request.nextUrl.pathname.split('/').pop()
+export async function GET(_request: NextRequest, context: { params: Promise<{ uid: string }> }) {
+  const { uid } = await context.params
   try {
-    const user = await userService.getUserByUid(uid)
-    return NextResponse.json({ success: true, data: user }, { status: 200 })
+    const data = await uidService.getByUid(uid)
+    return responseOk(data)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch user',
-      },
-      { status: 500 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to fetch uid'
+    if (message.includes('not found')) return responseNotFound(message)
+    return responseServerError(message)
   }
 }
 
 /**
- * POST /api/uid - uid 등록(최초 생성)
+ * POST /api/uid - uid 등록(최초 생성). 있으면 기존 반환.
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const userByUid = await userService.createUserByUid(body)
-    return NextResponse.json({ success: true, data: userByUid }, { status: 201 })
+    const data = await uidService.create(body)
+    return responseCreated(data)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to create user by uid',
-      },
-      { status: 400 },
-    )
-  }
-}
-
-/**
- * PATCH /api/uid/[uid] - uid로 프로필(닉네임 등) 수정
- */
-export async function PATCH(request: NextRequest) {
-  const { uid } = request.nextUrl.pathname.split('/').pop()
-  try {
-    const body = await request.json()
-    const userByUid = await userService.updateUserByUid(uid, body)
-    return NextResponse.json({ success: true, data: userByUid }, { status: 200 })
-  } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to update user by uid',
-      },
-      { status: 400 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to create uid'
+    return responseBadRequest(message)
   }
 }

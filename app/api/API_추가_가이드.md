@@ -166,7 +166,13 @@ export class ItemService {
 ```ts
 // 아이템 API 라우트
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import {
+  responseOk,
+  responseCreated,
+  responseBadRequest,
+  responseServerError,
+} from '@/lib/api-response'
 import { ItemService } from '@/service/item.service'
 
 const itemService = new ItemService()
@@ -177,15 +183,10 @@ const itemService = new ItemService()
 export async function GET() {
   try {
     const items = await itemService.getAll()
-    return NextResponse.json({ success: true, data: items }, { status: 200 })
+    return responseOk(items)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch items',
-      },
-      { status: 500 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to fetch items'
+    return responseServerError(message)
   }
 }
 
@@ -196,15 +197,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const item = await itemService.create(body)
-    return NextResponse.json({ success: true, data: item }, { status: 201 })
+    return responseCreated(item)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to create item',
-      },
-      { status: 400 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to create item'
+    return responseBadRequest(message)
   }
 }
 ```
@@ -220,7 +216,13 @@ export async function POST(request: NextRequest) {
 ```ts
 // 아이템 상세 API 라우트
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import {
+  responseOk,
+  responseBadRequest,
+  responseNotFound,
+  responseServerError,
+} from '@/lib/api-response'
 import { ItemService } from '@/service/item.service'
 
 const itemService = new ItemService()
@@ -232,11 +234,11 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
   try {
     const id = parseInt(params.id)
     const item = await itemService.getById(id)
-    return NextResponse.json({ success: true, data: item }, { status: 200 })
+    return responseOk(item)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to fetch item'
-    const status = message.includes('not found') ? 404 : 500
-    return NextResponse.json({ success: false, message }, { status })
+    if (message.includes('not found')) return responseNotFound(message)
+    return responseServerError(message)
   }
 }
 
@@ -248,11 +250,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const id = parseInt(params.id)
     const body = await request.json()
     const item = await itemService.update(id, body)
-    return NextResponse.json({ success: true, data: item }, { status: 200 })
+    return responseOk(item)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update item'
-    const status = message.includes('not found') ? 404 : 400
-    return NextResponse.json({ success: false, message }, { status })
+    if (message.includes('not found')) return responseNotFound(message)
+    return responseBadRequest(message)
   }
 }
 
@@ -263,11 +265,11 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
   try {
     const id = parseInt(params.id)
     await itemService.delete(id)
-    return NextResponse.json({ success: true }, { status: 200 })
+    return responseOk({ message: 'Deleted successfully' })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to delete item'
-    const status = message.includes('not found') ? 404 : 500
-    return NextResponse.json({ success: false, message }, { status })
+    if (message.includes('not found')) return responseNotFound(message)
+    return responseServerError(message)
   }
 }
 ```
@@ -295,70 +297,64 @@ export async function DELETE(_request: NextRequest, { params }: { params: { id: 
 - [ ] 응답 형식: `{ success, data? }` / `{ success: false, message }`
 - [ ] 에러 시 적절한 status (400, 404, 500)
 - [ ] (권장) `@swagger` JSDoc 추가 — API 문서 페이지에 자동 반영 (아래 7절 참고)
+- [ ] (권장) 응답은 `@/lib/api-response` 헬퍼 사용 — status 코드·형식 통일 (아래 5절 참고)
 
 ---
 
-## 5. 기존 API 참고
+## 5. API 응답 (response 헬퍼)
+
+라우트에서는 **`NextResponse.json()`을 직접 쓰지 말고** `@/lib/api-response` 의 메서드를 사용합니다.  
+HTTP status가 메서드에 종속되어 있어서, 형식과 코드가 통일됩니다.
+
+### 5.1 제공 메서드
+
+| 메서드                         | HTTP status | 응답 body                     |
+| ------------------------------ | ----------- | ----------------------------- |
+| `responseOk(data)`             | 200         | `{ success: true, data }`     |
+| `responseCreated(data)`        | 201         | `{ success: true, data }`     |
+| `responseBadRequest(message)`  | 400         | `{ success: false, message }` |
+| `responseNotFound(message)`    | 404         | `{ success: false, message }` |
+| `responseServerError(message)` | 500         | `{ success: false, message }` |
+
+### 5.2 사용 예
+
+```ts
+import {
+  responseOk,
+  responseCreated,
+  responseBadRequest,
+  responseNotFound,
+  responseServerError,
+} from '@/lib/api-response'
+
+// 성공 (조회 등)
+return responseOk(items)
+
+// 생성됨 (POST)
+return responseCreated(newItem)
+
+// 클라이언트 잘못 (파라미터/body 검증 실패)
+return responseBadRequest('Invalid id')
+
+// 리소스 없음
+return responseNotFound('Item not found')
+
+// 서버/DB 오류
+return responseServerError(error instanceof Error ? error.message : 'Failed to fetch')
+```
+
+에러 메시지에 `'not found'` 가 포함되면 404로 내려주고 싶을 때는, catch 블록에서 `message.includes('not found')` 로 분기해 `responseNotFound(message)` / `responseServerError(message)` 를 선택하면 됩니다.
+
+---
+
+## 6. 기존 API 참고
 
 - **단순 CRUD**: `users`, `builds`
 - **쿼리 파라미터·다국어**: `martials`, `mystics`
 - **동적 경로·서브 리소스**: `builds/[id]`, `builds/[id]/like`, `leaderboard/[id]/users/[user_id]`
+- **응답**: 모든 라우트에서 `lib/api-response` 의 `responseOk`, `responseCreated`, `responseBadRequest`, `responseNotFound`, `responseServerError` 사용 중.
 
 필요한 패턴에 맞춰 위 파일들을 참고하면 됩니다.
-
----
-
-## 6. UID API 설계 (외부/게임 유저 식별자)
-
-프로젝트에서 **uid**는 리더보드·좋아요에 쓰는 **문자열 사용자 식별자**(`user_id` VARCHAR)와 같은 개념으로 두면 됩니다.  
-(클라이언트/게임에서 부여한 ID, OAuth 제공자의 sub 등)
-
-### 6.1 데이터 구조 선택
-
-| 방식                                         | 설명                                                                                       |
-| -------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| **A. 기존 `users` 테이블에 `uid` 컬럼 추가** | 내부 유저(id)와 외부 uid를 1:1 매핑. 로그인 연동·관리자 유저가 있을 때 적합.               |
-| **B. uid 전용 테이블 신설**                  | `T_유저_uid` (uid PK, nickname, created_at 등). 리더보드/좋아요만 쓰는 게스트 유저에 적합. |
-
-- **리더보드/좋아요만** 쓸 거면 → **B** (가벼운 프로필 테이블)
-- **관리자 유저(users)와 로그인 연동**까지 할 거면 → **A** (users에 uid 추가)
-
-### 6.2 추천 API 엔드포인트
-
-| 메서드    | 경로                   | 설명                                                                          |
-| --------- | ---------------------- | ----------------------------------------------------------------------------- |
-| **GET**   | `/api/uid/[uid]`       | uid로 프로필(닉네임 등) 조회. 없으면 404.                                     |
-| **POST**  | `/api/uid`             | uid 등록(최초 생성). body: `{ uid, nickname? }`. 이미 있으면 200 + 기존 정보. |
-| **PATCH** | `/api/uid/[uid]`       | 닉네임 등 프로필 수정.                                                        |
-| **GET**   | `/api/uid/[uid]/stats` | (선택) 해당 uid의 리더보드 요약·좋아요 수 등.                                 |
-
-- `[uid]`는 **경로 파라미터**로 받고, 영문/숫자 등만 허용하도록 길이·패턴 검사 권장.
-- 기존 **리더보드 조회**는 그대로 `/api/leaderboard/users/[user_id]` 사용 (여기서 `user_id` = uid).
-
-### 6.3 구현 시 참고
-
-- **경로 파라미터로 문자열 id 받기**: `app/api/leaderboard/users/[user_id]/route.ts` (params.user_id)
-- **Service/Repository 패턴**: `UserService` + `UserRepository` 와 동일하게 `UidService` + `UidRepository` (또는 기존 User에 uid 연동 시 UserRepository에 `findByUid(uid)` 추가)
-- **응답 형식**: 다른 API와 동일하게 `{ success: true, data: { uid, nickname, ... } }` / `{ success: false, message }`
-
-### 6.4 B 방식 예시 (uid 전용 테이블)
-
-```sql
--- uid 전용 테이블 (게스트/외부 유저)
-CREATE TABLE IF NOT EXISTS `T_유저_uid` (
-  `uid` VARCHAR(255) NOT NULL PRIMARY KEY,
-  `nickname` VARCHAR(100) NULL,
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_created_at (`created_at`)
-);
-```
-
-- 리더보드·좋아요의 `user_id`는 이 테이블의 `uid`와 같은 값으로 사용.
-- **GET /api/uid/[uid]**: `T_유저_uid`에서 조회. 없으면 404.
-- **POST /api/uid**: `T_유저_uid`에 INSERT (이미 있으면 조회만 반환).
-
-이렇게 하면 기존 `/api/leaderboard`, `/api/builds/[id]/like` 와 역할이 구분되고, uid 기준 프로필/통계 API를 깔끔하게 붙일 수 있습니다.
 
 ---
 

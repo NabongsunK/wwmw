@@ -1,6 +1,7 @@
 // 비결 상세 API 라우트 (조회 전용)
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { responseOk, responseNotFound, responseServerError } from '@/lib/api-response'
 import { MysticService } from '@/service/mystic.service'
 
 /**
@@ -32,14 +33,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   try {
     const id = parseInt(params.id)
     const mystic = await mysticService.getById(id)
-    return NextResponse.json({ success: true, data: mystic }, { status: 200 })
+    return responseOk(mystic)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch mystic',
-      },
-      { status: error instanceof Error && error.message.includes('not found') ? 404 : 500 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to fetch mystic'
+    if (message.includes('not found')) return responseNotFound(message)
+    return responseServerError(message)
   }
 }

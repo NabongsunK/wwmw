@@ -1,6 +1,12 @@
 // 사용자 API 라우트
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import {
+  responseOk,
+  responseCreated,
+  responseBadRequest,
+  responseServerError,
+} from '@/lib/api-response'
 
 /**
  * @swagger
@@ -38,15 +44,10 @@ const userService = new UserService()
 export async function GET() {
   try {
     const users = await userService.getAllUsers()
-    return NextResponse.json({ success: true, data: users }, { status: 200 })
+    return responseOk(users)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch users',
-      },
-      { status: 500 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to fetch users'
+    return responseServerError(message)
   }
 }
 
@@ -57,14 +58,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const user = await userService.createUser(body)
-    return NextResponse.json({ success: true, data: user }, { status: 201 })
+    return responseCreated(user)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to create user',
-      },
-      { status: 400 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to create user'
+    return responseBadRequest(message)
   }
 }

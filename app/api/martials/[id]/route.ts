@@ -1,6 +1,12 @@
 // 무술계층 상세 API 라우트 (조회 전용)
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import {
+  responseOk,
+  responseBadRequest,
+  responseNotFound,
+  responseServerError,
+} from '@/lib/api-response'
 import { MartialService } from '@/service/martial.service'
 import type { Lang } from '@/types/martial'
 
@@ -46,21 +52,14 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     // 언어 유효성 검사
     if (!['ko', 'en', 'ja', 'zh'].includes(lang)) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid lang parameter. Use: ko, en, ja, zh' },
-        { status: 400 },
-      )
+      return responseBadRequest('Invalid lang parameter. Use: ko, en, ja, zh')
     }
 
     const item = await martialService.getById(id, lang)
-    return NextResponse.json({ success: true, data: item }, { status: 200 })
+    return responseOk(item)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch martial',
-      },
-      { status: error instanceof Error && error.message.includes('not found') ? 404 : 500 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to fetch martial'
+    if (message.includes('not found')) return responseNotFound(message)
+    return responseServerError(message)
   }
 }

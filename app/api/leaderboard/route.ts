@@ -1,6 +1,12 @@
 // 리더보드 API 라우트
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import {
+  responseOk,
+  responseCreated,
+  responseBadRequest,
+  responseServerError,
+} from '@/lib/api-response'
 import { LeaderboardService } from '@/service/leaderboard.service'
 
 /**
@@ -70,42 +76,36 @@ export async function GET(request: NextRequest) {
     if (ranking) {
       if (유파_code) {
         const rankings = await leaderboardService.getRankingsBy유파(유파_code, limit)
-        return NextResponse.json({ success: true, data: rankings }, { status: 200 })
+        return responseOk(rankings)
       }
       if (기록일) {
         const rankings = await leaderboardService.getRankingsByDate(기록일, limit)
-        return NextResponse.json({ success: true, data: rankings }, { status: 200 })
+        return responseOk(rankings)
       }
       const rankings = await leaderboardService.getRankings(limit)
-      return NextResponse.json({ success: true, data: rankings }, { status: 200 })
+      return responseOk(rankings)
     }
 
-    // 일반 조회
     if (user_id) {
       const entries = await leaderboardService.getByUserId(user_id)
-      return NextResponse.json({ success: true, data: entries }, { status: 200 })
+      return responseOk(entries)
     }
 
     if (유파_code) {
       const entries = await leaderboardService.getBy유파Code(유파_code)
-      return NextResponse.json({ success: true, data: entries }, { status: 200 })
+      return responseOk(entries)
     }
 
     if (기록일) {
       const entries = await leaderboardService.getBy기록일(기록일)
-      return NextResponse.json({ success: true, data: entries }, { status: 200 })
+      return responseOk(entries)
     }
 
     const entries = await leaderboardService.getAll()
-    return NextResponse.json({ success: true, data: entries }, { status: 200 })
+    return responseOk(entries)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch leaderboard',
-      },
-      { status: 500 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to fetch leaderboard'
+    return responseServerError(message)
   }
 }
 
@@ -116,14 +116,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const entry = await leaderboardService.create(body)
-    return NextResponse.json({ success: true, data: entry }, { status: 201 })
+    return responseCreated(entry)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to create leaderboard entry',
-      },
-      { status: 400 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to create leaderboard entry'
+    return responseBadRequest(message)
   }
 }

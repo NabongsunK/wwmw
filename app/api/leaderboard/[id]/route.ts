@@ -1,6 +1,7 @@
 // 리더보드 상세 API 라우트
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { responseOk, responseNotFound, responseServerError } from '@/lib/api-response'
 import { LeaderboardService } from '@/service/leaderboard.service'
 
 /**
@@ -32,14 +33,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   try {
     const id = parseInt(params.id)
     const entry = await leaderboardService.getById(id)
-    return NextResponse.json({ success: true, data: entry }, { status: 200 })
+    return responseOk(entry)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch leaderboard entry',
-      },
-      { status: error instanceof Error && error.message.includes('not found') ? 404 : 500 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to fetch leaderboard entry'
+    if (message.includes('not found')) return responseNotFound(message)
+    return responseServerError(message)
   }
 }

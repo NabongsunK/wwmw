@@ -1,6 +1,7 @@
 // 빌드 조회수 증가 API
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { responseOk, responseBadRequest, responseServerError } from '@/lib/api-response'
 import { query } from '@/lib/db'
 
 /**
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const buildId = parseInt(id)
 
     if (isNaN(buildId)) {
-      return NextResponse.json({ success: false, message: 'Invalid build ID' }, { status: 400 })
+      return responseBadRequest('Invalid build ID')
     }
 
     // 클라이언트 IP 주소 가져오기
@@ -48,15 +49,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       [buildId, ipAddress],
     )
 
-    return NextResponse.json({ success: true, message: 'View recorded' }, { status: 200 })
+    return responseOk({ message: 'View recorded' })
   } catch (error) {
-    // 중복 키 에러 등은 무시 (같은 사용자가 여러 번 조회한 경우)
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to record view',
-      },
-      { status: 500 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to record view'
+    return responseServerError(message)
   }
 }
