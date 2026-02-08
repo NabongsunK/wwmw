@@ -6,8 +6,11 @@ import {
   responseBadRequest,
   responseNotFound,
   responseServerError,
+  responseForbidden,
 } from '@/lib/api-response'
 import { BuildService } from '@/service/build.service'
+import { isAdmin } from '@/lib/auth'
+import type { UpdateBuildDto } from '@/types/build'
 
 /**
  * @swagger
@@ -71,7 +74,7 @@ const buildService = new BuildService()
 /**
  * GET /api/builds/:id - 빌드 상세 조회
  */
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: idStr } = await params
     const id = parseInt(idStr, 10)
@@ -92,7 +95,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 /**
- * PUT /api/builds/:id - 빌드 수정
+ * PUT /api/builds/:id - 빌드 수정 (작성자 또는 관리자만)
  */
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -102,9 +105,20 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return responseBadRequest('Invalid build ID')
     }
 
-    const body = await request.json()
-    const build = await buildService.updateBuild(id, body)
+    const body = (await request.json().catch(() => ({}))) as UpdateBuildDto & { uid?: string }
+    const { uid, ...updateData } = body
 
+    const existing = await buildService.getBuildById(id)
+    if (!existing) {
+      return responseNotFound('Build not found')
+    }
+
+    const isAuthor = existing.user_id != null && uid != null && existing.user_id === uid
+    if (!isAuthor && !isAdmin(uid)) {
+      return responseForbidden('수정 권한이 없습니다. (작성자 또는 관리자만 가능)')
+    }
+
+    const build = await buildService.updateBuild(id, updateData)
     return responseOk(build)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update build'
@@ -113,7 +127,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 /**
- * DELETE /api/builds/:id - 빌드 삭제 (소프트 삭제)
+ * DELETE /api/builds/:id - 빌드 삭제 (소프트 삭제, 작성자 또는 관리자만)
  */
 export async function DELETE(
   request: NextRequest,
@@ -126,8 +140,20 @@ export async function DELETE(
       return responseBadRequest('Invalid build ID')
     }
 
-    await buildService.deleteBuild(id)
+    const body = (await request.json().catch(() => ({}))) as { uid?: string }
+    const uid = body.uid ?? new URL(request.url).searchParams.get('uid')
 
+    const existing = await buildService.getBuildById(id)
+    if (!existing) {
+      return responseNotFound('Build not found')
+    }
+
+    const isAuthor = existing.user_id != null && uid != null && existing.user_id === uid
+    if (!isAuthor && !isAdmin(uid)) {
+      return responseForbidden('삭제 권한이 없습니다. (작성자 또는 관리자만 가능)')
+    }
+
+    await buildService.deleteBuild(id)
     return responseOk({ message: 'Build deleted successfully' })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to delete build'

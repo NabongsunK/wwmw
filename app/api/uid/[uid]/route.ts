@@ -2,6 +2,7 @@
 
 import { NextRequest } from 'next/server'
 import { responseOk, responseNotFound, responseServerError } from '@/lib/api-response'
+import { isAdmin } from '@/lib/auth'
 
 /**
  * @swagger
@@ -34,7 +35,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ui
   const { uid } = await context.params
   try {
     const data = await uidService.getByUid(uid)
-    return responseOk(data)
+    return responseOk({ ...data, isAdmin: isAdmin(uid) })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to fetch uid'
     if (message.includes('not found')) return responseNotFound(message)

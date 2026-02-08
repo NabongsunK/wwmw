@@ -20,6 +20,11 @@ export function responseNotFound(message: string) {
   return NextResponse.json({ success: false, message }, { status: 404 })
 }
 
+/** 권한 없음: 403 + { success: false, message } */
+export function responseForbidden(message: string) {
+  return NextResponse.json({ success: false, message }, { status: 403 })
+}
+
 /** 프로덕션에서 클라이언트에 보낼 기본 메시지 (DB/내부 정보 숨김) */
 const PRODUCTION_ERROR_MESSAGE = 'Internal server error'
 

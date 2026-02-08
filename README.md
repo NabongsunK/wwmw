@@ -64,6 +64,17 @@ MYSQL_PASSWORD=wwe_password
 MYSQL_DATABASE=z
 ```
 
+**관리자 uid (선택)**  
+빌드 수정/삭제를 모든 글에 할 수 있는 관리자를 두려면, 해당 uid를 쉼표로 나열하세요.  
+(uid는 브라우저에서 한 번 로그인/접속 후 `POST /api/uid`로 발급받은 값입니다.)
+
+```env
+ADMIN_UIDS=발급받은-uuid-1,발급받은-uuid-2
+```
+
+- 비워두면 **작성자만** 자신의 글 수정/삭제 가능.
+- 설정하면 나열한 uid는 **모든 빌드**에 대해 수정/삭제 가능.
+
 또는 Docker를 사용하는 경우:
 
 ```bash

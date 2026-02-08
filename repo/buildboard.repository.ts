@@ -10,19 +10,28 @@ export class BuildboardRepository {
   private methodTable = 'T_빌드보드_심법'
 
   /**
-   * 모든 빌드보드 조회 (삭제되지 않은)
+   * 모든 빌드보드 조회 (삭제되지 않은, 좋아요 수 포함)
    */
   async findAll(): Promise<Build[]> {
     return await query<Build>(
-      `SELECT * FROM ${this.tableName} WHERE deleted_at IS NULL ORDER BY created_at DESC`,
+      `SELECT b.*,
+        (SELECT COUNT(*) FROM T_빌드보드_좋아요 l WHERE l.빌드보드_id = b.id) AS 좋아요수
+       FROM ${this.tableName} b
+       WHERE b.deleted_at IS NULL
+       ORDER BY b.created_at DESC`,
     )
   }
 
   /**
-   * ID로 빌드보드 조회 (View 사용 - 무술, 비결, 심법 포함)
+   * ID로 빌드보드 조회 (View 사용 - 무술, 비결, 심법, 좋아요 수 포함)
    */
   async findById(id: number): Promise<Build | null> {
-    const results = await query<any>(`SELECT * FROM V_빌드보드_전체 WHERE id = ?`, [id])
+    const results = await query<any>(
+      `SELECT v.*,
+        (SELECT COUNT(*) FROM T_빌드보드_좋아요 l WHERE l.빌드보드_id = v.id) AS 좋아요수
+       FROM V_빌드보드_전체 v WHERE v.id = ?`,
+      [id],
+    )
     return results[0] || null
   }
 

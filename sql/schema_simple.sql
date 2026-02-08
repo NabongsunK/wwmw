@@ -258,7 +258,21 @@ CREATE TABLE IF NOT EXISTS `T_리더보드` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- 9. 빌드보드 상호작용 통합 테이블 (조회수, 좋아요 통합)
+-- 9. 빌드보드 좋아요 (API에서 사용)
+-- ============================================
+CREATE TABLE IF NOT EXISTS `T_빌드보드_좋아요` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `빌드보드_id` INT NOT NULL,
+  `user_id` VARCHAR(255) NOT NULL COMMENT '좋아요 누른 사용자 uid (T_UID.uid)',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`빌드보드_id`) REFERENCES `T_빌드보드` (`id`) ON DELETE CASCADE,
+  UNIQUE KEY `unique_build_like` (`빌드보드_id`, `user_id`),
+  INDEX idx_build_id (`빌드보드_id`),
+  INDEX idx_user_id (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- 10. 빌드보드 상호작용 통합 테이블 (조회수, 좋아요 통합)
 -- ============================================
 CREATE TABLE IF NOT EXISTS `T_빌드보드_상호작용` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -276,7 +290,7 @@ CREATE TABLE IF NOT EXISTS `T_빌드보드_상호작용` (
 
 
 -- ============================================
--- 10. UID 테이블
+-- 11. UID 테이블
 -- ============================================
 CREATE TABLE IF NOT EXISTS `T_UID` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
