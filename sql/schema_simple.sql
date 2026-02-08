@@ -138,6 +138,23 @@ CREATE TABLE `T_게임버전` (
 -- ============================================
 -- 4. 빌드보드 테이블
 -- ============================================
+-- 0) T_빌드보드를 참조하는 뷰 먼저 제거 (뷰가 깨지지 않도록)
+DROP VIEW IF EXISTS V_리더보드_일별;
+DROP VIEW IF EXISTS V_리더보드_유파별;
+DROP VIEW IF EXISTS V_리더보드_전체;
+DROP VIEW IF EXISTS V_빌드보드_전체;
+-- 1) 자식 테이블 먼저 (T_빌드보드를 참조하는 테이블)
+DROP TABLE IF EXISTS T_빌드보드_상호작용;   -- 조회/좋아요 통합 (스키마에 정의된 테이블)
+DROP TABLE IF EXISTS T_빌드보드_좋아요;     -- 좋아요 전용 테이블 쓰는 경우
+DROP TABLE IF EXISTS T_리더보드;
+DROP TABLE IF EXISTS T_빌드보드_심법;
+DROP TABLE IF EXISTS T_빌드보드_비결;
+DROP TABLE IF EXISTS T_빌드보드_무술;
+-- 2) 부모 테이블
+DROP TABLE IF EXISTS T_빌드보드;
+
+
+-- (데이터 보존 시 DROP 사용 안 함. 테이블 초기화하려면 아래 순서로: T_빌드보드_좋아요/상호작용 → T_리더보드 → T_빌드보드_심법/비결/무술 → T_빌드보드)
 CREATE TABLE IF NOT EXISTS `T_빌드보드` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(255) NOT NULL,
@@ -157,7 +174,9 @@ CREATE TABLE IF NOT EXISTS `T_빌드보드` (
   INDEX idx_created_at (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 기존 테이블에 user_id 추가 시: ALTER TABLE T_빌드보드 ADD COLUMN user_id VARCHAR(255) NULL COMMENT '작성자 uid' AFTER status, ADD INDEX idx_user_id (user_id);
+-- 기존 테이블 컬럼 추가 시 (이미 있으면 생략):
+-- ALTER TABLE T_빌드보드 ADD COLUMN category ENUM('PVE', 'PVP', 'RVR', '시련') NOT NULL DEFAULT 'PVE' COMMENT '빌드 용도 구분' AFTER description, ADD INDEX idx_category (category);
+-- ALTER TABLE T_빌드보드 ADD COLUMN user_id VARCHAR(255) NULL COMMENT '작성자 uid' AFTER status, ADD INDEX idx_user_id (user_id);
 
 -- ============================================
 -- 5. 빌드보드-무술 관계 테이블
