@@ -1,6 +1,33 @@
 // 사용자 API 라우트
 
 import { NextRequest, NextResponse } from 'next/server'
+
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     summary: 모든 사용자 조회
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: 사용자 목록
+ *       500:
+ *         description: 서버 오류
+ *   post:
+ *     summary: 사용자 생성
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: 생성됨
+ *       400:
+ *         description: 잘못된 요청
+ */
 import { UserService } from '@/service/user.service'
 
 const userService = new UserService()

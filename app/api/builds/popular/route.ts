@@ -5,6 +5,25 @@ import { query } from '@/lib/db'
 import type { Build } from '@/types/build'
 
 /**
+ * @swagger
+ * /api/builds/popular:
+ *   get:
+ *     summary: 인기 빌드 조회
+ *     tags: [Builds]
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [24h, 7d, trending, all]
+ *           default: all
+ *     responses:
+ *       200:
+ *         description: 인기 빌드 목록
+ *       500:
+ *         description: 서버 오류
+ */
+/**
  * GET /api/builds/popular - 인기 빌드 조회
  * @param period - '24h' | '7d' | 'all' (기본값: 'all')
  */

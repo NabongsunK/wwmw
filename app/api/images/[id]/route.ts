@@ -3,6 +3,63 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ImageService } from '@/service/image.service'
 
+/**
+ * @swagger
+ * /api/images/{id}:
+ *   get:
+ *     summary: ID로 이미지 조회
+ *     tags: [Images]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 이미지 상세
+ *       404:
+ *         description: 없음
+ *       500:
+ *         description: 서버 오류
+ *   put:
+ *     summary: 이미지 업데이트
+ *     tags: [Images]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: 수정됨
+ *       404:
+ *         description: 없음
+ *       400:
+ *         description: 잘못된 요청
+ *   delete:
+ *     summary: 이미지 삭제
+ *     tags: [Images]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 삭제됨
+ *       404:
+ *         description: 없음
+ *       500:
+ *         description: 서버 오류
+ */
 const imageService = new ImageService()
 
 /**

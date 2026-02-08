@@ -4,6 +4,31 @@ import { NextRequest, NextResponse } from 'next/server'
 import { MartialService } from '@/service/martial.service'
 import type { Lang } from '@/types/martial'
 
+/**
+ * @swagger
+ * /api/martials:
+ *   get:
+ *     summary: 모든 무술계층 조회 (다국어 지원)
+ *     tags: [Martials]
+ *     parameters:
+ *       - in: query
+ *         name: lang
+ *         schema:
+ *           type: string
+ *           enum: [ko, en, ja, zh]
+ *           default: ko
+ *       - in: query
+ *         name: 유파_code
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 무술계층 목록
+ *       400:
+ *         description: 잘못된 lang
+ *       500:
+ *         description: 서버 오류
+ */
 const martialService = new MartialService()
 
 /**

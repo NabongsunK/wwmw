@@ -4,6 +4,59 @@ import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 
 /**
+ * @swagger
+ * /api/builds/{id}/like:
+ *   get:
+ *     summary: 빌드 좋아요 상태 확인
+ *     tags: [Builds]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 좋아요 여부, 개수
+ *       400:
+ *         description: 잘못된 파라미터
+ *       500:
+ *         description: 서버 오류
+ *   post:
+ *     summary: 빌드 좋아요 추가/제거
+ *     tags: [Builds]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               action:
+ *                 type: string
+ *                 enum: [add, remove]
+ *                 default: add
+ *               userId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 처리됨
+ *       400:
+ *         description: 잘못된 요청
+ *       500:
+ *         description: 서버 오류
+ */
+/**
  * POST /api/builds/[id]/like - 빌드 좋아요 추가/제거
  * @param action - 'add' | 'remove' (기본값: 'add')
  */

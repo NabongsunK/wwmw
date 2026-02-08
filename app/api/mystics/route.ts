@@ -3,6 +3,18 @@
 import { NextResponse } from 'next/server'
 import { MysticService } from '@/service/mystic.service'
 
+/**
+ * @swagger
+ * /api/mystics:
+ *   get:
+ *     summary: 모든 비결 조회
+ *     tags: [Mystics]
+ *     responses:
+ *       200:
+ *         description: 비결 목록
+ *       500:
+ *         description: 서버 오류
+ */
 const mysticService = new MysticService()
 
 /**

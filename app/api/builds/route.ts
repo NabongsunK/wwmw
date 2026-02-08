@@ -3,6 +3,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { BuildService } from '@/service/build.service'
 
+/**
+ * @swagger
+ * /api/builds:
+ *   get:
+ *     summary: 모든 빌드 조회
+ *     tags: [Builds]
+ *     responses:
+ *       200:
+ *         description: 빌드 목록
+ *       500:
+ *         description: 서버 오류
+ *   post:
+ *     summary: 빌드 생성
+ *     tags: [Builds]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: 생성됨
+ *       400:
+ *         description: 잘못된 요청
+ */
 const buildService = new BuildService()
 
 /**

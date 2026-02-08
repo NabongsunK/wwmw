@@ -3,6 +3,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { LeaderboardService } from '@/service/leaderboard.service'
 
+/**
+ * @swagger
+ * /api/leaderboard/{id}:
+ *   get:
+ *     summary: ID로 리더보드 조회
+ *     tags: [Leaderboard]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 리더보드 상세
+ *       404:
+ *         description: 없음
+ *       500:
+ *         description: 서버 오류
+ */
 const leaderboardService = new LeaderboardService()
 
 /**

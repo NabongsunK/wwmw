@@ -3,6 +3,54 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { LeaderboardService } from '@/service/leaderboard.service'
 
+/**
+ * @swagger
+ * /api/leaderboard:
+ *   get:
+ *     summary: 리더보드 조회
+ *     tags: [Leaderboard]
+ *     parameters:
+ *       - in: query
+ *         name: user_id
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: 유파_code
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: 기록일
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: ranking
+ *         schema:
+ *           type: boolean
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: 리더보드 목록/랭킹
+ *       500:
+ *         description: 서버 오류
+ *   post:
+ *     summary: 리더보드 기록 생성
+ *     tags: [Leaderboard]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: 생성됨
+ *       400:
+ *         description: 잘못된 요청
+ */
 const leaderboardService = new LeaderboardService()
 
 /**

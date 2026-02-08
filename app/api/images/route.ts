@@ -3,6 +3,42 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ImageService } from '@/service/image.service'
 
+/**
+ * @swagger
+ * /api/images:
+ *   get:
+ *     summary: 이미지 조회
+ *     tags: [Images]
+ *     parameters:
+ *       - in: query
+ *         name: code
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: image_type
+ *         schema:
+ *           type: string
+ *           enum: [유파, 장비, 무술, 스킬, 비결, 심법]
+ *     responses:
+ *       200:
+ *         description: 이미지 목록/단건
+ *       500:
+ *         description: 서버 오류
+ *   post:
+ *     summary: 이미지 생성
+ *     tags: [Images]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: 생성됨
+ *       400:
+ *         description: 잘못된 요청
+ */
 const imageService = new ImageService()
 
 /**

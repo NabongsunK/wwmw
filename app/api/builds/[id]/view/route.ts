@@ -4,6 +4,26 @@ import { NextRequest, NextResponse } from 'next/server'
 import { query } from '@/lib/db'
 
 /**
+ * @swagger
+ * /api/builds/{id}/view:
+ *   post:
+ *     summary: 빌드 조회수 증가
+ *     tags: [Builds]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 기록됨
+ *       400:
+ *         description: 잘못된 ID
+ *       500:
+ *         description: 서버 오류
+ */
+/**
  * POST /api/builds/[id]/view - 빌드 조회수 증가
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

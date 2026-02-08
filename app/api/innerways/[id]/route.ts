@@ -3,6 +3,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { InnerwayService } from '@/service/innerway.service'
 
+/**
+ * @swagger
+ * /api/innerways/{id}:
+ *   get:
+ *     summary: ID로 심법 조회
+ *     tags: [Innerways]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 심법 상세
+ *       404:
+ *         description: 없음
+ *       500:
+ *         description: 서버 오류
+ */
 const innerwayService = new InnerwayService()
 
 /**
