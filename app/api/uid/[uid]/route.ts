@@ -1,13 +1,7 @@
 // 사용자 API 라우트 (uid 기준)
 
 import { NextRequest } from 'next/server'
-import {
-  responseOk,
-  responseCreated,
-  responseBadRequest,
-  responseNotFound,
-  responseServerError,
-} from '@/lib/api-response'
+import { responseOk, responseNotFound, responseServerError } from '@/lib/api-response'
 
 /**
  * @swagger
@@ -23,23 +17,11 @@ import {
  *           type: string
  *     responses:
  *       200:
- *         description: 프로필 정보
+ *         description: uid 정보 (uid, created_at, updated_at)
+ *       404:
+ *         description: uid 없음
  *       500:
  *         description: 서버 오류
- *   post:
- *     summary: uid 등록(최초 생성)
- *     tags: [Uid]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *     responses:
- *       201:
- *         description: 생성됨
- *       400:
- *         description: 잘못된 요청
  */
 import { UidService } from '@/service/uid.service'
 
@@ -57,19 +39,5 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ ui
     const message = error instanceof Error ? error.message : 'Failed to fetch uid'
     if (message.includes('not found')) return responseNotFound(message)
     return responseServerError(message)
-  }
-}
-
-/**
- * POST /api/uid - uid 등록(최초 생성). 있으면 기존 반환.
- */
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-    const data = await uidService.create(body)
-    return responseCreated(data)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to create uid'
-    return responseBadRequest(message)
   }
 }

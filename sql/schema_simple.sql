@@ -145,6 +145,7 @@ CREATE TABLE IF NOT EXISTS `T_빌드보드` (
   `category` ENUM('PVE', 'PVP', 'RVR', '시련') NOT NULL COMMENT '빌드 용도 구분',
   `version_id` INT NULL COMMENT '게임 버전 ID (T_게임버전 참조, 등록 시 자동 설정)',
   `status` ENUM('active', 'inactive', 'archived') DEFAULT 'active',
+  `user_id` VARCHAR(255) NULL COMMENT '작성자 uid (T_UID.uid)',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL,
@@ -152,8 +153,11 @@ CREATE TABLE IF NOT EXISTS `T_빌드보드` (
   INDEX idx_category (`category`),
   INDEX idx_status (`status`),
   INDEX idx_version_id (`version_id`),
+  INDEX idx_user_id (`user_id`),
   INDEX idx_created_at (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 기존 테이블에 user_id 추가 시: ALTER TABLE T_빌드보드 ADD COLUMN user_id VARCHAR(255) NULL COMMENT '작성자 uid' AFTER status, ADD INDEX idx_user_id (user_id);
 
 -- ============================================
 -- 5. 빌드보드-무술 관계 테이블
@@ -251,6 +255,17 @@ CREATE TABLE IF NOT EXISTS `T_빌드보드_상호작용` (
   UNIQUE KEY `unique_like` (`빌드보드_id`, `user_id`, `type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+-- ============================================
+-- 10. UID 테이블
+-- ============================================
+CREATE TABLE IF NOT EXISTS `T_UID` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `uid` VARCHAR(255) NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ============================================
 -- View: 빌드보드 전체 정보 (단순화된 버전)
 -- ============================================
@@ -263,6 +278,7 @@ SELECT
   b.version_id,
   v.version AS version_name,
   b.status,
+  b.user_id,
   b.created_at,
   b.updated_at,
   -- 무술 정보를 JSON 배열로 집계 (유파 정보 포함)

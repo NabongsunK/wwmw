@@ -1,7 +1,7 @@
 // uid 서비스 (T_유저_uid)
 
 import { UidRepository } from '@/repo/uid.repository'
-import type { Uid, CreateUidDto } from '@/types/uid'
+import type { Uid } from '@/types/uid'
 
 /** uid 허용 길이 (필요 시 조정) */
 const UID_MIN_LENGTH = 1
@@ -49,17 +49,11 @@ export class UidService {
   }
 
   /**
-   * uid 등록 (최초 생성). 이미 있으면 기존 레코드 반환.
+   * uid 등록 (최초 생성). 서버에서 uid(UUID) 생성 후 저장해 반환.
    */
-  async create(data: CreateUidDto): Promise<Uid> {
-    this.validateUid(data.uid)
-
-    const existing = await this.uidRepository.findByUid(data.uid)
-    if (existing) {
-      return existing
-    }
-
-    return await this.uidRepository.create(data)
+  async create(): Promise<Uid> {
+    const uid = crypto.randomUUID()
+    return await this.uidRepository.create({ uid })
   }
 
   private validateUid(uid: string): void {

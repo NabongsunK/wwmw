@@ -1,10 +1,10 @@
-// uid 레포지토리 (T_유저_uid)
+// uid 레포지토리 (T_UID)
 
 import { query } from '@/lib/db'
 import type { Uid, CreateUidDto } from '@/types/uid'
 
 export class UidRepository {
-  private tableName = 'T_유저_uid'
+  private tableName = 'T_UID'
 
   /**
    * uid로 조회
@@ -18,6 +18,9 @@ export class UidRepository {
    * uid 등록 (INSERT)
    */
   async create(data: CreateUidDto): Promise<Uid> {
+    if (!data?.uid || typeof data.uid !== 'string') {
+      throw new Error('Uid is required')
+    }
     await query(
       `INSERT INTO ${this.tableName} (uid, created_at, updated_at) VALUES (?, NOW(), NOW())`,
       [data.uid],

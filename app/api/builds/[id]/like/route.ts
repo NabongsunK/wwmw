@@ -3,6 +3,9 @@
 import { NextRequest } from 'next/server'
 import { responseOk, responseBadRequest, responseServerError } from '@/lib/api-response'
 import { query } from '@/lib/db'
+import { UidService } from '@/service/uid.service'
+
+const uidService = new UidService()
 
 /**
  * @swagger
@@ -17,10 +20,11 @@ import { query } from '@/lib/db'
  *         schema:
  *           type: string
  *       - in: query
- *         name: userId
+ *         name: uid
  *         required: true
  *         schema:
  *           type: string
+ *         description: 작성자/좋아요 누른 사람 uid (T_UID.uid)
  *     responses:
  *       200:
  *         description: 좋아요 여부, 개수
@@ -47,8 +51,9 @@ import { query } from '@/lib/db'
  *                 type: string
  *                 enum: [add, remove]
  *                 default: add
- *               userId:
+ *               uid:
  *                 type: string
+ *                 description: 좋아요 누른 사람 uid (T_UID.uid)
  *     responses:
  *       200:
  *         description: 처리됨
@@ -65,25 +70,30 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     const { id } = await params
     const buildId = parseInt(id)
-    const body = await request.json()
-    const { action = 'add', userId } = body
+    const body = (await request.json().catch(() => ({}))) as {
+      action?: string
+      uid?: string
+      userId?: string
+    }
+    const action = body.action ?? 'add'
+    const uid = body.uid ?? body.userId
 
     if (isNaN(buildId)) {
       return responseBadRequest('Invalid build ID')
     }
 
-    if (!userId) {
-      return responseBadRequest('User ID is required')
+    if (!uid || typeof uid !== 'string') {
+      return responseBadRequest('uid is required')
     }
 
     if (action === 'add') {
-      // 좋아요 추가
       try {
         await query(
           `INSERT INTO T_빌드보드_좋아요 (빌드보드_id, user_id, created_at) 
            VALUES (?, ?, NOW())`,
-          [buildId, userId],
+          [buildId, uid],
         )
+        await uidService.touch(uid)
         return responseOk({ message: 'Like added', liked: true })
       } catch (error: unknown) {
         const err = error as { code?: string }
@@ -93,11 +103,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         throw error
       }
     } else {
-      // 좋아요 제거
       await query(
         `DELETE FROM T_빌드보드_좋아요 
          WHERE 빌드보드_id = ? AND user_id = ?`,
-        [buildId, userId],
+        [buildId, uid],
       )
       return responseOk({ message: 'Like removed', liked: false })
     }
@@ -115,16 +124,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params
     const buildId = parseInt(id)
     const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
+    const uid = searchParams.get('uid') ?? searchParams.get('userId')
 
-    if (isNaN(buildId) || !userId) {
-      return responseBadRequest('Invalid parameters')
+    if (isNaN(buildId) || !uid) {
+      return responseBadRequest('Invalid parameters (uid required)')
     }
 
     const likes = await query<{ id: number }>(
       `SELECT id FROM T_빌드보드_좋아요 
        WHERE 빌드보드_id = ? AND user_id = ?`,
-      [buildId, userId],
+      [buildId, uid],
     )
 
     return responseOk({ liked: likes.length > 0, likeCount: likes.length })

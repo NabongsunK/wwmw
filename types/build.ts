@@ -10,6 +10,7 @@ export interface Build {
   version_id?: number // 게임 버전 ID (자동 설정)
   version_name?: string // 게임 버전명 (조회용)
   status?: 'active' | 'inactive' | 'archived'
+  user_id?: string | null // 작성자 uid (T_UID.uid)
   무술들?: BuildItem[]
   심법들?: BuildItem[]
   비결들?: BuildItem[]
@@ -40,6 +41,8 @@ export interface CreateBuildDto {
   name: string
   description?: string
   category: BuildCategory // 필수: 빌드 용도 선택
+  /** 작성자 uid (T_UID.uid). 글쓸 때 누가 썼는지 저장 */
+  uid?: string
   // version은 서버에서 자동으로 현재 활성 버전으로 설정
   status?: 'active' | 'inactive' | 'archived'
   무술들?: BuildItem[]

@@ -1,13 +1,16 @@
 // 빌드 서비스 (schema_simple.sql 기반)
 
 import { BuildboardRepository } from '@/repo/buildboard.repository'
+import { UidService } from '@/service/uid.service'
 import type { Build, CreateBuildDto, UpdateBuildDto } from '@/types/build'
 
 export class BuildService {
   private buildboardRepository: BuildboardRepository
+  private uidService: UidService
 
   constructor() {
     this.buildboardRepository = new BuildboardRepository()
+    this.uidService = new UidService()
   }
 
   /**
@@ -57,8 +60,11 @@ export class BuildService {
       throw new Error('심법은 최대 4개까지 선택 가능합니다')
     }
 
-    // 빌드 생성
-    return await this.buildboardRepository.create(data)
+    const build = await this.buildboardRepository.create(data)
+    if (data.uid) {
+      await this.uidService.touch(data.uid)
+    }
+    return build
   }
 
   /**

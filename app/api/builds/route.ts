@@ -21,7 +21,7 @@ import { BuildService } from '@/service/build.service'
  *       500:
  *         description: 서버 오류
  *   post:
- *     summary: 빌드 생성
+ *     summary: 빌드 생성 (작성자 uid 저장)
  *     tags: [Builds]
  *     requestBody:
  *       required: true
@@ -29,6 +29,17 @@ import { BuildService } from '@/service/build.service'
  *         application/json:
  *           schema:
  *             type: object
+ *             properties:
+ *               uid:
+ *                 type: string
+ *                 description: 작성자 uid (T_UID.uid)
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *                 enum: [PVE, PVP, RVR, 시련]
  *     responses:
  *       201:
  *         description: 생성됨

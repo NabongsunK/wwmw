@@ -37,11 +37,18 @@ export class BuildboardRepository {
       )) as any
       const version_id = versionResult && versionResult[0] ? versionResult[0].id : null
 
-      // 빌드보드 생성
+      // 빌드보드 생성 (작성자 uid 저장)
       const [buildResult] = (await conn.execute(
-        `INSERT INTO ${this.tableName} (name, description, category, version_id, status, created_at, updated_at) 
-         VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
-        [data.name, data.description || null, data.category, version_id, data.status || 'active'],
+        `INSERT INTO ${this.tableName} (name, description, category, version_id, status, user_id, created_at, updated_at) 
+         VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [
+          data.name,
+          data.description || null,
+          data.category,
+          version_id,
+          data.status || 'active',
+          data.uid || null,
+        ],
       )) as any
 
       const 빌드보드_id = buildResult.insertId
