@@ -210,25 +210,6 @@ export default function MysticSimulatorPage() {
   const handleWeeklyRoll = useCallback(() => {
     if (!factionBanner || !defaultBanner || isRolling) return
 
-    // 1주일 제한 체크 (600개)
-    const currentBoxCount = state.weeklyPullCount * 108
-    const remainingBoxes = 600 - currentBoxCount
-
-    if (remainingBoxes <= 0) {
-      alert('1주일 제한 600개에 도달했습니다. 리셋 후 다시 뽑을 수 있습니다.')
-      return
-    }
-
-    if (remainingBoxes < 108) {
-      if (
-        !confirm(
-          `1주일 제한이 ${remainingBoxes}개 남았습니다.\n그래도 108개를 뽑으시겠습니까? (제한 초과됨)`,
-        )
-      ) {
-        return
-      }
-    }
-
     setIsRolling(true)
     setTimeout(() => {
       try {
@@ -439,7 +420,7 @@ export default function MysticSimulatorPage() {
           </div>
           <div>
             1주일 뽑기: <span className="font-medium text-foreground">{state.weeklyPullCount}</span>
-            회<span className="text-xs ml-1">(상자 {state.weeklyPullCount * 108}개 / 600개)</span>
+            회
           </div>
           <div>
             침중산 사용:{' '}
@@ -470,6 +451,17 @@ export default function MysticSimulatorPage() {
               </option>
             ))}
           </select>
+          <div className="mt-3 p-3 bg-muted/30 rounded-lg border border-border">
+            <p className="text-xs text-muted-foreground">
+              💡 <strong>상자 종류 설명:</strong>
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              • <strong>유파 상자</strong>: 선택한 유파 심법 + 공용 심법만 획득 가능
+            </p>
+            <p className="text-xs text-muted-foreground">
+              • <strong>전체 상자</strong>: 모든 유파의 심법 획득 가능
+            </p>
+          </div>
         </div>
 
         {/* 뽑기 버튼들 */}
@@ -477,18 +469,14 @@ export default function MysticSimulatorPage() {
           <div className="flex flex-col gap-2">
             <button
               onClick={handleWeeklyRoll}
-              disabled={isRolling || state.weeklyPullCount * 108 >= 600}
               className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg"
             >
               {isRolling ? '뽑는 중...' : '1주일 뽑기 (108개)'}
             </button>
             <p className="text-xs text-muted-foreground">
-              유파 68개 + 전체 40개
-              {state.weeklyPullCount * 108 >= 600 ? (
-                <span className="text-red-600 ml-1">(주간 제한 도달)</span>
-              ) : (
-                <span className="ml-1">(남은 상자: {600 - state.weeklyPullCount * 108}개)</span>
-              )}
+              <strong className="text-purple-600 dark:text-purple-400">유파 상자 68개</strong> +{' '}
+              <strong className="text-blue-600 dark:text-blue-400">전체 상자 40개</strong>
+              <span className="block mt-1">(지난 주: {state.weeklyPullCount}주)</span>
             </p>
           </div>
 
@@ -510,7 +498,11 @@ export default function MysticSimulatorPage() {
               </button>
             </div>
             <p className="text-xs text-muted-foreground">
-              {chimjungsanCount}개 사용 = 유파 {chimjungsanCount * 3}개 뽑기
+              {chimjungsanCount}개 사용 ={' '}
+              <strong className="text-purple-600 dark:text-purple-400">
+                유파 상자 {chimjungsanCount * 3}개
+              </strong>{' '}
+              뽑기
             </p>
           </div>
 
@@ -523,11 +515,12 @@ export default function MysticSimulatorPage() {
               서표로 상자 뽑기
             </button>
             <p className="text-xs text-muted-foreground">
-              서표 5개 = 유파 상자 1개
+              서표 5개 ={' '}
+              <strong className="text-purple-600 dark:text-purple-400">유파 상자 1개</strong>
               {state.fragmentBoxesThisWeek >= 600 ? (
-                <span className="text-red-600 ml-1">(이번 주 제한 도달)</span>
+                <span className="text-red-600 block mt-1">(이번 주 제한 도달)</span>
               ) : (
-                <span className="ml-1">
+                <span className="block mt-1">
                   (이번 주 남은 상자: {600 - state.fragmentBoxesThisWeek}개)
                 </span>
               )}

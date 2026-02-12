@@ -55,10 +55,13 @@ export function createDefaultBanner(allCards: MysticCard[]): GachaBanner {
 }
 
 /**
- * 유파 배너 생성 (특정 유파 심법만)
+ * 유파 배너 생성 (특정 유파 심법 + 공용 심법)
  */
 export function createFactionBanner(allCards: MysticCard[], factionCode: string): GachaBanner {
-  const factionCards = allCards.filter((card) => card.유파_code === factionCode)
+  // 선택한 유파의 심법 + 공용 심법
+  const factionCards = allCards.filter(
+    (card) => card.유파_code === factionCode || card.유파_code === '공용',
+  )
 
   return {
     id: `faction-${factionCode}`,
