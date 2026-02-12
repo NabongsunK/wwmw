@@ -26,6 +26,7 @@ export interface GachaState {
   rarityCount: Record<MysticRarity, number> // 등급별 획득 개수
   weeklyPullCount: number // 1주일 뽑기 횟수
   chimjungsanUsed: number // 침중산 사용 개수
+  fragmentBoxesThisWeek: number // 이번 주에 서표로 뽑은 상자 개수
 }
 
 export interface GachaResult {
@@ -158,6 +159,7 @@ export function rollOnce(
     rarityCount: newRarityCount,
     weeklyPullCount: state.weeklyPullCount,
     chimjungsanUsed: state.chimjungsanUsed,
+    fragmentBoxesThisWeek: state.fragmentBoxesThisWeek,
   }
 
   return {
@@ -213,6 +215,7 @@ export function rollTen(banner: GachaBanner, state: GachaState): GachaTenResult 
       rarityCount: { ...currentState.rarityCount },
       weeklyPullCount: currentState.weeklyPullCount,
       chimjungsanUsed: currentState.chimjungsanUsed,
+      fragmentBoxesThisWeek: currentState.fragmentBoxesThisWeek,
     }
   } else {
     // 일반 뽑기
@@ -247,6 +250,7 @@ export function createInitialState(): GachaState {
     },
     weeklyPullCount: 0,
     chimjungsanUsed: 0,
+    fragmentBoxesThisWeek: 0,
   }
 }
 

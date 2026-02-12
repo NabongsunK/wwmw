@@ -19,6 +19,13 @@ import {
   exchangeFragmentsForBoxes,
 } from '@/lib/mystic-gacha'
 
+// 심법 데이터 통합 관리
+interface MysticCardData {
+  card: MysticCard
+  count: number // 보관함에 실제 뽑아서 저장된 개수
+  isSaved: boolean // 추적/보관 여부
+}
+
 export default function MysticSimulatorPage() {
   const { fetchApi, lang } = useApi()
   const [allCards, setAllCards] = useState<MysticCard[]>([])
@@ -32,7 +39,8 @@ export default function MysticSimulatorPage() {
   const [lastResult, setLastResult] = useState<MysticCard[]>([])
   const [isRolling, setIsRolling] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [protectedCards, setProtectedCards] = useState<Set<string>>(new Set()) // 개별 카드 보호 (id-idx)
+  const [mysticCards, setMysticCards] = useState<Record<string, MysticCardData>>({})
+  const [searchQuery, setSearchQuery] = useState<string>('') // 보관함 검색어
 
   // 유파 데이터 로드 (언어 변경 시 자동 갱신)
   useEffect(() => {
@@ -159,9 +167,67 @@ export default function MysticSimulatorPage() {
     [allCards],
   )
 
+  // 뽑기 결과 처리 (추적 중인 심법은 자동으로 보관함에 추가)
+  const processRollResult = useCallback(
+    (cards: MysticCard[]) => {
+      const cardsToShow: MysticCard[] = []
+      const cardsToSave: MysticCard[] = []
+
+      // 먼저 추적 중인 카드와 아닌 카드 분리
+      cards.forEach((card) => {
+        const key = `${card.title}-${card.등급}`
+        if (mysticCards[key]?.isSaved) {
+          cardsToSave.push(card)
+        } else {
+          cardsToShow.push(card)
+        }
+      })
+
+      // 추적 중인 카드들의 count 증가
+      if (cardsToSave.length > 0) {
+        setMysticCards((prev) => {
+          const updated = { ...prev }
+          cardsToSave.forEach((card) => {
+            const key = `${card.title}-${card.등급}`
+            updated[key] = {
+              ...updated[key],
+              count: updated[key].count + 1,
+            }
+          })
+          return updated
+        })
+      }
+
+      // 나머지는 뽑기 결과에 누적
+      if (cardsToShow.length > 0) {
+        setLastResult((prev) => [...prev, ...cardsToShow])
+      }
+    },
+    [mysticCards],
+  )
+
   // 1주일 뽑기 (유파 68개 + 전체 40개)
   const handleWeeklyRoll = useCallback(() => {
     if (!factionBanner || !defaultBanner || isRolling) return
+
+    // 1주일 제한 체크 (600개)
+    const currentBoxCount = state.weeklyPullCount * 108
+    const remainingBoxes = 600 - currentBoxCount
+
+    if (remainingBoxes <= 0) {
+      alert('1주일 제한 600개에 도달했습니다. 리셋 후 다시 뽑을 수 있습니다.')
+      return
+    }
+
+    if (remainingBoxes < 108) {
+      if (
+        !confirm(
+          `1주일 제한이 ${remainingBoxes}개 남았습니다.\n그래도 108개를 뽑으시겠습니까? (제한 초과됨)`,
+        )
+      ) {
+        return
+      }
+    }
 
     setIsRolling(true)
     setTimeout(() => {
@@ -180,13 +246,13 @@ export default function MysticSimulatorPage() {
           40,
         )
 
-        // 1주일 뽑기 카운트 증가
+        // 1주일 뽑기 카운트 증가 + 서표 상자 카운트 리셋 (새로운 주 시작)
         setState({
           ...finalState,
           weeklyPullCount: finalState.weeklyPullCount + 1,
+          fragmentBoxesThisWeek: 0,
         })
-        setLastResult([...factionCards, ...defaultCards])
-        setProtectedCards(new Set()) // 새 뽑기 시 개별 보호 리셋
+        processRollResult([...factionCards, ...defaultCards])
       } catch (error) {
         console.error('Roll error:', error)
         alert(
@@ -197,7 +263,7 @@ export default function MysticSimulatorPage() {
         setIsRolling(false)
       }
     }, 500)
-  }, [factionBanner, defaultBanner, state, isRolling])
+  }, [factionBanner, defaultBanner, state, isRolling, processRollResult])
 
   // 침중산 뽑기 (유파 3*N개)
   const handleChimjungsanRoll = useCallback(() => {
@@ -209,14 +275,13 @@ export default function MysticSimulatorPage() {
     setTimeout(() => {
       try {
         const { cards, newState } = rollMultiple(factionBanner, state, totalPulls)
-        
+
         // 침중산 사용 개수 증가
         setState({
           ...newState,
           chimjungsanUsed: newState.chimjungsanUsed + chimjungsanCount,
         })
-        setLastResult(cards)
-        setProtectedCards(new Set()) // 새 뽑기 시 개별 보호 리셋
+        processRollResult(cards)
       } catch (error) {
         console.error('Roll error:', error)
         alert(
@@ -227,28 +292,14 @@ export default function MysticSimulatorPage() {
         setIsRolling(false)
       }
     }, 500)
-  }, [factionBanner, state, isRolling, chimjungsanCount])
+  }, [factionBanner, state, isRolling, chimjungsanCount, processRollResult])
 
   // 리셋
   const handleReset = useCallback(() => {
     if (confirm('통계를 초기화하시겠습니까?')) {
       setState(createInitialState())
       setLastResult([])
-      setProtectedCards(new Set())
     }
-  }, [])
-
-  // 개별 카드 보호 토글
-  const toggleCardProtection = useCallback((cardId: string) => {
-    setProtectedCards((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(cardId)) {
-        newSet.delete(cardId)
-      } else {
-        newSet.add(cardId)
-      }
-      return newSet
-    })
   }, [])
 
   // 갈갈이 (최근 뽑기 결과 전체)
@@ -258,44 +309,13 @@ export default function MysticSimulatorPage() {
       return
     }
 
-    // 개별 보호된 카드 필터링
-    const cardsToDismantle = lastResult.filter((card, idx) => {
-      const cardKey = `${card.id}-${idx}`
-      return !protectedCards.has(cardKey)
-    })
-    const protectedCardsList = lastResult.filter((card, idx) => {
-      const cardKey = `${card.id}-${idx}`
-      return protectedCards.has(cardKey)
-    })
+    const totalFragments = lastResult.reduce((sum, card) => sum + getFragmentsFromCard(card), 0)
 
-    if (cardsToDismantle.length === 0) {
-      alert('갈갈이할 수 있는 심법이 없습니다. 모두 보호 설정되어 있습니다.')
-      return
+    if (confirm(`${lastResult.length}개 심법을 갈갈이하여 ${totalFragments} 서표를 얻습니다.`)) {
+      setState(dismantleCards(lastResult, state))
+      setLastResult([])
     }
-
-    const totalFragments = cardsToDismantle.reduce(
-      (sum, card) => sum + getFragmentsFromCard(card),
-      0,
-    )
-    const protectedInfo =
-      protectedCardsList.length > 0 ? `\n(${protectedCardsList.length}개는 보호됨)` : ''
-
-    if (
-      confirm(
-        `${cardsToDismantle.length}개 심법을 갈갈이하여 ${totalFragments} 서표를 얻습니다.${protectedInfo}`,
-      )
-    ) {
-      setState(dismantleCards(cardsToDismantle, state))
-      // 보호된 카드만 남기고, protectedCards Set도 업데이트
-      const newProtectedCards = new Set<string>()
-      protectedCardsList.forEach((card, idx) => {
-        const newCardKey = `${card.id}-${idx}`
-        newProtectedCards.add(newCardKey)
-      })
-      setProtectedCards(newProtectedCards)
-      setLastResult(protectedCardsList)
-    }
-  }, [lastResult, state, protectedCards])
+  }, [lastResult, state])
 
   // 서표로 상자 교환 (모든 서표 사용)
   const handleExchangeFragments = useCallback(() => {
@@ -307,14 +327,24 @@ export default function MysticSimulatorPage() {
       return
     }
 
-    const usedFragments = availableBoxes * 5
+    // 이번 주 서표 상자 제한 체크 (600개)
+    const remainingWeeklyBoxes = 600 - state.fragmentBoxesThisWeek
+    if (remainingWeeklyBoxes <= 0) {
+      alert('이번 주 서표 상자 제한 600개에 도달했습니다. 1주일 뽑기 후 다시 뽑을 수 있습니다.')
+      return
+    }
+
+    // 뽑을 상자 개수 (제한 내에서)
+    const boxesToRoll = Math.min(availableBoxes, remainingWeeklyBoxes)
+    const usedFragments = boxesToRoll * 5
     const remainingFragments = state.fragments - usedFragments
 
-    if (
-      !confirm(
-        `서표 ${usedFragments}개를 사용하여 유파 상자 ${availableBoxes}개를 뽑습니다.\n(남은 서표: ${remainingFragments}개)`,
-      )
-    ) {
+    let confirmMessage = `서표 ${usedFragments}개를 사용하여 유파 상자 ${boxesToRoll}개를 뽑습니다.\n(남은 서표: ${remainingFragments}개)`
+    if (boxesToRoll < availableBoxes) {
+      confirmMessage += `\n\n※ 이번 주 서표 상자 제한으로 ${boxesToRoll}개만 뽑을 수 있습니다.`
+    }
+
+    if (!confirm(confirmMessage)) {
       return
     }
 
@@ -322,14 +352,17 @@ export default function MysticSimulatorPage() {
     setTimeout(() => {
       try {
         // 서표 차감
-        const stateAfterExchange = exchangeFragmentsForBoxes(state, availableBoxes)
+        const stateAfterExchange = exchangeFragmentsForBoxes(state, boxesToRoll)
 
         // 유파 상자 뽑기
-        const { cards, newState } = rollMultiple(factionBanner, stateAfterExchange, availableBoxes)
+        const { cards, newState } = rollMultiple(factionBanner, stateAfterExchange, boxesToRoll)
 
-        setState(newState)
-        setLastResult(cards)
-        setProtectedCards(new Set())
+        // fragmentBoxesThisWeek 업데이트
+        setState({
+          ...newState,
+          fragmentBoxesThisWeek: newState.fragmentBoxesThisWeek + boxesToRoll,
+        })
+        processRollResult(cards)
       } catch (error) {
         console.error('Exchange error:', error)
         alert(error instanceof Error ? error.message : '교환 중 오류가 발생했습니다.')
@@ -337,7 +370,7 @@ export default function MysticSimulatorPage() {
         setIsRolling(false)
       }
     }, 300)
-  }, [state, factionBanner, isRolling])
+  }, [state, factionBanner, isRolling, processRollResult])
 
   if (loading) {
     return (
@@ -405,14 +438,21 @@ export default function MysticSimulatorPage() {
             총 뽑기: <span className="font-medium text-foreground">{totalPulls}</span>회
           </div>
           <div>
-            1주일 뽑기: <span className="font-medium text-foreground">{state.weeklyPullCount}</span>회
+            1주일 뽑기: <span className="font-medium text-foreground">{state.weeklyPullCount}</span>
+            회<span className="text-xs ml-1">(상자 {state.weeklyPullCount * 108}개 / 600개)</span>
           </div>
           <div>
-            침중산 사용: <span className="font-medium text-foreground">{state.chimjungsanUsed}</span>개
+            침중산 사용:{' '}
+            <span className="font-medium text-foreground">{state.chimjungsanUsed}</span>개
           </div>
           <div>
             서표: <span className="font-medium text-foreground">{state.fragments}</span>개
             <span className="text-xs ml-1">(상자 {Math.floor(state.fragments / 5)}개)</span>
+          </div>
+          <div>
+            이번 주 서표 상자:{' '}
+            <span className="font-medium text-foreground">{state.fragmentBoxesThisWeek}</span>개
+            <span className="text-xs ml-1">/ 600개</span>
           </div>
         </div>
 
@@ -437,12 +477,19 @@ export default function MysticSimulatorPage() {
           <div className="flex flex-col gap-2">
             <button
               onClick={handleWeeklyRoll}
-              disabled={isRolling}
+              disabled={isRolling || state.weeklyPullCount * 108 >= 600}
               className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg"
             >
               {isRolling ? '뽑는 중...' : '1주일 뽑기 (108개)'}
             </button>
-            <p className="text-xs text-muted-foreground">유파 68개 + 전체 40개</p>
+            <p className="text-xs text-muted-foreground">
+              유파 68개 + 전체 40개
+              {state.weeklyPullCount * 108 >= 600 ? (
+                <span className="text-red-600 ml-1">(주간 제한 도달)</span>
+              ) : (
+                <span className="ml-1">(남은 상자: {600 - state.weeklyPullCount * 108}개)</span>
+              )}
+            </p>
           </div>
 
           <div className="flex flex-col gap-2">
@@ -470,12 +517,21 @@ export default function MysticSimulatorPage() {
           <div className="flex flex-col gap-2">
             <button
               onClick={handleExchangeFragments}
-              disabled={isRolling || state.fragments < 5}
+              disabled={isRolling || state.fragments < 5 || state.fragmentBoxesThisWeek >= 600}
               className="px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               서표로 상자 뽑기
             </button>
-            <p className="text-xs text-muted-foreground">서표 5개 = 유파 상자 1개</p>
+            <p className="text-xs text-muted-foreground">
+              서표 5개 = 유파 상자 1개
+              {state.fragmentBoxesThisWeek >= 600 ? (
+                <span className="text-red-600 ml-1">(이번 주 제한 도달)</span>
+              ) : (
+                <span className="ml-1">
+                  (이번 주 남은 상자: {600 - state.fragmentBoxesThisWeek}개)
+                </span>
+              )}
+            </p>
           </div>
 
           <button
@@ -485,29 +541,14 @@ export default function MysticSimulatorPage() {
             리셋
           </button>
 
-          {lastResult.length > 0 &&
-            (() => {
-              const dismantlableCount = lastResult.filter((card, idx) => {
-                const cardKey = `${card.id}-${idx}`
-                return !protectedCards.has(cardKey)
-              }).length
-              return (
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={handleDismantleAll}
-                    disabled={dismantlableCount === 0}
-                    className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                  >
-                    전체 갈갈이 ({dismantlableCount}개)
-                  </button>
-                  {dismantlableCount !== lastResult.length && (
-                    <p className="text-xs text-muted-foreground">
-                      {lastResult.length - dismantlableCount}개 보호됨
-                    </p>
-                  )}
-                </div>
-              )
-            })()}
+          {lastResult.length > 0 && (
+            <button
+              onClick={handleDismantleAll}
+              className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+            >
+              전체 갈갈이 ({lastResult.length}개)
+            </button>
+          )}
         </div>
       </div>
 
@@ -542,67 +583,345 @@ export default function MysticSimulatorPage() {
         </div>
       )}
 
+      {/* 보관함 */}
+      <div className="mb-8">
+        <div className="bg-card border rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">
+              심법 보관함 ({Object.values(mysticCards).reduce((sum, m) => sum + m.count, 0)}개)
+            </h2>
+            {Object.keys(mysticCards).length > 0 && (
+              <button
+                onClick={() => {
+                  const totalCount = Object.values(mysticCards).reduce((sum, m) => sum + m.count, 0)
+                  if (
+                    confirm(
+                      `보관함의 모든 심법 (${totalCount}개)을 비우고 추적도 모두 해제하시겠습니까?`,
+                    )
+                  ) {
+                    setMysticCards({})
+                    setSearchQuery('')
+                  }
+                }}
+                className="px-4 py-2 border border-border rounded-lg hover:bg-muted text-sm"
+              >
+                전체 비우기
+              </button>
+            )}
+          </div>
+
+          {/* 검색 */}
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="전체 심법 검색 (추적하려는 심법 이름 입력)..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground"
+            />
+          </div>
+
+          {/* 검색 결과 (전체 심법에서 검색) */}
+          {searchQuery && (
+            <div className="mb-6">
+              <h3 className="text-sm font-medium mb-2 text-muted-foreground">
+                검색 결과 (클릭하여 추적)
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 p-4 bg-muted/30 rounded-lg">
+                {(() => {
+                  // 전체 심법에서 검색
+                  const searchResults = allCards
+                    .filter((card) => card.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .reduce(
+                      (acc, card) => {
+                        const key = `${card.title}-${card.등급}`
+                        if (!acc[key]) {
+                          acc[key] = card
+                        }
+                        return acc
+                      },
+                      {} as Record<string, MysticCard>,
+                    )
+
+                  const results = Object.values(searchResults).sort((a, b) => {
+                    if (a.등급 !== b.등급) {
+                      return b.등급 - a.등급
+                    }
+                    return a.title.localeCompare(b.title)
+                  })
+
+                  if (results.length === 0) {
+                    return (
+                      <div className="col-span-full text-center text-muted-foreground py-4">
+                        검색 결과가 없습니다.
+                      </div>
+                    )
+                  }
+
+                  return results.map((card, idx) => {
+                    const key = `${card.title}-${card.등급}`
+                    const isTracked = mysticCards[key]?.isSaved
+
+                    return (
+                      <button
+                        key={`search-${idx}`}
+                        onClick={() => {
+                          setMysticCards((prev) => ({
+                            ...prev,
+                            [key]: {
+                              card,
+                              count: 0,
+                              isSaved: true,
+                            },
+                          }))
+                        }}
+                        disabled={isTracked}
+                        className={`border-2 rounded-lg p-3 ${getRarityColorClass(card.등급)} flex items-center gap-3 ${
+                          isTracked
+                            ? 'opacity-50 cursor-not-allowed'
+                            : 'hover:scale-105 cursor-pointer'
+                        } transition-all`}
+                      >
+                        {card.심법_img && (
+                          <div className="relative w-12 h-12 rounded overflow-hidden bg-background flex-shrink-0">
+                            <Image
+                              src={card.심법_img}
+                              alt={card.title}
+                              fill
+                              className="object-contain"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 text-left">
+                          <div className="font-medium">{card.title}</div>
+                          <div
+                            className={`text-xs px-2 py-0.5 rounded inline-block ${
+                              card.등급 === 3
+                                ? 'bg-yellow-200 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100'
+                                : card.등급 === 2
+                                  ? 'bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-100'
+                                  : 'bg-blue-200 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
+                            }`}
+                          >
+                            {getRarityName(card.등급)}
+                          </div>
+                        </div>
+                        <div className={isTracked ? 'text-blue-600' : 'text-green-600'}>
+                          {isTracked ? '✓' : '+'}
+                        </div>
+                      </button>
+                    )
+                  })
+                })()}
+              </div>
+            </div>
+          )}
+
+          {/* 보관된 심법별 집계 결과 */}
+          <h3 className="text-sm font-medium mb-2 text-muted-foreground">보관된 심법</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {(() => {
+              // isSaved === true인 심법들만 필터링하고 정렬
+              const savedList = Object.entries(mysticCards)
+                .filter(([_, data]) => data.isSaved)
+                .map(([key, data]) => ({ key, ...data }))
+                .sort((a, b) => {
+                  if (a.card.등급 !== b.card.등급) {
+                    return b.card.등급 - a.card.등급
+                  }
+                  return a.card.title.localeCompare(b.card.title)
+                })
+
+              if (savedList.length === 0) {
+                return (
+                  <div className="col-span-full text-center text-muted-foreground py-8">
+                    보관함이 비어있습니다. 위 검색에서 추적할 심법을 선택하면, 뽑기에서 나올 때
+                    자동으로 보관됩니다.
+                  </div>
+                )
+              }
+
+              return savedList.map(({ key, card, count }) => {
+                const removeCard = () => {
+                  if (
+                    confirm(
+                      `"${card.title}" (${getRarityName(card.등급)}) ${count}개를 모두 제거하고 추적도 해제하시겠습니까?`,
+                    )
+                  ) {
+                    setMysticCards((prev) => {
+                      const updated = { ...prev }
+                      delete updated[key]
+                      return updated
+                    })
+                  }
+                }
+
+                return (
+                  <div
+                    key={key}
+                    className={`border-2 rounded-lg p-3 ${getRarityColorClass(card.등급)} flex items-center justify-between relative`}
+                  >
+                    {/* 제거 버튼 */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        removeCard()
+                      }}
+                      className="absolute -top-2 -right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-red-600 hover:bg-red-700 text-white text-sm transition-all"
+                      title={`${card.title} 전체 제거`}
+                    >
+                      ✕
+                    </button>
+
+                    <div className="flex items-center gap-3">
+                      {card.심법_img && (
+                        <div className="relative w-12 h-12 rounded overflow-hidden bg-background flex-shrink-0">
+                          <Image
+                            src={card.심법_img}
+                            alt={card.title}
+                            fill
+                            className="object-contain"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <div className="font-medium">{card.title}</div>
+                        <div
+                          className={`text-xs px-2 py-0.5 rounded inline-block ${
+                            card.등급 === 3
+                              ? 'bg-yellow-200 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100'
+                              : card.등급 === 2
+                                ? 'bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-100'
+                                : 'bg-blue-200 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
+                          }`}
+                        >
+                          {getRarityName(card.등급)}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-2xl font-bold text-foreground">×{count}</div>
+                  </div>
+                )
+              })
+            })()}
+          </div>
+        </div>
+      </div>
+
       {/* 최근 뽑기 결과 */}
       {lastResult.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">뽑기 결과 ({lastResult.length}개)</h2>
-          <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-            {lastResult.map((card, idx) => {
-              const cardKey = `${card.id}-${idx}`
-              const isProtected = protectedCards.has(cardKey)
+          <div className="bg-card border rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold">뽑기 결과</h2>
+            </div>
 
-              return (
-                <div
-                  key={cardKey}
-                  className={`border-2 rounded-lg p-4 ${getRarityColorClass(card.등급)} transition-all hover:scale-105 relative`}
-                >
-                  {/* 보호 상태 표시 */}
-                  {isProtected && (
-                    <div className="absolute top-2 right-2">
-                      <div className="bg-green-600 text-white text-xs px-2 py-1 rounded-full">
-                        🔒
-                      </div>
-                    </div>
-                  )}
+            {/* 심법별 집계 결과 */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+              {(() => {
+                // 심법별로 그룹핑
+                const cardGroups = lastResult.reduce(
+                  (acc, card) => {
+                    const key = `${card.title}-${card.등급}`
+                    if (!acc[key]) {
+                      acc[key] = {
+                        card,
+                        count: 0,
+                      }
+                    }
+                    acc[key].count++
+                    return acc
+                  },
+                  {} as Record<string, { card: MysticCard; count: number }>,
+                )
 
-                  {/* 개별 보호 토글 버튼 */}
-                  <button
-                    onClick={() => toggleCardProtection(cardKey)}
-                    className="absolute top-2 left-2 bg-background/80 hover:bg-background border border-border rounded-full p-1 transition-all"
-                    title={isProtected ? '보호 해제' : '보호 설정'}
-                  >
-                    {isProtected ? '🔓' : '🔒'}
-                  </button>
+                // 등급별로 정렬 (전설 > 영웅 > 희귀)
+                const sortedGroups = Object.values(cardGroups).sort((a, b) => {
+                  if (a.card.등급 !== b.card.등급) {
+                    return b.card.등급 - a.card.등급
+                  }
+                  return a.card.title.localeCompare(b.card.title)
+                })
 
-                  <div className="relative w-full aspect-square mb-3 rounded-lg overflow-hidden bg-background">
-                    {card.심법_img ? (
-                      <Image src={card.심법_img} alt={card.title} fill className="object-contain" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-4xl">
-                        🧘
-                      </div>
-                    )}
-                  </div>
-                  <div className="text-center">
-                    <div className="font-medium text-sm mb-1">{card.title}</div>
+                return sortedGroups.map(({ card, count }, idx) => {
+                  // 이 심법을 보관함으로 이동
+                  const moveToSaved = () => {
+                    const cardsToMove = lastResult.filter(
+                      (c) => c.title === card.title && c.등급 === card.등급,
+                    )
+
+                    if (cardsToMove.length === 0) return
+
+                    const key = `${card.title}-${card.등급}`
+
+                    // mysticCards에 추가 또는 카운트 증가
+                    setMysticCards((prev) => {
+                      const existing = prev[key]
+                      return {
+                        ...prev,
+                        [key]: {
+                          card,
+                          count: (existing?.count || 0) + cardsToMove.length,
+                          isSaved: true,
+                        },
+                      }
+                    })
+
+                    // 뽑기 결과에서 제거
+                    setLastResult((prev) =>
+                      prev.filter((c) => !(c.title === card.title && c.등급 === card.등급)),
+                    )
+                  }
+
+                  return (
                     <div
-                      className={`text-xs px-2 py-1 rounded inline-block mb-1 ${
-                        card.등급 === 3
-                          ? 'bg-yellow-200 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100'
-                          : card.등급 === 2
-                            ? 'bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-100'
-                            : 'bg-blue-200 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
-                      }`}
+                      key={`${card.id}-${idx}`}
+                      className={`border-2 rounded-lg p-3 ${getRarityColorClass(card.등급)} flex items-center justify-between relative`}
                     >
-                      {getRarityName(card.등급)}
+                      {/* 보관 버튼 */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          moveToSaved()
+                        }}
+                        className="absolute -top-2 -right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full text-sm transition-all bg-blue-600 hover:bg-blue-700 text-white"
+                        title="보관함으로 이동"
+                      >
+                        📥
+                      </button>
+
+                      <div className="flex items-center gap-3">
+                        {card.심법_img && (
+                          <div className="relative w-12 h-12 rounded overflow-hidden bg-background flex-shrink-0">
+                            <Image
+                              src={card.심법_img}
+                              alt={card.title}
+                              fill
+                              className="object-contain"
+                            />
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-medium">{card.title}</div>
+                          <div
+                            className={`text-xs px-2 py-0.5 rounded inline-block ${
+                              card.등급 === 3
+                                ? 'bg-yellow-200 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100'
+                                : card.등급 === 2
+                                  ? 'bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-100'
+                                  : 'bg-blue-200 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
+                            }`}
+                          >
+                            {getRarityName(card.등급)}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-2xl font-bold text-foreground">×{count}</div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {isProtected ? '갈갈이 불가' : `서표 ${getFragmentsFromCard(card)}개`}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
+                  )
+                })
+              })()}
+            </div>
           </div>
         </div>
       )}
