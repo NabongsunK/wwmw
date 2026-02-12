@@ -21,8 +21,6 @@ INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 ('1001006', 'ko', '견사-림');
 
 -- 장비(무기) 코드
-delete from `T_CodeBase` where code like '1003%';
-
 INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 ('1003001', 'ko', '검'),
 ('1003002', 'ko', '창'),
