@@ -33,6 +33,26 @@ export function Header() {
               </Link>
             ))}
           </nav>
+          <nav className="flex items-center space-x-6 text-sm font-medium">
+            <Link
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+              href="/"
+            >
+              Home
+            </Link>
+            <Link
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+              href="/builds"
+            >
+              Builds
+            </Link>
+            <Link
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+              href="/simulator/mystic"
+            >
+              심법 뽑기
+            </Link>
+          </nav>
         </div>
 
         {/* 테마 */}

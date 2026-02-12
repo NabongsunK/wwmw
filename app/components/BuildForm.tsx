@@ -7,6 +7,7 @@ import type { MartialHierarchyWithNames } from '@/types/martial'
 import type { Mystic } from '@/types/mystic'
 import type { Innerway } from '@/types/innerway'
 import Button from './ui/Button'
+import { useUid } from '@/app/hooks/useUid'
 
 interface BuildFormProps {
   editBuildId?: number // 수정 모드: 빌드 ID 전달
@@ -26,6 +27,7 @@ type StepType = 'weapons' | 'mystic' | 'innerway' | 'info'
 
 export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
   const isEditMode = !!editBuildId
+  const { uid } = useUid()
 
   const [formData, setFormData] = useState<CreateBuildDto>({
     name: '',
@@ -215,17 +217,21 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
         const url = isEditMode ? `/api/builds/${editBuildId}` : '/api/builds'
         const method = isEditMode ? 'PUT' : 'POST'
 
+        const payload = {
+          ...formData,
+          무술들: selectedMartials,
+          비결들: selectedMystics,
+          심법들: selectedInnerways,
+        }
+        if (uid) {
+          ;(payload as CreateBuildDto & { uid?: string }).uid = uid
+        }
         const response = await fetch(url, {
           method,
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            ...formData,
-            무술들: selectedMartials,
-            비결들: selectedMystics,
-            심법들: selectedInnerways,
-          }),
+          body: JSON.stringify(payload),
         })
 
         const result = await response.json()
@@ -392,8 +398,8 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                   currentStep === step.id
                     ? 'bg-foreground text-background'
                     : index < currentStepIndex
-                      ? 'bg-foreground/20 text-foreground cursor-pointer hover:bg-foreground/30'
-                      : 'text-muted-foreground'
+                    ? 'bg-foreground/20 text-foreground cursor-pointer hover:bg-foreground/30'
+                    : 'text-muted-foreground'
                 }`}
               >
                 <span>{step.icon}</span>
@@ -401,7 +407,9 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
               </button>
               {index < steps.length - 1 && (
                 <div
-                  className={`w-8 h-0.5 mx-1 ${index < currentStepIndex ? 'bg-foreground/30' : 'bg-border'}`}
+                  className={`w-8 h-0.5 mx-1 ${
+                    index < currentStepIndex ? 'bg-foreground/30' : 'bg-border'
+                  }`}
                 />
               )}
             </div>
@@ -442,8 +450,8 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                               currentWeaponSlot === slot
                                 ? 'border-foreground bg-foreground/10'
                                 : isComplete
-                                  ? 'border-green-500 bg-green-500/10'
-                                  : 'border-border hover:border-foreground/50'
+                                ? 'border-green-500 bg-green-500/10'
+                                : 'border-border hover:border-foreground/50'
                             }`}
                           >
                             <div className="flex items-center justify-between mb-1">
@@ -541,8 +549,8 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                                   isSelected
                                     ? 'border-foreground bg-foreground/10 ring-2 ring-foreground'
                                     : isUsedInOtherSlot
-                                      ? 'border-border bg-muted/50 opacity-50 cursor-not-allowed'
-                                      : 'border-border hover:border-foreground/50'
+                                    ? 'border-border bg-muted/50 opacity-50 cursor-not-allowed'
+                                    : 'border-border hover:border-foreground/50'
                                 }`}
                               >
                                 {martial.무술_img_path ? (

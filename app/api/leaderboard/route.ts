@@ -1,8 +1,62 @@
 // 리더보드 API 라우트
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import {
+  responseOk,
+  responseCreated,
+  responseBadRequest,
+  responseServerError,
+} from '@/lib/api-response'
 import { LeaderboardService } from '@/service/leaderboard.service'
 
+/**
+ * @swagger
+ * /api/leaderboard:
+ *   get:
+ *     summary: 리더보드 조회
+ *     tags: [Leaderboard]
+ *     parameters:
+ *       - in: query
+ *         name: user_id
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: 유파_code
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: 기록일
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: ranking
+ *         schema:
+ *           type: boolean
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: 리더보드 목록/랭킹
+ *       500:
+ *         description: 서버 오류
+ *   post:
+ *     summary: 리더보드 기록 생성
+ *     tags: [Leaderboard]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       201:
+ *         description: 생성됨
+ *       400:
+ *         description: 잘못된 요청
+ */
 const leaderboardService = new LeaderboardService()
 
 /**
@@ -22,42 +76,36 @@ export async function GET(request: NextRequest) {
     if (ranking) {
       if (유파_code) {
         const rankings = await leaderboardService.getRankingsBy유파(유파_code, limit)
-        return NextResponse.json({ success: true, data: rankings }, { status: 200 })
+        return responseOk(rankings)
       }
       if (기록일) {
         const rankings = await leaderboardService.getRankingsByDate(기록일, limit)
-        return NextResponse.json({ success: true, data: rankings }, { status: 200 })
+        return responseOk(rankings)
       }
       const rankings = await leaderboardService.getRankings(limit)
-      return NextResponse.json({ success: true, data: rankings }, { status: 200 })
+      return responseOk(rankings)
     }
 
-    // 일반 조회
     if (user_id) {
       const entries = await leaderboardService.getByUserId(user_id)
-      return NextResponse.json({ success: true, data: entries }, { status: 200 })
+      return responseOk(entries)
     }
 
     if (유파_code) {
       const entries = await leaderboardService.getBy유파Code(유파_code)
-      return NextResponse.json({ success: true, data: entries }, { status: 200 })
+      return responseOk(entries)
     }
 
     if (기록일) {
       const entries = await leaderboardService.getBy기록일(기록일)
-      return NextResponse.json({ success: true, data: entries }, { status: 200 })
+      return responseOk(entries)
     }
 
     const entries = await leaderboardService.getAll()
-    return NextResponse.json({ success: true, data: entries }, { status: 200 })
+    return responseOk(entries)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch leaderboard',
-      },
-      { status: 500 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to fetch leaderboard'
+    return responseServerError(message)
   }
 }
 
@@ -68,14 +116,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const entry = await leaderboardService.create(body)
-    return NextResponse.json({ success: true, data: entry }, { status: 201 })
+    return responseCreated(entry)
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to create leaderboard entry',
-      },
-      { status: 400 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to create leaderboard entry'
+    return responseBadRequest(message)
   }
 }

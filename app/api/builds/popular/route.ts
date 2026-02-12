@@ -1,9 +1,28 @@
 // 인기 빌드 API
 
-import { NextResponse } from 'next/server'
+import { responseOk, responseServerError } from '@/lib/api-response'
 import { query } from '@/lib/db'
 import type { Build } from '@/types/build'
 
+/**
+ * @swagger
+ * /api/builds/popular:
+ *   get:
+ *     summary: 인기 빌드 조회
+ *     tags: [Builds]
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [24h, 7d, trending, all]
+ *           default: all
+ *     responses:
+ *       200:
+ *         description: 인기 빌드 목록
+ *       500:
+ *         description: 서버 오류
+ */
 /**
  * GET /api/builds/popular - 인기 빌드 조회
  * @param period - '24h' | '7d' | 'all' (기본값: 'all')
@@ -76,21 +95,9 @@ export async function GET(request: Request) {
 
     const builds = await query<Build>(querySql)
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: builds,
-        period,
-      },
-      { status: 200 },
-    )
+    return responseOk({ data: builds, period })
   } catch (error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to fetch popular builds',
-      },
-      { status: 500 },
-    )
+    const message = error instanceof Error ? error.message : 'Failed to fetch popular builds'
+    return responseServerError(message)
   }
 }

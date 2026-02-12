@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS `T_이미지` (
 CREATE TABLE IF NOT EXISTS `T_비결` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `title` VARCHAR(7) NOT NULL COMMENT '제목',
+  `type` VARCHAR(7) NOT NULL COMMENT '타입',
   `body` VARCHAR(7) NOT NULL COMMENT '설명',
   `순서` INT DEFAULT 0 COMMENT '정렬 순서',
   `img` INT NOT NULL COMMENT '비결 이미지 ID (T_이미지 참조)',
@@ -77,6 +78,19 @@ CREATE TABLE IF NOT EXISTS `T_비결` (
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (`img`) REFERENCES `T_이미지` (`id`),
   INDEX idx_순서 (`순서`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `T_비결_돌파` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `비결_id` INT NOT NULL COMMENT '비결 ID (T_비결 참조)',
+  `level` TINYINT NOT NULL COMMENT '돌파레벨',
+  `body` VARCHAR(7) NOT NULL COMMENT '돌파 효과 설명',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (`비결_id`) REFERENCES `T_비결` (`id`) ON DELETE CASCADE,
+  UNIQUE KEY `unique_비결_돌파레벨` (`비결_id`, `level`),
+  INDEX idx_비결_id (`비결_id`),
+  INDEX idx_level (`level`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
@@ -124,6 +138,23 @@ CREATE TABLE `T_게임버전` (
 -- ============================================
 -- 4. 빌드보드 테이블
 -- ============================================
+-- 0) T_빌드보드를 참조하는 뷰 먼저 제거 (뷰가 깨지지 않도록)
+DROP VIEW IF EXISTS V_리더보드_일별;
+DROP VIEW IF EXISTS V_리더보드_유파별;
+DROP VIEW IF EXISTS V_리더보드_전체;
+DROP VIEW IF EXISTS V_빌드보드_전체;
+-- 1) 자식 테이블 먼저 (T_빌드보드를 참조하는 테이블)
+DROP TABLE IF EXISTS T_빌드보드_상호작용;   -- 조회/좋아요 통합 (스키마에 정의된 테이블)
+DROP TABLE IF EXISTS T_빌드보드_좋아요;     -- 좋아요 전용 테이블 쓰는 경우
+DROP TABLE IF EXISTS T_리더보드;
+DROP TABLE IF EXISTS T_빌드보드_심법;
+DROP TABLE IF EXISTS T_빌드보드_비결;
+DROP TABLE IF EXISTS T_빌드보드_무술;
+-- 2) 부모 테이블
+DROP TABLE IF EXISTS T_빌드보드;
+
+
+-- (데이터 보존 시 DROP 사용 안 함. 테이블 초기화하려면 아래 순서로: T_빌드보드_좋아요/상호작용 → T_리더보드 → T_빌드보드_심법/비결/무술 → T_빌드보드)
 CREATE TABLE IF NOT EXISTS `T_빌드보드` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(255) NOT NULL,
@@ -131,6 +162,7 @@ CREATE TABLE IF NOT EXISTS `T_빌드보드` (
   `category` ENUM('PVE', 'PVP', 'RVR', '시련') NOT NULL COMMENT '빌드 용도 구분',
   `version_id` INT NULL COMMENT '게임 버전 ID (T_게임버전 참조, 등록 시 자동 설정)',
   `status` ENUM('active', 'inactive', 'archived') DEFAULT 'active',
+  `user_id` VARCHAR(255) NULL COMMENT '작성자 uid (T_UID.uid)',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` TIMESTAMP NULL,
@@ -138,8 +170,13 @@ CREATE TABLE IF NOT EXISTS `T_빌드보드` (
   INDEX idx_category (`category`),
   INDEX idx_status (`status`),
   INDEX idx_version_id (`version_id`),
+  INDEX idx_user_id (`user_id`),
   INDEX idx_created_at (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 기존 테이블 컬럼 추가 시 (이미 있으면 생략):
+-- ALTER TABLE T_빌드보드 ADD COLUMN category ENUM('PVE', 'PVP', 'RVR', '시련') NOT NULL DEFAULT 'PVE' COMMENT '빌드 용도 구분' AFTER description, ADD INDEX idx_category (category);
+-- ALTER TABLE T_빌드보드 ADD COLUMN user_id VARCHAR(255) NULL COMMENT '작성자 uid' AFTER status, ADD INDEX idx_user_id (user_id);
 
 -- ============================================
 -- 5. 빌드보드-무술 관계 테이블
@@ -221,7 +258,21 @@ CREATE TABLE IF NOT EXISTS `T_리더보드` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
--- 9. 빌드보드 상호작용 통합 테이블 (조회수, 좋아요 통합)
+-- 9. 빌드보드 좋아요 (API에서 사용)
+-- ============================================
+CREATE TABLE IF NOT EXISTS `T_빌드보드_좋아요` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `빌드보드_id` INT NOT NULL,
+  `user_id` VARCHAR(255) NOT NULL COMMENT '좋아요 누른 사용자 uid (T_UID.uid)',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`빌드보드_id`) REFERENCES `T_빌드보드` (`id`) ON DELETE CASCADE,
+  UNIQUE KEY `unique_build_like` (`빌드보드_id`, `user_id`),
+  INDEX idx_build_id (`빌드보드_id`),
+  INDEX idx_user_id (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- 10. 빌드보드 상호작용 통합 테이블 (조회수, 좋아요 통합)
 -- ============================================
 CREATE TABLE IF NOT EXISTS `T_빌드보드_상호작용` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
@@ -237,6 +288,17 @@ CREATE TABLE IF NOT EXISTS `T_빌드보드_상호작용` (
   UNIQUE KEY `unique_like` (`빌드보드_id`, `user_id`, `type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
+-- ============================================
+-- 11. UID 테이블
+-- ============================================
+CREATE TABLE IF NOT EXISTS `T_UID` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `uid` VARCHAR(255) NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ============================================
 -- View: 빌드보드 전체 정보 (단순화된 버전)
 -- ============================================
@@ -249,6 +311,7 @@ SELECT
   b.version_id,
   v.version AS version_name,
   b.status,
+  b.user_id,
   b.created_at,
   b.updated_at,
   -- 무술 정보를 JSON 배열로 집계 (유파 정보 포함)
