@@ -101,7 +101,6 @@ CREATE TABLE IF NOT EXISTS `T_비결_돌파` (
 -- ============================================
 -- 2-3. 심법 테이블 (무술과 독립적, 유파에만 속함)
 -- ============================================
-alter table `T_심법` add column `body` VARCHAR(200) NOT NULL COMMENT '설명' after `title`;
 CREATE TABLE IF NOT EXISTS `T_심법` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `유파_code` VARCHAR(7) NOT NULL COMMENT '유파 코드 (T_CodeBase.code 참조)',
