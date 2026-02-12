@@ -234,7 +234,7 @@ export default function BuildDetailPage() {
                   {(m as BuildItem & { 무술_img?: string }).무술_img ? (
                     <div className="w-16 h-16 relative rounded-lg overflow-hidden bg-background flex-shrink-0">
                       <Image
-                        src={(m as BuildItem & { 무술_img?: string }).무술_img}
+                        src={(m as BuildItem & { 무술_img?: string }).무술_img ?? ''}
                         alt=""
                         fill
                         className="object-contain"

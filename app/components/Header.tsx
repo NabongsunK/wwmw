@@ -21,6 +21,12 @@ export function Header() {
             >
               Builds
             </Link>
+            <Link
+              className="transition-colors hover:text-foreground/80 text-foreground/60"
+              href="/simulator/mystic"
+            >
+              심법 뽑기
+            </Link>
           </nav>
         </div>
       </div>
