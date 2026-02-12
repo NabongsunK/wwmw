@@ -3,7 +3,6 @@
 import { NextRequest } from 'next/server'
 import {
   responseOk,
-  responseBadRequest,
   responseNotFound,
   responseServerError,
 } from '@/lib/api-response'
@@ -12,22 +11,22 @@ import type { Lang } from '@/types/martial'
 
 /**
  * @swagger
- * /api/martials/{id}:
+ * /api/{lang}/martials/{id}:
  *   get:
  *     summary: ID로 무술계층 조회 (다국어 지원)
  *     tags: [Martials]
  *     parameters:
  *       - in: path
+ *         name: lang
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [ko, en, ja, zh]
+ *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *       - in: query
- *         name: lang
- *         schema:
- *           type: string
- *           enum: [ko, en, ja, zh]
- *           default: ko
  *     responses:
  *       200:
  *         description: 무술계층 상세
@@ -38,23 +37,20 @@ import type { Lang } from '@/types/martial'
  *       500:
  *         description: 서버 오류
  */
-const martialService = new MartialService()
 
 /**
- * GET /api/martials/[id] - ID로 무술계층 조회 (다국어 지원)
- * Query: ?lang=ko|en|ja|zh
+ * GET /api/{lang}/martials/[id] - ID로 무술계층 조회 (다국어 지원)
+ * Path: lang (ko|en|ja|zh), id (무술계층 ID)
  */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ lang: string; id: string }> }
+) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const lang = (searchParams.get('lang') || 'ko') as Lang
-    const id = parseInt(params.id)
+    const { lang, id: idStr } = await params
+    const id = parseInt(idStr)
 
-    // 언어 유효성 검사
-    if (!['ko', 'en', 'ja', 'zh'].includes(lang)) {
-      return responseBadRequest('Invalid lang parameter. Use: ko, en, ja, zh')
-    }
-
+    const martialService = new MartialService()
     const item = await martialService.getById(id, lang)
     return responseOk(item)
   } catch (error) {

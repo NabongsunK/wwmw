@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS `T_비결_돌파` (
   INDEX idx_level (`level`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
 -- ============================================
 -- 2-3. 심법 테이블 (무술과 독립적, 유파에만 속함)
 -- ============================================

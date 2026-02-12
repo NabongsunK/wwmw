@@ -1,23 +1,23 @@
 // 무술계층 API 라우트 (조회 전용)
 
 import { NextRequest } from 'next/server'
-import { responseOk, responseBadRequest, responseServerError } from '@/lib/api-response'
+import { responseOk, responseServerError } from '@/lib/api-response'
 import { MartialService } from '@/service/martial.service'
 import type { Lang } from '@/types/martial'
 
 /**
  * @swagger
- * /api/martials:
+ * /api/{lang}/martials:
  *   get:
  *     summary: 모든 무술계층 조회 (다국어 지원)
  *     tags: [Martials]
  *     parameters:
- *       - in: query
+ *       - in: path
  *         name: lang
+ *         required: true
  *         schema:
  *           type: string
  *           enum: [ko, en, ja, zh]
- *           default: ko
  *       - in: query
  *         name: 유파_code
  *         schema:
@@ -30,22 +30,22 @@ import type { Lang } from '@/types/martial'
  *       500:
  *         description: 서버 오류
  */
-const martialService = new MartialService()
 
 /**
- * GET /api/martials - 모든 무술계층 조회 (다국어 지원)
- * Query: ?lang=ko|en|ja|zh&유파_code=xxx
+ * GET /api/{lang}/martials - 모든 무술계층 조회 (다국어 지원)
+ * Path: lang (ko|en|ja|zh)
+ * Query: ?유파_code=xxx
  */
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ lang: string }> }
+) {
   try {
+    const { lang } = await params
     const searchParams = request.nextUrl.searchParams
-    const lang = (searchParams.get('lang') || 'ko') as Lang
     const 유파_code = searchParams.get('유파_code')
 
-    // 언어 유효성 검사
-    if (!['ko', 'en', 'ja', 'zh'].includes(lang)) {
-      return responseBadRequest('Invalid lang parameter. Use: ko, en, ja, zh')
-    }
+    const martialService = new MartialService()
 
     if (유파_code) {
       const items = await martialService.getBy유파Code(유파_code, lang)

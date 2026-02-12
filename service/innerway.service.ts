@@ -2,6 +2,7 @@
 
 import { InnerwayRepository } from '@/repo/innerway.repository'
 import type { Innerway } from '@/types/innerway'
+import type { Lang } from '@/types/martial'
 
 export class InnerwayService {
   private innerwayRepository: InnerwayRepository
@@ -13,19 +14,19 @@ export class InnerwayService {
   /**
    * 모든 심법 조회
    */
-  async getAll(): Promise<Innerway[]> {
-    return await this.innerwayRepository.findAll()
+  async getAll(lang: Lang): Promise<Innerway[]> {
+    return await this.innerwayRepository.findAll(lang)
   }
 
   /**
-   * ID로 조회
+   * ID로 조회 (다국어 지원)
    */
-  async getById(id: number): Promise<Innerway> {
+  async getById(id: number, lang: Lang): Promise<Innerway> {
     if (id <= 0) {
       throw new Error('Invalid ID')
     }
 
-    const innerway = await this.innerwayRepository.findById(id)
+    const innerway = await this.innerwayRepository.findById(id, lang)
     if (!innerway) {
       throw new Error('Innerway not found')
     }
