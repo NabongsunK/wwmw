@@ -1,5 +1,8 @@
+'use client'
+
 import Link from 'next/link'
 import { ThemeToggle } from './ui/theme/themeToggle'
+import { LanguageSwitcher } from './LanguageSwitcherSafe'
 
 export function Header() {
   return (
@@ -55,8 +58,11 @@ export function Header() {
           </nav>
         </div>
 
-        {/* 테마 */}
-        <ThemeToggle />
+        {/* 설정 */}
+        <div className="flex items-center gap-4">
+          <LanguageSwitcher />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   )

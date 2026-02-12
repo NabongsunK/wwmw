@@ -1,6 +1,6 @@
 // 심법 뽑기 시뮬레이터 로직
 
-export type MysticRarity = 1 | 2 | 3 | 4 // 1: 일반, 2: 희귀, 3: 영웅, 4: 전설
+export type MysticRarity = 1 | 2 | 3 // 1: 희귀, 2: 영웅, 3: 전설
 
 export interface MysticCard {
   id: number
@@ -17,21 +17,19 @@ export interface GachaBanner {
   name: string
   pool: MysticCard[]
   rates: Record<MysticRarity, number> // 확률 (0~1)
-  pityMax?: number // 피티 최대 횟수
-  pityTarget?: MysticRarity // 피티 대상 등급
 }
 
 export interface GachaState {
   pulls: number // 총 뽑기 횟수
-  pityCount: number // 마지막 전설 이후 카운트
   history: MysticCard[] // 뽑기 히스토리
-  shards: number // 중복 시 얻는 재화
+  fragments: number // 갈갈이로 얻는 서표
   rarityCount: Record<MysticRarity, number> // 등급별 획득 개수
+  weeklyPullCount: number // 1주일 뽑기 횟수
+  chimjungsanUsed: number // 침중산 사용 개수
 }
 
 export interface GachaResult {
   card: MysticCard
-  isPity: boolean // 피티로 뽑았는지
 }
 
 export interface GachaTenResult {
@@ -40,39 +38,62 @@ export interface GachaTenResult {
 }
 
 /**
- * 기본 배너 생성
+ * 기본 배너 생성 (전체 심법)
  */
 export function createDefaultBanner(allCards: MysticCard[]): GachaBanner {
   return {
     id: 'default',
-    name: '기본 배너',
+    name: '전체 상자',
     pool: allCards,
     rates: {
-      1: 0.6, // 일반 60%
-      2: 0.3, // 희귀 30%
-      3: 0.08, // 영웅 8%
-      4: 0.02, // 전설 2%
+      1: 0.4, // 희귀 40%
+      2: 0.4, // 영웅 40%
+      3: 0.2, // 전설 20%
     },
-    pityMax: 90, // 90회 안에 전설 보장
-    pityTarget: 4,
   }
 }
 
 /**
- * 등급 결정 (피티 고려)
+ * 유파 배너 생성 (특정 유파 심법만)
  */
-function determineRarity(banner: GachaBanner, state: GachaState): MysticRarity {
-  // 피티 체크
-  if (banner.pityMax && banner.pityTarget && state.pityCount >= banner.pityMax - 1) {
-    return banner.pityTarget
-  }
+export function createFactionBanner(allCards: MysticCard[], factionCode: string): GachaBanner {
+  const factionCards = allCards.filter((card) => card.유파_code === factionCode)
 
+  return {
+    id: `faction-${factionCode}`,
+    name: '유파 상자',
+    pool: factionCards.length > 0 ? factionCards : allCards, // 유파 카드가 없으면 전체 풀 사용
+    rates: {
+      1: 0.4, // 희귀 40%
+      2: 0.4, // 영웅 40%
+      3: 0.2, // 전설 20%
+    },
+  }
+}
+
+/**
+ * 사용 가능한 유파 목록 가져오기
+ */
+export function getAvailableFactions(
+  allCards: MysticCard[],
+): Array<{ code: string; name: string }> {
+  const factionCodes = new Set(allCards.map((card) => card.유파_code))
+  return Array.from(factionCodes).map((code) => ({
+    code,
+    name: code, // 실제로는 UDF_BaseCode로 이름을 가져와야 하지만, 여기서는 코드 사용
+  }))
+}
+
+/**
+ * 등급 결정
+ */
+function determineRarity(banner: GachaBanner): MysticRarity {
   // 확률에 따라 등급 결정
   const rand = Math.random()
   let cumulative = 0
 
   // 전설부터 역순으로 체크 (높은 등급 우선)
-  const rarities: MysticRarity[] = [4, 3, 2, 1]
+  const rarities: MysticRarity[] = [3, 2, 1]
   for (const rarity of rarities) {
     cumulative += banner.rates[rarity]
     if (rand <= cumulative) {
@@ -108,7 +129,10 @@ function selectCardByRarity(banner: GachaBanner, rarity: MysticRarity): MysticCa
 /**
  * 단일 뽑기
  */
-export function rollOnce(banner: GachaBanner, state: GachaState): {
+export function rollOnce(
+  banner: GachaBanner,
+  state: GachaState,
+): {
   result: GachaResult
   newState: GachaState
 } {
@@ -116,30 +140,28 @@ export function rollOnce(banner: GachaBanner, state: GachaState): {
     throw new Error('Invalid banner or empty pool')
   }
 
-  const rarity = determineRarity(banner, state)
+  const rarity = determineRarity(banner)
   const card = selectCardByRarity(banner, rarity)
-  
+
   if (!card || card.등급 === undefined) {
     throw new Error(`Invalid card selected: ${JSON.stringify(card)}`)
   }
 
-  const isPity = banner.pityMax && banner.pityTarget && state.pityCount >= banner.pityMax - 1
-
   // 새 상태 계산
-  const newPityCount = rarity === (banner.pityTarget || 4) ? 0 : state.pityCount + 1
   const newRarityCount = { ...state.rarityCount }
   newRarityCount[rarity] = (newRarityCount[rarity] || 0) + 1
 
   const newState: GachaState = {
     pulls: state.pulls + 1,
-    pityCount: newPityCount,
     history: [...state.history, card],
-    shards: state.shards + (rarity >= 3 ? 10 : 1), // 영웅 이상은 10, 그 외는 1
+    fragments: state.fragments, // fragments는 유지
     rarityCount: newRarityCount,
+    weeklyPullCount: state.weeklyPullCount,
+    chimjungsanUsed: state.chimjungsanUsed,
   }
 
   return {
-    result: { card, isPity },
+    result: { card },
     newState,
   }
 }
@@ -159,11 +181,11 @@ export function rollTen(banner: GachaBanner, state: GachaState): GachaTenResult 
   // 9회 뽑기
   for (let i = 0; i < 9; i++) {
     const { result, newState } = rollOnce(banner, currentState)
-    
+
     if (!result || !result.card || result.card.등급 === undefined) {
       throw new Error(`Invalid card result at pull ${i + 1}: ${JSON.stringify(result)}`)
     }
-    
+
     cards.push(result.card)
     if (result.card.등급 >= 3) {
       hasEpicOrHigher = true
@@ -174,7 +196,7 @@ export function rollTen(banner: GachaBanner, state: GachaState): GachaTenResult 
   // 10번째: 최소 영웅 이상 보장 (9회 중에 영웅 이상이 없으면)
   if (!hasEpicOrHigher) {
     // 영웅 이상 등급으로 강제
-    const epicRarities: MysticRarity[] = [3, 4]
+    const epicRarities: MysticRarity[] = [3]
     const targetRarity = epicRarities[Math.floor(Math.random() * epicRarities.length)]
     const card = selectCardByRarity(banner, targetRarity)
 
@@ -183,26 +205,23 @@ export function rollTen(banner: GachaBanner, state: GachaState): GachaTenResult 
     }
 
     // 피티 카운트 업데이트
-    const newPityCount = targetRarity === (banner.pityTarget || 4) ? 0 : currentState.pityCount + 1
-    const newRarityCount = { ...currentState.rarityCount }
-    newRarityCount[targetRarity] = (newRarityCount[targetRarity] || 0) + 1
-
     cards.push(card)
     currentState = {
       pulls: currentState.pulls + 1,
-      pityCount: newPityCount,
       history: [...currentState.history, card],
-      shards: currentState.shards + (targetRarity >= 3 ? 10 : 1),
-      rarityCount: newRarityCount,
+      fragments: currentState.fragments,
+      rarityCount: { ...currentState.rarityCount },
+      weeklyPullCount: currentState.weeklyPullCount,
+      chimjungsanUsed: currentState.chimjungsanUsed,
     }
   } else {
     // 일반 뽑기
     const { result, newState } = rollOnce(banner, currentState)
-    
+
     if (!result || !result.card || result.card.등급 === undefined) {
       throw new Error(`Invalid card result at 10th pull: ${JSON.stringify(result)}`)
     }
-    
+
     cards.push(result.card)
     currentState = newState
   }
@@ -219,15 +238,15 @@ export function rollTen(banner: GachaBanner, state: GachaState): GachaTenResult 
 export function createInitialState(): GachaState {
   return {
     pulls: 0,
-    pityCount: 0,
     history: [],
-    shards: 0,
+    fragments: 0,
     rarityCount: {
       1: 0,
       2: 0,
       3: 0,
-      4: 0,
     },
+    weeklyPullCount: 0,
+    chimjungsanUsed: 0,
   }
 }
 
@@ -236,10 +255,9 @@ export function createInitialState(): GachaState {
  */
 export function getRarityName(rarity: MysticRarity): string {
   const names: Record<MysticRarity, string> = {
-    1: '일반',
-    2: '희귀',
-    3: '영웅',
-    4: '전설',
+    1: '희귀',
+    2: '영웅',
+    3: '전설',
   }
   return names[rarity]
 }
@@ -249,10 +267,92 @@ export function getRarityName(rarity: MysticRarity): string {
  */
 export function getRarityColorClass(rarity: MysticRarity): string {
   const colors: Record<MysticRarity, string> = {
-    1: 'border-gray-400 bg-gray-50 dark:bg-gray-900', // 일반
-    2: 'border-blue-400 bg-blue-50 dark:bg-blue-950', // 희귀
-    3: 'border-purple-400 bg-purple-50 dark:bg-purple-950', // 영웅
-    4: 'border-yellow-400 bg-yellow-50 dark:bg-yellow-950', // 전설
+    1: 'border-blue-400 bg-blue-50 dark:bg-blue-950', // 희귀 (파랑)
+    2: 'border-purple-400 bg-purple-50 dark:bg-purple-950', // 영웅 (보라)
+    3: 'border-yellow-400 bg-yellow-50 dark:bg-yellow-950', // 전설 (금색)
   }
   return colors[rarity]
+}
+
+/**
+ * N개 뽑기 (대량 뽑기)
+ */
+export function rollMultiple(
+  banner: GachaBanner,
+  state: GachaState,
+  count: number,
+): GachaTenResult {
+  if (!banner || !banner.pool || banner.pool.length === 0) {
+    throw new Error('Invalid banner or empty pool')
+  }
+
+  if (count <= 0) {
+    throw new Error('Count must be greater than 0')
+  }
+
+  let currentState = { ...state }
+  const cards: MysticCard[] = []
+
+  for (let i = 0; i < count; i++) {
+    const { result, newState } = rollOnce(banner, currentState)
+
+    if (!result || !result.card || result.card.등급 === undefined) {
+      throw new Error(`Invalid card result at pull ${i + 1}: ${JSON.stringify(result)}`)
+    }
+
+    cards.push(result.card)
+    currentState = newState
+  }
+
+  return {
+    cards,
+    newState: currentState,
+  }
+}
+
+/**
+ * 심득교체 - 서표 획득
+ * 금색(3): 유파 15, 공용 10
+ * 보라(2): 유파 5, 공용 4
+ * 파랑(1): 2
+ */
+export function getFragmentsFromCard(card: MysticCard): number {
+  const isCommon = card.유파_code === '공용' || card.유파_code === ''
+
+  if (card.등급 === 3) {
+    return isCommon ? 10 : 15 // 금색
+  } else if (card.등급 === 2) {
+    return isCommon ? 4 : 5 // 보라
+  } else {
+    return 2 // 파랑
+  }
+}
+
+/**
+ * 여러 심법을 한번에 갈갈이
+ */
+export function dismantleCards(cards: MysticCard[], state: GachaState): GachaState {
+  const totalFragments = cards.reduce((sum, card) => sum + getFragmentsFromCard(card), 0)
+
+  return {
+    ...state,
+    fragments: state.fragments + totalFragments,
+  }
+}
+
+/**
+ * 서표 5개 -> 상자 1개 교환
+ * 1주일 600상자 = 3000 서표
+ */
+export function exchangeFragmentsForBoxes(state: GachaState, boxCount: number): GachaState {
+  const requiredFragments = boxCount * 5
+
+  if (state.fragments < requiredFragments) {
+    throw new Error(`서표가 부족합니다. 필요: ${requiredFragments}, 보유: ${state.fragments}`)
+  }
+
+  return {
+    ...state,
+    fragments: state.fragments - requiredFragments,
+  }
 }
