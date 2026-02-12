@@ -52,7 +52,7 @@ INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 ('1004003', 'ko', '단체 피해'),
 ('1004004', 'ko', '단일 제어'),
 ('1004005', 'ko', '단일 폭발'),
-('1004006', 'ko', '지원'),
+('1004006', 'ko', '지원');
 
 INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 -- 수수께끼(1004001)
