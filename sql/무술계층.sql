@@ -10,6 +10,7 @@
 
 -- 유파 코드
 INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
+('1001000', 'ko', '공용'),
 ('1001001', 'ko', '명금(홍)'),
 ('1001002', 'ko', '명금(영)'),
 ('1001003', 'ko', '열석-위'),
@@ -104,13 +105,13 @@ INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 ('1006012', 'ko', '월하의 섬광'),
 ('1006013', 'ko', '핏빛 찬가'),
 
--- 명금(영)
+-- 명금(홍)
 ('1006013', 'ko', '무명 심법'),
 ('1006014', 'ko', '천산의 의지'),
 ('1006015', 'ko', '잿빛의 잔영'),
 ('1006016', 'ko', '맹수의 포효'),
 
--- 명금(홍)   
+-- 명금(영)   
 ('1006017', 'ko', '광풍의 검기'),
 ('1006018', 'ko', '굶주린 늑대'),
 ('1006019', 'ko', '무공의 경지'),
@@ -145,124 +146,57 @@ INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 DELETE FROM `T_심법`;
 
 INSERT INTO `T_심법` (유파_code, title, body, 순서, 등급, img) VALUES
-4: 전설
+-- 4: 레어(무지개) 3: 신화(금색) 2: 전설(보라) 1: 영웅(파랑)
 
--- 공용 심법
-('1001000', '결의의노래', '공용', 1, 1, (SELECT id FROM T_이미지 WHERE code = '1006001')),
-('1001000', '계절의순환', '공용', 2, 1, (SELECT id FROM T_이미지 WHERE code = '1006002')),
-('1001000', '춤추는그림자', '공용', 3, 1, (SELECT id FROM T_이미지 WHERE code = '1006003')),
-('1001000', '생명의귀환', '공용', 4, 1, (SELECT id FROM T_이미지 WHERE code = '1006004')),
-('1001000', '천추의한', '공용', 5, 1, (SELECT id FROM T_이미지 WHERE code = '1006005')),
-('1001000', '제비의보은', '공용', 6, 1, (SELECT id FROM T_이미지 WHERE code = '1006006')),
-('1001000', '분노의참격', '공용', 7, 1, (SELECT id FROM T_이미지 WHERE code = '1006007')),
-('1001000', '무상의불멸', '공용', 8, 1, (SELECT id FROM T_이미지 WHERE code = '1006008')),
-('1001000', '맹호의질주', '공용', 9, 1, (SELECT id FROM T_이미지 WHERE code = '1006009')),
-('1001000', '설한의균열', '공용', 10, 1, (SELECT id FROM T_이미지 WHERE code = '1006010')),
-('1001000', '월하의섬광', '공용', 11, 1, (SELECT id FROM T_이미지 WHERE code = '1006011')),
-('1001000', '핏빛찬가', '공용', 12, 1, (SELECT id FROM T_이미지 WHERE code = '1006012')),
+-- 공용 - 1001000
+('1001000', '1006001', '결의의 노래', 1, 3, (SELECT id FROM T_이미지 WHERE code = '1006001')),
+('1001000', '1006002', '계절의 순환', 2, 3, (SELECT id FROM T_이미지 WHERE code = '1006002')),
+('1001000', '1006003', '춤추는 그림자', 3, 2, (SELECT id FROM T_이미지 WHERE code = '1006003')),
+('1001000', '1006004', '생명의  귀환', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006004')),
+('1001000', '1006005', '천추의 한', 5, 2, (SELECT id FROM T_이미지 WHERE code = '1006005')),
+('1001000', '1006006', '제비의 보은', 6, 2, (SELECT id FROM T_이미지 WHERE code = '1006006')),
+('1001000', '1006007', '분노의 참격', 7, 2, (SELECT id FROM T_이미지 WHERE code = '1006007')),
+('1001000', '1006008', '무상의 불멸', 8, 1, (SELECT id FROM T_이미지 WHERE code = '1006008')),
+('1001000', '1006009', '맹호의 질주', 9, 1, (SELECT id FROM T_이미지 WHERE code = '1006009')),
+('1001000', '1006010', '설한의 균열', 10, 1, (SELECT id FROM T_이미지 WHERE code = '1006010')),
+('1001000', '1006011', '월하의 섬광', 11, 1, (SELECT id FROM T_이미지 WHERE code = '1006011')),
+('1001000', '1006012', '핏빛 찬가', 12, 1, (SELECT id FROM T_이미지 WHERE code = '1006012')),
 
 -- 명금(홍) - 1001001
-('1001001', '광풍의검기', '명금홍', 1, 4, (SELECT id FROM T_이미지 WHERE code = '1006023')),
-('1001001', '굶주린늑대', '명금홍', 2, 3, (SELECT id FROM T_이미지 WHERE code = '1006024')),
-('1001001', '무공의경지', '명금홍', 3, 3, (SELECT id FROM T_이미지 WHERE code = '1006025')),
-('1001001', '', '명금홍', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006026')),
+('1001001', '1006013', '무명 심법', 1, 1, (SELECT id FROM T_이미지 WHERE code = '1006013')),
+('1001001', '1006014', '천산의 의지', 2, 1, (SELECT id FROM T_이미지 WHERE code = '1006014')),
+('1001001', '1006015', '잿빛의 잔영', 1, 4, (SELECT id FROM T_이미지 WHERE code = '1006015')),
+('1001001', '1006016', '맹수의 포효', 2, 3, (SELECT id FROM T_이미지 WHERE code = '1006016')),
 
 -- 명금(영) - 1001002
-('1001002', '무명 심법', '명금영', 1, 1, (SELECT id FROM T_이미지 WHERE code = '1006001')),
-('1001002', '천산의 의지', '명금영', 2, 1, (SELECT id FROM T_이미지 WHERE code = '1006002')),
-('1001002', '맹수의 포효', '명금영', 1, 4, (SELECT id FROM T_이미지 WHERE code = '1006021')),
-('1001002', '무명심법', '명금영', 2, 3, (SELECT id FROM T_이미지 WHERE code = '1006022')),
+('1001002', '1006017', '광풍의 검기', 1, 3, (SELECT id FROM T_이미지 WHERE code = '1006017')),
+('1001002', '1006018', '굶주린 늑대', 2, 2, (SELECT id FROM T_이미지 WHERE code = '1006018')),
+('1001002', '1006019', '무공의 경지', 3, 2, (SELECT id FROM T_이미지 WHERE code = '1006019')),
+('1001002', '1006020', '통찰의 눈', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006020')),
 
 -- 열석-위 - 1001003
-('1001003', '강철의비기', '열석위', 1, 4, (SELECT id FROM T_이미지 WHERE code = '1006027')),
-('1001003', '맹수의혼', '열석위', 2, 3, (SELECT id FROM T_이미지 WHERE code = '1006028')),
-('1001003', '저항의법칙', '열석위', 3, 3, (SELECT id FROM T_이미지 WHERE code = '1006029')),
-('1001003', '지축의분노', '열석위', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006030')),
+('1001003', '1006021', '지축의 분노', 1, 4, (SELECT id FROM T_이미지 WHERE code = '1006021')),
+('1001003', '1006022', '맹수의 혼', 2, 3, (SELECT id FROM T_이미지 WHERE code = '1006022')),
+('1001003', '1006023', '저항의 법칙', 3, 3, (SELECT id FROM T_이미지 WHERE code = '1006023')),
+('1001003', '1006024', '강철의 비기', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006024')),
 
 -- 견사-옥 - 1001004
-('1001004', '비상하는호리병', '견사옥', 1, 4, (SELECT id FROM T_이미지 WHERE code = '1006017')),
-('1001004', '월광의계율', '견사옥', 2, 3, (SELECT id FROM T_이미지 WHERE code = '1006018')),
-('1001004', '천공참', '견사옥', 3, 3, (SELECT id FROM T_이미지 WHERE code = '1006019')),
-('1001004', '춘뢰일섬', '견사옥', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006020')),
+('1001004', '1006025', '월광의 계율', 1, 4, (SELECT id FROM T_이미지 WHERE code = '1006025')),
+('1001004', '1006026', '비상하는 호리병', 2, 3, (SELECT id FROM T_이미지 WHERE code = '1006026')),
+('1001004', '1006027', '춘뢰일섬', 3, 3, (SELECT id FROM T_이미지 WHERE code = '1006027')),
+('1001004', '1006028', '천공참', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006028')),
 
 -- 파죽-풍 - 1001005
-('1001005', '망각의울림', '파죽풍', 1, 4, (SELECT id FROM T_이미지 WHERE code = '1006031')),
-('1001005', '심연의늪', '파죽풍', 2, 3, (SELECT id FROM T_이미지 WHERE code = '1006032')),
-('1001005', '파괴의서막', '파죽풍', 3, 3, (SELECT id FROM T_이미지 WHERE code = '1006033')),
-('1001005', '파도의검기', '파죽풍', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006034')),
+('1001005', '1006029', '망각의 울림', 1, 4, (SELECT id FROM T_이미지 WHERE code = '1006029')),
+('1001005', '1006030', '심연의 늪', 2, 3, (SELECT id FROM T_이미지 WHERE code = '1006030')),
+('1001005', '1006031', '파괴의 서막', 3, 3, (SELECT id FROM T_이미지 WHERE code = '1006031')),
+('1001005', '1006032', '파도의 검기', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006032')),
 
 -- 견사-림 - 1001006
-('1001006', '견사림심법1', '견사림', 1, 4, (SELECT id FROM T_이미지 WHERE code = '1006013')),
-('1001006', '견사림심법2', '견사림', 2, 3, (SELECT id FROM T_이미지 WHERE code = '1006014')),
-('1001006', '견사림심법3', '견사림', 3, 3, (SELECT id FROM T_이미지 WHERE code = '1006015')),
-('1001006', '견사림심법4', '견사림', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006016')),
-
--- 공통 심법 (각 유파에 추가 - 등급 1-2)
--- 명금(홍) 공통 심법
-('1001001', '결의의노래', '공통', 5, 1, (SELECT id FROM T_이미지 WHERE code = '1006004')),
-('1001001', '맹호의질주', '공통', 6, 1, (SELECT id FROM T_이미지 WHERE code = '1006005')),
-('1001001', '생명의그림자', '공통', 7, 1, (SELECT id FROM T_이미지 WHERE code = '1006006')),
-('1001001', '설한의균열', '공통', 8, 1, (SELECT id FROM T_이미지 WHERE code = '1006007')),
-('1001001', '월하의섬광', '공통', 9, 1, (SELECT id FROM T_이미지 WHERE code = '1006008')),
-('1001001', '천추의한', '공통', 10, 1, (SELECT id FROM T_이미지 WHERE code = '1006009')),
-('1001001', '철포삼', '공통', 11, 1, (SELECT id FROM T_이미지 WHERE code = '1006010')),
-('1001001', '춤추는그림자', '공통', 12, 1, (SELECT id FROM T_이미지 WHERE code = '1006011')),
-('1001001', '핏빛찬가', '공통', 13, 1, (SELECT id FROM T_이미지 WHERE code = '1006012')),
-
--- 명금(영) 공통 심법
-('1001002', '결의의노래', '공통', 3, 1, (SELECT id FROM T_이미지 WHERE code = '1006004')),
-('1001002', '맹호의질주', '공통', 4, 1, (SELECT id FROM T_이미지 WHERE code = '1006005')),
-('1001002', '생명의그림자', '공통', 5, 1, (SELECT id FROM T_이미지 WHERE code = '1006006')),
-('1001002', '설한의균열', '공통', 6, 1, (SELECT id FROM T_이미지 WHERE code = '1006007')),
-('1001002', '월하의섬광', '공통', 7, 1, (SELECT id FROM T_이미지 WHERE code = '1006008')),
-('1001002', '천추의한', '공통', 8, 1, (SELECT id FROM T_이미지 WHERE code = '1006009')),
-('1001002', '철포삼', '공통', 9, 1, (SELECT id FROM T_이미지 WHERE code = '1006010')),
-('1001002', '춤추는그림자', '공통', 10, 1, (SELECT id FROM T_이미지 WHERE code = '1006011')),
-('1001002', '핏빛찬가', '공통', 11, 1, (SELECT id FROM T_이미지 WHERE code = '1006012')),
-
--- 열석-위 공통 심법
-('1001003', '결의의노래', '공통', 5, 1, (SELECT id FROM T_이미지 WHERE code = '1006004')),
-('1001003', '맹호의질주', '공통', 6, 1, (SELECT id FROM T_이미지 WHERE code = '1006005')),
-('1001003', '생명의그림자', '공통', 7, 1, (SELECT id FROM T_이미지 WHERE code = '1006006')),
-('1001003', '설한의균열', '공통', 8, 1, (SELECT id FROM T_이미지 WHERE code = '1006007')),
-('1001003', '월하의섬광', '공통', 9, 1, (SELECT id FROM T_이미지 WHERE code = '1006008')),
-('1001003', '천추의한', '공통', 10, 1, (SELECT id FROM T_이미지 WHERE code = '1006009')),
-('1001003', '철포삼', '공통', 11, 1, (SELECT id FROM T_이미지 WHERE code = '1006010')),
-('1001003', '춤추는그림자', '공통', 12, 1, (SELECT id FROM T_이미지 WHERE code = '1006011')),
-('1001003', '핏빛찬가', '공통', 13, 1, (SELECT id FROM T_이미지 WHERE code = '1006012')),
-
--- 견사-옥 공통 심법
-('1001004', '결의의노래', '공통', 5, 1, (SELECT id FROM T_이미지 WHERE code = '1006004')),
-('1001004', '맹호의질주', '공통', 6, 1, (SELECT id FROM T_이미지 WHERE code = '1006005')),
-('1001004', '생명의그림자', '공통', 7, 1, (SELECT id FROM T_이미지 WHERE code = '1006006')),
-('1001004', '설한의균열', '공통', 8, 1, (SELECT id FROM T_이미지 WHERE code = '1006007')),
-('1001004', '월하의섬광', '공통', 9, 1, (SELECT id FROM T_이미지 WHERE code = '1006008')),
-('1001004', '천추의한', '공통', 10, 1, (SELECT id FROM T_이미지 WHERE code = '1006009')),
-('1001004', '철포삼', '공통', 11, 1, (SELECT id FROM T_이미지 WHERE code = '1006010')),
-('1001004', '춤추는그림자', '공통', 12, 1, (SELECT id FROM T_이미지 WHERE code = '1006011')),
-('1001004', '핏빛찬가', '공통', 13, 1, (SELECT id FROM T_이미지 WHERE code = '1006012')),
-
--- 파죽-풍 공통 심법
-('1001005', '결의의노래', '공통', 5, 1, (SELECT id FROM T_이미지 WHERE code = '1006004')),
-('1001005', '맹호의질주', '공통', 6, 1, (SELECT id FROM T_이미지 WHERE code = '1006005')),
-('1001005', '생명의그림자', '공통', 7, 1, (SELECT id FROM T_이미지 WHERE code = '1006006')),
-('1001005', '설한의균열', '공통', 8, 1, (SELECT id FROM T_이미지 WHERE code = '1006007')),
-('1001005', '월하의섬광', '공통', 9, 1, (SELECT id FROM T_이미지 WHERE code = '1006008')),
-('1001005', '천추의한', '공통', 10, 1, (SELECT id FROM T_이미지 WHERE code = '1006009')),
-('1001005', '철포삼', '공통', 11, 1, (SELECT id FROM T_이미지 WHERE code = '1006010')),
-('1001005', '춤추는그림자', '공통', 12, 1, (SELECT id FROM T_이미지 WHERE code = '1006011')),
-('1001005', '핏빛찬가', '공통', 13, 1, (SELECT id FROM T_이미지 WHERE code = '1006012')),
-
--- 견사-림 공통 심법
-('1001006', '결의의노래', '공통', 5, 1, (SELECT id FROM T_이미지 WHERE code = '1006004')),
-('1001006', '맹호의질주', '공통', 6, 1, (SELECT id FROM T_이미지 WHERE code = '1006005')),
-('1001006', '생명의그림자', '공통', 7, 1, (SELECT id FROM T_이미지 WHERE code = '1006006')),
-('1001006', '설한의균열', '공통', 8, 1, (SELECT id FROM T_이미지 WHERE code = '1006007')),
-('1001006', '월하의섬광', '공통', 9, 1, (SELECT id FROM T_이미지 WHERE code = '1006008')),
-('1001006', '천추의한', '공통', 10, 1, (SELECT id FROM T_이미지 WHERE code = '1006009')),
-('1001006', '철포삼', '공통', 11, 1, (SELECT id FROM T_이미지 WHERE code = '1006010')),
-('1001006', '춤추는그림자', '공통', 12, 1, (SELECT id FROM T_이미지 WHERE code = '1006011')),
-('1001006', '핏빛찬가', '공통', 13, 1, (SELECT id FROM T_이미지 WHERE code = '1006012'));
+('1001006', '1006033', '군신의 묘약', 1, 4, (SELECT id FROM T_이미지 WHERE code = '1006033')),
+('1001006', '1006034', '만개한 복사꽃', 2, 3, (SELECT id FROM T_이미지 WHERE code = '1006034')),
+('1001006', '1006035', '생명의 고서', 3, 3, (SELECT id FROM T_이미지 WHERE code = '1006035')),
+('1001006', '1006036', '회복의 실', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006036')),
 
 -- ============================================
 -- T_무술계층 INSERT
