@@ -61,7 +61,7 @@ MYSQL_HOST=localhost
 MYSQL_PORT=3306
 MYSQL_USER=wwe_user
 MYSQL_PASSWORD=wwe_password
-MYSQL_DATABASE=z
+MYSQL_DATABASE=wwe_db
 ```
 
 **관리자 uid (선택)**  

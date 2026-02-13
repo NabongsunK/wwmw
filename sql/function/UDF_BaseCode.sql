@@ -5,6 +5,8 @@
 SET GLOBAL log_bin_trust_function_creators = 1;
 
 -- 3단계: collation을 명시한 함수 생성
+DELIMITER $$
+
 CREATE FUNCTION UDF_BaseCode(
     p_code VARCHAR(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
     p_lang VARCHAR(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
@@ -19,7 +21,9 @@ BEGIN
     AND lang = p_lang 
     LIMIT 1
   );
-END;
+END$$
+
+DELIMITER ;
 
 SELECT * FROM T_심법;
 select * from T_이미지;
