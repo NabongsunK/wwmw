@@ -321,12 +321,17 @@ values
     '/img/심법/견사림/회복의실.png'
   );
 
+
 insert into 
   `T_이미지` (
     code, 
     img_path
   )
 values
+  (
+    '1001000', 
+    '/img/유파/공용.png'
+  ),
   (
     '1001001', 
     '/img/유파/명금홍.png'

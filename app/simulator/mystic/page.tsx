@@ -115,6 +115,7 @@ export default function MysticSimulatorPage() {
               순서: item.순서 || 0,
               등급: valid등급,
               심법_img: item.심법_이미지_url || null,
+              유파_img: item.유파_이미지_url || null,
             }
           })
           .filter((card: any): card is MysticCard => card != null)
@@ -207,25 +208,18 @@ export default function MysticSimulatorPage() {
     [mysticCards],
   )
 
-  // 1주일 뽑기 (유파 68개 + 전체 40개)
+  // 1주일 뽑기 (전체 108개)
   const handleWeeklyRoll = useCallback(() => {
     if (!factionBanner || !defaultBanner || isRolling) return
 
     setIsRolling(true)
     setTimeout(() => {
       try {
-        // 유파 상자 68개
-        const { cards: factionCards, newState: stateAfterFaction } = rollMultiple(
-          factionBanner,
-          state,
-          68,
-        )
-
-        // 전체 상자 40개
+        // 전체 상자 108개
         const { cards: defaultCards, newState: finalState } = rollMultiple(
           defaultBanner,
-          stateAfterFaction,
-          40,
+          state,
+          108,
         )
 
         // 1주일 뽑기 카운트 증가 + 서표 상자 카운트 리셋 (새로운 주 시작)
@@ -234,7 +228,7 @@ export default function MysticSimulatorPage() {
           weeklyPullCount: finalState.weeklyPullCount + 1,
           fragmentBoxesThisWeek: 0,
         })
-        processRollResult([...factionCards, ...defaultCards])
+        processRollResult(defaultCards)
       } catch (error) {
         console.error('Roll error:', error)
         alert(
@@ -245,18 +239,18 @@ export default function MysticSimulatorPage() {
         setIsRolling(false)
       }
     }, 500)
-  }, [factionBanner, defaultBanner, state, isRolling, processRollResult])
+  }, [defaultBanner, state, isRolling, processRollResult])
 
-  // 침중산 뽑기 (유파 3*N개)
+  // 침중산 뽑기 (전체 3*N개)
   const handleChimjungsanRoll = useCallback(() => {
-    if (!factionBanner || isRolling || chimjungsanCount <= 0) return
+    if (!defaultBanner || isRolling || chimjungsanCount <= 0) return
 
     setIsRolling(true)
     const totalPulls = chimjungsanCount * 3
 
     setTimeout(() => {
       try {
-        const { cards, newState } = rollMultiple(factionBanner, state, totalPulls)
+        const { cards, newState } = rollMultiple(defaultBanner, state, totalPulls)
 
         // 침중산 사용 개수 증가
         setState({
@@ -274,7 +268,7 @@ export default function MysticSimulatorPage() {
         setIsRolling(false)
       }
     }, 500)
-  }, [factionBanner, state, isRolling, chimjungsanCount, processRollResult])
+  }, [defaultBanner, state, isRolling, chimjungsanCount, processRollResult])
 
   // 리셋
   const handleReset = useCallback(() => {
@@ -284,16 +278,18 @@ export default function MysticSimulatorPage() {
     }
   }, [])
 
-  // 갈갈이 (최근 뽑기 결과 전체)
+  // 서표로 변환 (최근 뽑기 결과 전체)
   const handleDismantleAll = useCallback(() => {
     if (lastResult.length === 0) {
-      alert('갈갈이할 심법이 없습니다!')
+      alert('서표로 변환할 심법이 없습니다!')
       return
     }
 
     const totalFragments = lastResult.reduce((sum, card) => sum + getFragmentsFromCard(card), 0)
 
-    if (confirm(`${lastResult.length}개 심법을 갈갈이하여 ${totalFragments} 서표를 얻습니다.`)) {
+    if (
+      confirm(`${lastResult.length}개 심법을 서표로 변환하여 ${totalFragments} 서표를 얻습니다.`)
+    ) {
       setState(dismantleCards(lastResult, state))
       setLastResult([])
     }
@@ -422,7 +418,7 @@ export default function MysticSimulatorPage() {
           </div>
           <div>
             1주일 뽑기: <span className="font-medium text-foreground">{state.weeklyPullCount}</span>
-            회
+            주차
           </div>
           <div>
             침중산 사용:{' '}
@@ -479,8 +475,7 @@ export default function MysticSimulatorPage() {
             </button>
 
             <p className="text-xs text-muted-foreground">
-              <strong className="text-accent">유파 상자 68개</strong> +{' '}
-              <strong className="text-foreground">전체 상자 40개</strong>
+              <strong className="text-accent">전체 상자 108개</strong>
               <span className="block mt-1">(지난 주: {state.weeklyPullCount}주)</span>
             </p>
           </div>
@@ -507,7 +502,7 @@ export default function MysticSimulatorPage() {
 
             <p className="text-xs text-muted-foreground">
               {chimjungsanCount}개 사용 ={' '}
-              <strong className="text-accent">유파 상자 {chimjungsanCount * 3}개</strong> 뽑기
+              <strong className="text-accent">전체 상자 {chimjungsanCount * 3}개</strong> 뽑기
             </p>
           </div>
 
@@ -541,48 +536,17 @@ export default function MysticSimulatorPage() {
             리셋
           </button>
 
-          {/* 전체 갈갈이 (Danger - outline only) */}
+          {/* 서표로 변환 (Danger - outline only) */}
           {lastResult.length > 0 && (
             <button
               onClick={handleDismantleAll}
               className=" px-6 py-3 rounded-md border border-red-500 text-red-500 hover:bg-red-500/10 transition"
             >
-              전체 갈갈이 ({lastResult.length}개)
+              서표로 변환 ({lastResult.length}개)
             </button>
           )}
         </div>
       </div>
-
-      {/* 통계 */}
-      {totalPulls > 0 && (
-        <div className="bg-card border rounded-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">통계</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {([1, 2, 3] as const).map((rarity) => (
-              <div key={rarity} className="border rounded-lg p-4">
-                <div className="text-sm text-muted-foreground mb-1">{getRarityName(rarity)}</div>
-                <div className="text-2xl font-bold mb-2">{state.rarityCount[rarity]}개</div>
-                <div className="text-xs text-muted-foreground">
-                  확률: {actualRates[rarity].toFixed(2)}% (목표:{' '}
-                  {(defaultBanner.rates[rarity] * 100).toFixed(1)}%)
-                </div>
-                <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className={`h-full ${
-                      rarity === 3
-                        ? 'bg-yellow-500'
-                        : rarity === 2
-                          ? 'bg-purple-500'
-                          : 'bg-blue-500'
-                    }`}
-                    style={{ width: `${actualRates[rarity]}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* 보관함 */}
       <div className="mb-8">
@@ -677,7 +641,7 @@ export default function MysticSimulatorPage() {
                           }))
                         }}
                         disabled={isTracked}
-                        className={`border-2 rounded-lg p-3 ${getRarityColorClass(card.등급)} flex items-center gap-3 ${
+                        className={`border-2 rounded-lg p-2 ${getRarityColorClass(card.등급)} flex items-center gap-3 ${
                           isTracked
                             ? 'opacity-50 cursor-not-allowed'
                             : 'hover:scale-105 cursor-pointer'
@@ -694,18 +658,17 @@ export default function MysticSimulatorPage() {
                           </div>
                         )}
                         <div className="flex-1 text-left">
-                          <div className="font-medium text-black">{card.title}</div>
-                          <div
-                            className={`text-xs px-2 py-0.5 rounded inline-block ${
-                              card.등급 === 3
-                                ? 'bg-yellow-200 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100'
-                                : card.등급 === 2
-                                  ? 'bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-100'
-                                  : 'bg-blue-200 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
-                            }`}
-                          >
-                            {getRarityName(card.등급)}
-                          </div>
+                          <div className="font-medium text-black -mb-[5px]">{card.title}</div>
+                          {card.유파_img && (
+                            <div className="relative w-8 h-8 inline-block mt-0.5">
+                              <Image
+                                src={card.유파_img}
+                                alt={card.유파 || card.title}
+                                fill
+                                className="object-contain"
+                              />
+                            </div>
+                          )}
                         </div>
                         <div className={isTracked ? 'text-blue-600' : 'text-green-600'}>
                           {isTracked ? '✓' : '+'}
@@ -760,7 +723,7 @@ export default function MysticSimulatorPage() {
                 return (
                   <div
                     key={key}
-                    className={`border-2 rounded-lg p-3 ${getRarityColorClass(card.등급)} flex items-center justify-between relative`}
+                    className={`border-2 rounded-lg p-2 ${getRarityColorClass(card.등급)} flex items-center justify-between relative`}
                   >
                     {/* 제거 버튼 */}
                     <button
@@ -786,18 +749,17 @@ export default function MysticSimulatorPage() {
                         </div>
                       )}
                       <div>
-                        <div className="font-medium text-black">{card.title}</div>
-                        <div
-                          className={`text-xs px-2 py-0.5 rounded inline-block ${
-                            card.등급 === 3
-                              ? 'bg-yellow-200 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100'
-                              : card.등급 === 2
-                                ? 'bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-100'
-                                : 'bg-blue-200 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
-                          }`}
-                        >
-                          {getRarityName(card.등급)}
-                        </div>
+                        <div className="font-medium text-black -mb-[5px]">{card.title}</div>
+                        {card.유파_img && (
+                          <div className="relative w-8 h-8 inline-block mt-0.5">
+                            <Image
+                              src={card.유파_img}
+                              alt={card.유파 || card.title}
+                              fill
+                              className="object-contain"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="text-2xl font-bold text-black">×{count}</div>
@@ -877,7 +839,7 @@ export default function MysticSimulatorPage() {
                   return (
                     <div
                       key={`${card.id}-${idx}`}
-                      className={`border-2 rounded-lg p-3 ${getRarityColorClass(card.등급)} flex items-center justify-between relative`}
+                      className={`border-2 rounded-lg p-2 ${getRarityColorClass(card.등급)} flex items-center justify-between relative`}
                     >
                       {/* 보관 버튼 */}
                       <button
@@ -903,18 +865,17 @@ export default function MysticSimulatorPage() {
                           </div>
                         )}
                         <div>
-                          <div className="font-medium text-black">{card.title}</div>
-                          <div
-                            className={`text-xs px-2 py-0.5 rounded inline-block ${
-                              card.등급 === 3
-                                ? 'bg-yellow-200 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100'
-                                : card.등급 === 2
-                                  ? 'bg-purple-200 dark:bg-purple-900 text-purple-900 dark:text-purple-100'
-                                  : 'bg-blue-200 dark:bg-blue-900 text-blue-900 dark:text-blue-100'
-                            }`}
-                          >
-                            {getRarityName(card.등급)}
-                          </div>
+                          <div className="font-medium text-black -mb-[5px]">{card.title}</div>
+                          {card.유파_img && (
+                            <div className="relative w-8 h-8 inline-block mt-0.5">
+                              <Image
+                                src={card.유파_img}
+                                alt={card.유파 || card.title}
+                                fill
+                                className="object-contain"
+                              />
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="text-2xl font-bold text-black">×{count}</div>
@@ -923,6 +884,37 @@ export default function MysticSimulatorPage() {
                 })
               })()}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 통계 */}
+      {totalPulls > 0 && (
+        <div className="bg-card border rounded-lg p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4">통계</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {([1, 2, 3] as const).map((rarity) => (
+              <div key={rarity} className="border rounded-lg p-4">
+                <div className="text-sm text-muted-foreground mb-1">{getRarityName(rarity)}</div>
+                <div className="text-2xl font-bold mb-2">{state.rarityCount[rarity]}개</div>
+                <div className="text-xs text-muted-foreground">
+                  확률: {actualRates[rarity].toFixed(2)}% (목표:{' '}
+                  {(defaultBanner.rates[rarity] * 100).toFixed(1)}%)
+                </div>
+                <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={`h-full ${
+                      rarity === 3
+                        ? 'bg-yellow-500'
+                        : rarity === 2
+                          ? 'bg-purple-500'
+                          : 'bg-blue-500'
+                    }`}
+                    style={{ width: `${actualRates[rarity]}%` }}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

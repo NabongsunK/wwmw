@@ -136,6 +136,7 @@ export default function BuildDetailPage() {
     title?: string
     등급?: string
     심법_img?: string
+    유파_img?: string
     순서?: number
   }[]
 
@@ -164,15 +165,15 @@ export default function BuildDetailPage() {
                     build.status === 'active'
                       ? 'text-green-600 dark:text-green-400'
                       : build.status === 'inactive'
-                      ? 'text-gray-500'
-                      : 'text-orange-600 dark:text-orange-400'
+                        ? 'text-gray-500'
+                        : 'text-orange-600 dark:text-orange-400'
                   }
                 >
                   {build.status === 'active'
                     ? '활성'
                     : build.status === 'inactive'
-                    ? '비활성'
-                    : '보관됨'}
+                      ? '비활성'
+                      : '보관됨'}
                 </span>
               )}
               <span>생성일: {new Date(build.created_at).toLocaleDateString('ko-KR')}</span>
@@ -300,8 +301,12 @@ export default function BuildDetailPage() {
                   )}
                   <div>
                     <span className="font-medium">{s.title ?? `심법 #${s.id}`}</span>
-                    {s.등급 && (
-                      <span className="ml-2 text-sm text-muted-foreground">({s.등급})</span>
+                    {s.유파_img ? (
+                      <Image src={s.유파_img} alt="" fill className="object-cover" />
+                    ) : (
+                      <div className="w-12 h-12 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                        🧘
+                      </div>
                     )}
                   </div>
                 </li>

@@ -11,6 +11,7 @@ export interface MysticCard {
   순서: number
   등급: MysticRarity
   심법_img: string | null
+  유파_img: string | null
 }
 
 export interface GachaBanner {
@@ -23,7 +24,7 @@ export interface GachaBanner {
 export interface GachaState {
   pulls: number // 총 뽑기 횟수
   history: MysticCard[] // 뽑기 히스토리
-  fragments: number // 갈갈이로 얻는 서표
+  fragments: number // 서표로 변환하여 얻는 서표
   rarityCount: Record<MysticRarity, number> // 등급별 획득 개수
   weeklyPullCount: number // 1주일 뽑기 횟수
   chimjungsanUsed: number // 침중산 사용 개수
@@ -270,7 +271,7 @@ export function getFragmentsFromCard(card: MysticCard): number {
 }
 
 /**
- * 여러 심법을 한번에 갈갈이
+ * 여러 심법을 한번에 서표로 변환
  */
 export function dismantleCards(cards: MysticCard[], state: GachaState): GachaState {
   const totalFragments = cards.reduce((sum, card) => sum + getFragmentsFromCard(card), 0)
