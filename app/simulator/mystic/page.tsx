@@ -19,13 +19,6 @@ import {
   exchangeFragmentsForBoxes,
 } from '@/lib/mystic-gacha'
 
-// 심법 데이터 통합 관리
-interface MysticCardData {
-  card: MysticCard
-  count: number // 보관함에 실제 뽑아서 저장된 개수
-  isSaved: boolean // 추적/보관 여부
-}
-
 export default function MysticSimulatorPage() {
   const { fetchApi, lang } = useApi()
   const [allCards, setAllCards] = useState<MysticCard[]>([])
@@ -36,10 +29,10 @@ export default function MysticSimulatorPage() {
   const [factions, setFactions] = useState<Array<{ code: string; name: string }>>([])
   const [chimjungsanCount, setChimjungsanCount] = useState<number>(1)
   const [state, setState] = useState<GachaState>(createInitialState())
-  const [lastResult, setLastResult] = useState<MysticCard[]>([])
+  const [lastResult, setLastResult] = useState<MysticCard[]>([]) // 모든 뽑기 결과 (보관함 포함)
   const [isRolling, setIsRolling] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [mysticCards, setMysticCards] = useState<Record<string, MysticCardData>>({})
+  const [trackedKeys, setTrackedKeys] = useState<Set<string>>(new Set()) // 추적 중인 카드 키만 저장
   const [searchQuery, setSearchQuery] = useState<string>('') // 보관함 검색어
 
   // 유파 데이터 로드 (언어 변경 시 자동 갱신)
@@ -169,44 +162,10 @@ export default function MysticSimulatorPage() {
     [allCards],
   )
 
-  // 뽑기 결과 처리 (추적 중인 심법은 자동으로 보관함에 추가)
-  const processRollResult = useCallback(
-    (cards: MysticCard[]) => {
-      const cardsToShow: MysticCard[] = []
-      const cardsToSave: MysticCard[] = []
-
-      // 먼저 추적 중인 카드와 아닌 카드 분리
-      cards.forEach((card) => {
-        const key = `${card.title}-${card.등급}`
-        if (mysticCards[key]?.isSaved) {
-          cardsToSave.push(card)
-        } else {
-          cardsToShow.push(card)
-        }
-      })
-
-      // 추적 중인 카드들의 count 증가
-      if (cardsToSave.length > 0) {
-        setMysticCards((prev) => {
-          const updated = { ...prev }
-          cardsToSave.forEach((card) => {
-            const key = `${card.title}-${card.등급}`
-            updated[key] = {
-              ...updated[key],
-              count: updated[key].count + 1,
-            }
-          })
-          return updated
-        })
-      }
-
-      // 나머지는 뽑기 결과에 누적
-      if (cardsToShow.length > 0) {
-        setLastResult((prev) => [...prev, ...cardsToShow])
-      }
-    },
-    [mysticCards],
-  )
+  // 뽑기 결과 처리 (모든 카드를 lastResult에 추가)
+  const processRollResult = useCallback((cards: MysticCard[]) => {
+    setLastResult((prev) => [...prev, ...cards])
+  }, [])
 
   // 1주일 뽑기 (전체 108개)
   const handleWeeklyRoll = useCallback(() => {
@@ -552,21 +511,12 @@ export default function MysticSimulatorPage() {
       <div className="mb-8">
         <div className="bg-card border rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">
-              심법 보관함 ({Object.values(mysticCards).reduce((sum, m) => sum + m.count, 0)}개)
-            </h2>
-            {Object.keys(mysticCards).length > 0 && (
+            <h2 className="text-xl font-semibold">심법 보관함 ({trackedKeys.size}개)</h2>
+            {trackedKeys.size > 0 && (
               <button
                 onClick={() => {
-                  const totalCount = Object.values(mysticCards).reduce((sum, m) => sum + m.count, 0)
-                  if (
-                    confirm(
-                      `보관함의 모든 심법 (${totalCount}개)을 비우고 추적도 모두 해제하시겠습니까?`,
-                    )
-                  ) {
-                    setMysticCards({})
-                    setSearchQuery('')
-                  }
+                  setTrackedKeys(new Set())
+                  setSearchQuery('')
                 }}
                 className="px-4 py-2 border border-border rounded-lg hover:bg-muted text-sm"
               >
@@ -592,7 +542,7 @@ export default function MysticSimulatorPage() {
               <h3 className="text-sm font-medium mb-2 text-muted-foreground">
                 검색 결과 (클릭하여 추적)
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 p-4 bg-muted/30 rounded-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 bg-muted/30 rounded-lg">
                 {(() => {
                   // 전체 심법에서 검색
                   const searchResults = allCards
@@ -625,20 +575,13 @@ export default function MysticSimulatorPage() {
 
                   return results.map((card, idx) => {
                     const key = `${card.title}-${card.등급}`
-                    const isTracked = mysticCards[key]?.isSaved
+                    const isTracked = trackedKeys.has(key)
 
                     return (
                       <button
                         key={`search-${idx}`}
                         onClick={() => {
-                          setMysticCards((prev) => ({
-                            ...prev,
-                            [key]: {
-                              card,
-                              count: 0,
-                              isSaved: true,
-                            },
-                          }))
+                          setTrackedKeys((prev) => new Set(prev).add(key))
                         }}
                         disabled={isTracked}
                         className={`border-2 rounded-lg p-2 ${getRarityColorClass(card.등급)} flex items-center gap-3 ${
@@ -685,9 +628,22 @@ export default function MysticSimulatorPage() {
           <h3 className="text-sm font-medium mb-2 text-muted-foreground">보관된 심법</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {(() => {
-              // isSaved === true인 심법들만 필터링하고 정렬
-              const savedList = Object.entries(mysticCards)
-                .filter(([_, data]) => data.isSaved)
+              // lastResult에서 추적 중인 카드만 그룹화
+              const savedGroups = lastResult.reduce(
+                (acc, card) => {
+                  const key = `${card.title}-${card.등급}`
+                  if (trackedKeys.has(key)) {
+                    if (!acc[key]) {
+                      acc[key] = { card, count: 0 }
+                    }
+                    acc[key].count++
+                  }
+                  return acc
+                },
+                {} as Record<string, { card: MysticCard; count: number }>,
+              )
+
+              const savedList = Object.entries(savedGroups)
                 .map(([key, data]) => ({ key, ...data }))
                 .sort((a, b) => {
                   if (a.card.등급 !== b.card.등급) {
@@ -707,17 +663,12 @@ export default function MysticSimulatorPage() {
 
               return savedList.map(({ key, card, count }) => {
                 const removeCard = () => {
-                  if (
-                    confirm(
-                      `"${card.title}" (${getRarityName(card.등급)}) ${count}개를 모두 제거하고 추적도 해제하시겠습니까?`,
-                    )
-                  ) {
-                    setMysticCards((prev) => {
-                      const updated = { ...prev }
-                      delete updated[key]
-                      return updated
-                    })
-                  }
+                  // 추적만 해제 (lastResult는 유지)
+                  setTrackedKeys((prev) => {
+                    const updated = new Set(prev)
+                    updated.delete(key)
+                    return updated
+                  })
                 }
 
                 return (
@@ -782,7 +733,7 @@ export default function MysticSimulatorPage() {
             {/* 심법별 집계 결과 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
               {(() => {
-                // 심법별로 그룹핑
+                // 심법별로 그룹핑 (보관된 심법도 포함)
                 const cardGroups = lastResult.reduce(
                   (acc, card) => {
                     const key = `${card.title}-${card.등급}`
@@ -807,51 +758,41 @@ export default function MysticSimulatorPage() {
                 })
 
                 return sortedGroups.map(({ card, count }, idx) => {
-                  // 이 심법을 보관함으로 이동
+                  const key = `${card.title}-${card.등급}`
+                  const isTracked = trackedKeys.has(key)
+
+                  // 이 심법을 보관함으로 이동 (추적 추가)
                   const moveToSaved = () => {
-                    const cardsToMove = lastResult.filter(
-                      (c) => c.title === card.title && c.등급 === card.등급,
-                    )
-
-                    if (cardsToMove.length === 0) return
-
-                    const key = `${card.title}-${card.등급}`
-
-                    // mysticCards에 추가 또는 카운트 증가
-                    setMysticCards((prev) => {
-                      const existing = prev[key]
-                      return {
-                        ...prev,
-                        [key]: {
-                          card,
-                          count: (existing?.count || 0) + cardsToMove.length,
-                          isSaved: true,
-                        },
-                      }
-                    })
-
-                    // 뽑기 결과에서 제거
-                    setLastResult((prev) =>
-                      prev.filter((c) => !(c.title === card.title && c.등급 === card.등급)),
-                    )
+                    setTrackedKeys((prev) => new Set(prev).add(key))
                   }
 
                   return (
                     <div
                       key={`${card.id}-${idx}`}
-                      className={`border-2 rounded-lg p-2 ${getRarityColorClass(card.등급)} flex items-center justify-between relative`}
+                      className={`border-2 rounded-lg p-2 ${getRarityColorClass(card.등급)} flex items-center justify-between relative ${
+                        isTracked ? 'opacity-75' : ''
+                      }`}
                     >
-                      {/* 보관 버튼 */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          moveToSaved()
-                        }}
-                        className="absolute -top-2 -right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full text-sm transition-all bg-blue-600 hover:bg-blue-700 text-white"
-                        title="보관함으로 이동"
-                      >
-                        📥
-                      </button>
+                      {/* 자물쇠 아이콘 */}
+                      {isTracked ? (
+                        <div
+                          className="absolute -top-2 -right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full text-sm bg-gray-600 text-white"
+                          title="보관함에 저장됨"
+                        >
+                          🔒
+                        </div>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            moveToSaved()
+                          }}
+                          className="absolute -top-2 -right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full text-sm transition-all bg-blue-600 hover:bg-blue-700 text-white"
+                          title="보관함으로 이동"
+                        >
+                          🔓
+                        </button>
+                      )}
 
                       <div className="flex items-center gap-3">
                         {card.심법_img && (
