@@ -727,7 +727,7 @@ export default function MysticSimulatorPage() {
         <div className="mb-8">
           <div className="bg-card border rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">뽑기 결과</h2>
+              <h2 className="text-xl font-semibold">뽑기 결과 ({lastResult.length}개)</h2>
             </div>
 
             {/* 심법별 집계 결과 */}
