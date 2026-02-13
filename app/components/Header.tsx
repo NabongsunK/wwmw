@@ -1,11 +1,14 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
+import { NAV_ITEMS } from '@/types/nav'
 import { ThemeToggle } from './ui/theme/themeToggle'
 import { LanguageSwitcher } from './LanguageSwitcherSafe'
-import { NAV_ITEMS } from '@/types/nav'
 
 export function Header() {
+  const pathname = usePathname()
   return (
     <header
       className="
@@ -28,10 +31,10 @@ export function Header() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="
-                  relative text-muted-foreground
-                  hover:text-foreground transition
-                "
+                className={`
+                  relative hover:text-foreground transition
+                  ${item.href === pathname ? 'text-foreground' : 'text-muted-foreground'}
+                `}
               >
                 {item.label}
               </Link>
