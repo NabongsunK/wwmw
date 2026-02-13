@@ -41,6 +41,10 @@
   --accent-soft: 209 250 229;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 html.dark {
   --background: 2 6 23;
   --foreground: 226 232 240;

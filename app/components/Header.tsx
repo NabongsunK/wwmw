@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ThemeToggle } from './ui/theme/themeToggle'
 import { LanguageSwitcher } from './LanguageSwitcherSafe'
+import { NAV_ITEMS } from '@/types/nav'
 
 export function Header() {
   return (
@@ -23,38 +24,18 @@ export function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 text-sm">
-            {['Home', 'Builds'].map((v) => (
+            {NAV_ITEMS.map((item) => (
               <Link
-                key={v}
-                href={v === 'Home' ? '/' : '/builds'}
+                key={item.label}
+                href={item.href}
                 className="
                   relative text-muted-foreground
                   hover:text-foreground transition
                 "
               >
-                {v}
+                {item.label}
               </Link>
             ))}
-          </nav>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            <Link
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-              href="/"
-            >
-              Home
-            </Link>
-            <Link
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-              href="/builds"
-            >
-              Builds
-            </Link>
-            <Link
-              className="transition-colors hover:text-foreground/80 text-foreground/60"
-              href="/simulator/mystic"
-            >
-              심법 뽑기
-            </Link>
           </nav>
         </div>
 

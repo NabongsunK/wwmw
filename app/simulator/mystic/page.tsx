@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
+// import Link from 'next/link'
 import { useApi } from '@/hooks/useApi'
 import {
   type MysticCard,
@@ -351,6 +351,7 @@ export default function MysticSimulatorPage() {
         setIsRolling(false)
       }
     }, 300)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, factionBanner, isRolling, processRollResult])
 
   if (loading) {
@@ -397,12 +398,12 @@ export default function MysticSimulatorPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 max-w-6xl">
-      <div className="mb-6">
+    <div className="container mx-auto py-8">
+      {/* <div className="mb-6">
         <Link href="/builds" className="text-muted-foreground hover:text-foreground text-sm">
           ← 빌드 목록으로
         </Link>
-      </div>
+      </div> */}
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">심법 뽑기 시뮬레이터</h1>
@@ -466,20 +467,24 @@ export default function MysticSimulatorPage() {
 
         {/* 뽑기 버튼들 */}
         <div className="flex flex-wrap gap-4 items-start">
+          {/* 1주일 뽑기 (Primary) */}
           <div className="flex flex-col gap-2">
             <button
               onClick={handleWeeklyRoll}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-lg"
+              disabled={isRolling}
+              className="px-6 py-3 rounded-md bg-accent text-background hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               {isRolling ? '뽑는 중...' : '1주일 뽑기 (108개)'}
             </button>
+
             <p className="text-xs text-muted-foreground">
-              <strong className="text-purple-600 dark:text-purple-400">유파 상자 68개</strong> +{' '}
-              <strong className="text-blue-600 dark:text-blue-400">전체 상자 40개</strong>
+              <strong className="text-accent">유파 상자 68개</strong> +{' '}
+              <strong className="text-foreground">전체 상자 40개</strong>
               <span className="block mt-1">(지난 주: {state.weeklyPullCount}주)</span>
             </p>
           </div>
 
+          {/* 침중산 */}
           <div className="flex flex-col gap-2">
             <div className="flex gap-2 items-center">
               <input
@@ -487,38 +492,38 @@ export default function MysticSimulatorPage() {
                 min="1"
                 value={chimjungsanCount}
                 onChange={(e) => setChimjungsanCount(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-20 px-3 py-2 border border-border rounded-lg bg-background text-foreground text-center"
+                className="w-20 px-3 py-2 border border-border rounded-md bg-background text-foreground text-center focus:outline-none focus:ring-1 focus:ring-accent"
               />
+
               <button
                 onClick={handleChimjungsanRoll}
                 disabled={isRolling}
-                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="px-6 py-3 rounded-md bg-surface border border-border text-foreground hover:bg-foreground/5 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 {isRolling ? '뽑는 중...' : '침중산 사용'}
               </button>
             </div>
+
             <p className="text-xs text-muted-foreground">
               {chimjungsanCount}개 사용 ={' '}
-              <strong className="text-purple-600 dark:text-purple-400">
-                유파 상자 {chimjungsanCount * 3}개
-              </strong>{' '}
-              뽑기
+              <strong className="text-accent">유파 상자 {chimjungsanCount * 3}개</strong> 뽑기
             </p>
           </div>
 
+          {/* 서표 교환 */}
           <div className="flex flex-col gap-2">
             <button
               onClick={handleExchangeFragments}
               disabled={isRolling || state.fragments < 5 || state.fragmentBoxesThisWeek >= 600}
-              className="px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="px-6 py-3 rounded-md bg-surface border border-border text-foreground hover:bg-foreground/5 disabled:opacity-50 disabled:cursor-not-allowed transition"
             >
               서표로 상자 뽑기
             </button>
+
             <p className="text-xs text-muted-foreground">
-              서표 5개 ={' '}
-              <strong className="text-purple-600 dark:text-purple-400">유파 상자 1개</strong>
+              서표 5개 = <strong className="text-accent">유파 상자 1개</strong>
               {state.fragmentBoxesThisWeek >= 600 ? (
-                <span className="text-red-600 block mt-1">(이번 주 제한 도달)</span>
+                <span className="text-red-500 block mt-1">(이번 주 제한 도달)</span>
               ) : (
                 <span className="block mt-1">
                   (이번 주 남은 상자: {600 - state.fragmentBoxesThisWeek}개)
@@ -527,17 +532,19 @@ export default function MysticSimulatorPage() {
             </p>
           </div>
 
+          {/* 리셋 */}
           <button
             onClick={handleReset}
-            className="px-4 py-3 border border-border rounded-lg hover:bg-muted text-sm"
+            className="px-4 py-3 rounded-md bg-surface border border-border text-muted-foreground hover:bg-foreground/5 transition"
           >
             리셋
           </button>
 
+          {/* 전체 갈갈이 (Danger - outline only) */}
           {lastResult.length > 0 && (
             <button
               onClick={handleDismantleAll}
-              className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+              className=" px-6 py-3 rounded-md border border-red-500 text-red-500 hover:bg-red-500/10 transition"
             >
               전체 갈갈이 ({lastResult.length}개)
             </button>
@@ -676,17 +683,17 @@ export default function MysticSimulatorPage() {
                         } transition-all`}
                       >
                         {card.심법_img && (
-                          <div className="relative w-12 h-12 rounded overflow-hidden bg-background flex-shrink-0">
+                          <div className="relative w-12 h-12 rounded overflow-hidden bg-black flex-shrink-0">
                             <Image
                               src={card.심법_img}
                               alt={card.title}
                               fill
-                              className="object-contain"
+                              className="object-contain text-white text-sm"
                             />
                           </div>
                         )}
                         <div className="flex-1 text-left">
-                          <div className="font-medium">{card.title}</div>
+                          <div className="font-medium text-black">{card.title}</div>
                           <div
                             className={`text-xs px-2 py-0.5 rounded inline-block ${
                               card.등급 === 3
@@ -768,17 +775,17 @@ export default function MysticSimulatorPage() {
 
                     <div className="flex items-center gap-3">
                       {card.심법_img && (
-                        <div className="relative w-12 h-12 rounded overflow-hidden bg-background flex-shrink-0">
+                        <div className="relative w-12 h-12 rounded overflow-hidden bg-black flex-shrink-0">
                           <Image
                             src={card.심법_img}
                             alt={card.title}
                             fill
-                            className="object-contain"
+                            className="object-contain text-white text-sm"
                           />
                         </div>
                       )}
                       <div>
-                        <div className="font-medium">{card.title}</div>
+                        <div className="font-medium text-black">{card.title}</div>
                         <div
                           className={`text-xs px-2 py-0.5 rounded inline-block ${
                             card.등급 === 3
@@ -792,7 +799,7 @@ export default function MysticSimulatorPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="text-2xl font-bold text-foreground">×{count}</div>
+                    <div className="text-2xl font-bold text-black">×{count}</div>
                   </div>
                 )
               })
@@ -885,17 +892,17 @@ export default function MysticSimulatorPage() {
 
                       <div className="flex items-center gap-3">
                         {card.심법_img && (
-                          <div className="relative w-12 h-12 rounded overflow-hidden bg-background flex-shrink-0">
+                          <div className="relative w-12 h-12 rounded overflow-hidden bg-black flex-shrink-0">
                             <Image
                               src={card.심법_img}
                               alt={card.title}
                               fill
-                              className="object-contain"
+                              className="object-contain text-white text-sm"
                             />
                           </div>
                         )}
                         <div>
-                          <div className="font-medium">{card.title}</div>
+                          <div className="font-medium text-black">{card.title}</div>
                           <div
                             className={`text-xs px-2 py-0.5 rounded inline-block ${
                               card.등급 === 3
@@ -909,7 +916,7 @@ export default function MysticSimulatorPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="text-2xl font-bold text-foreground">×{count}</div>
+                      <div className="text-2xl font-bold text-black">×{count}</div>
                     </div>
                   )
                 })

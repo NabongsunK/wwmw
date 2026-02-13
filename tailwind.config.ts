@@ -6,7 +6,11 @@ const config: Config = {
         './components/**/*.{js,ts,jsx,tsx}',
     ],
     theme: {
-       extend: {},
+       extend: {
+            colors: {
+                'bg-black': 'rgb(10 10 10)',
+            }
+       },
     },
     darkMode: 'class',
     plugins: [],
