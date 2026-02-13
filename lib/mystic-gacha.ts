@@ -5,6 +5,7 @@ export type MysticRarity = 1 | 2 | 3 // 1: 희귀, 2: 영웅, 3: 전설
 export interface MysticCard {
   id: number
   유파_code: string
+  유파: string
   title: string
   body: string
   순서: number
@@ -60,7 +61,7 @@ export function createDefaultBanner(allCards: MysticCard[]): GachaBanner {
 export function createFactionBanner(allCards: MysticCard[], factionCode: string): GachaBanner {
   // 선택한 유파의 심법 + 공용 심법
   const factionCards = allCards.filter(
-    (card) => card.유파_code === factionCode || card.유파_code === '공용',
+    (card) => card.유파_code === factionCode || card.유파_code === '1001000', //공용
   )
 
   return {
@@ -172,73 +173,6 @@ export function rollOnce(
 }
 
 /**
- * 10연차 뽑기
- */
-export function rollTen(banner: GachaBanner, state: GachaState): GachaTenResult {
-  if (!banner || !banner.pool || banner.pool.length === 0) {
-    throw new Error('Invalid banner or empty pool')
-  }
-
-  let currentState = { ...state }
-  const cards: MysticCard[] = []
-  let hasEpicOrHigher = false
-
-  // 9회 뽑기
-  for (let i = 0; i < 9; i++) {
-    const { result, newState } = rollOnce(banner, currentState)
-
-    if (!result || !result.card || result.card.등급 === undefined) {
-      throw new Error(`Invalid card result at pull ${i + 1}: ${JSON.stringify(result)}`)
-    }
-
-    cards.push(result.card)
-    if (result.card.등급 >= 3) {
-      hasEpicOrHigher = true
-    }
-    currentState = newState
-  }
-
-  // 10번째: 최소 영웅 이상 보장 (9회 중에 영웅 이상이 없으면)
-  if (!hasEpicOrHigher) {
-    // 영웅 이상 등급으로 강제
-    const epicRarities: MysticRarity[] = [3]
-    const targetRarity = epicRarities[Math.floor(Math.random() * epicRarities.length)]
-    const card = selectCardByRarity(banner, targetRarity)
-
-    if (!card || card.등급 === undefined) {
-      throw new Error(`Failed to select card with rarity ${targetRarity}`)
-    }
-
-    // 피티 카운트 업데이트
-    cards.push(card)
-    currentState = {
-      pulls: currentState.pulls + 1,
-      history: [...currentState.history, card],
-      fragments: currentState.fragments,
-      rarityCount: { ...currentState.rarityCount },
-      weeklyPullCount: currentState.weeklyPullCount,
-      chimjungsanUsed: currentState.chimjungsanUsed,
-      fragmentBoxesThisWeek: currentState.fragmentBoxesThisWeek,
-    }
-  } else {
-    // 일반 뽑기
-    const { result, newState } = rollOnce(banner, currentState)
-
-    if (!result || !result.card || result.card.등급 === undefined) {
-      throw new Error(`Invalid card result at 10th pull: ${JSON.stringify(result)}`)
-    }
-
-    cards.push(result.card)
-    currentState = newState
-  }
-
-  return {
-    cards,
-    newState: currentState,
-  }
-}
-
-/**
  * 초기 상태 생성
  */
 export function createInitialState(): GachaState {
@@ -324,7 +258,7 @@ export function rollMultiple(
  * 파랑(1): 2
  */
 export function getFragmentsFromCard(card: MysticCard): number {
-  const isCommon = card.유파_code === '공용' || card.유파_code === ''
+  const isCommon = card.유파_code === '1001000'
 
   if (card.등급 === 3) {
     return isCommon ? 10 : 15 // 금색
