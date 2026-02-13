@@ -20,7 +20,7 @@ import {
 } from '@/lib/mystic-gacha'
 
 export default function MysticSimulatorPage() {
-  const { fetchApi, lang } = useApi()
+  const { fetchApi } = useApi()
   const [allCards, setAllCards] = useState<MysticCard[]>([])
   const [loading, setLoading] = useState(true)
   const [defaultBanner, setDefaultBanner] = useState<GachaBanner | null>(null)
@@ -237,22 +237,33 @@ export default function MysticSimulatorPage() {
     }
   }, [])
 
-  // 서표로 변환 (최근 뽑기 결과 전체)
+  // 서표로 변환 (보관함에 없는 심법만)
   const handleDismantleAll = useCallback(() => {
-    if (lastResult.length === 0) {
-      alert('서표로 변환할 심법이 없습니다!')
+    // 보관함에 있는 심법 제외
+    const cardsToDismantle = lastResult.filter(
+      (card) => !trackedKeys.has(`${card.title}-${card.등급}`),
+    )
+
+    if (cardsToDismantle.length === 0) {
+      alert('서표로 변환할 심법이 없습니다! (보관함에 있는 심법은 제외됩니다)')
       return
     }
 
-    const totalFragments = lastResult.reduce((sum, card) => sum + getFragmentsFromCard(card), 0)
+    const totalFragments = cardsToDismantle.reduce(
+      (sum, card) => sum + getFragmentsFromCard(card),
+      0,
+    )
 
     if (
-      confirm(`${lastResult.length}개 심법을 서표로 변환하여 ${totalFragments} 서표를 얻습니다.`)
+      confirm(
+        `${cardsToDismantle.length}개 심법을 서표로 변환하여 ${totalFragments} 서표를 얻습니다. (보관함에 있는 심법은 제외됩니다)`,
+      )
     ) {
-      setState(dismantleCards(lastResult, state))
-      setLastResult([])
+      setState(dismantleCards(cardsToDismantle, state))
+      // 보관함에 없는 카드만 제거
+      setLastResult((prev) => prev.filter((card) => trackedKeys.has(`${card.title}-${card.등급}`)))
     }
-  }, [lastResult, state])
+  }, [lastResult, state, trackedKeys])
 
   // 서표로 상자 교환 (모든 서표 사용)
   const handleExchangeFragments = useCallback(() => {
@@ -363,9 +374,6 @@ export default function MysticSimulatorPage() {
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">심법 뽑기 시뮬레이터</h1>
-        <p className="text-muted-foreground">
-          가상으로 심법을 뽑아보고 통계를 확인해보세요! (언어: {lang.toUpperCase()})
-        </p>
       </div>
 
       {/* 컨트롤 패널 */}
@@ -444,15 +452,30 @@ export default function MysticSimulatorPage() {
             <div className="flex gap-2 items-center">
               <input
                 type="number"
-                min="1"
-                value={chimjungsanCount}
-                onChange={(e) => setChimjungsanCount(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-20 px-3 py-2 border border-border rounded-md bg-background text-foreground text-center focus:outline-none focus:ring-1 focus:ring-accent"
+                min="0"
+                value={chimjungsanCount === 0 ? '' : chimjungsanCount}
+                onChange={(e) => {
+                  const value = e.target.value
+                  if (value === '') {
+                    setChimjungsanCount(0)
+                  } else {
+                    const num = parseInt(value)
+                    if (!isNaN(num)) {
+                      setChimjungsanCount(Math.max(0, num))
+                    }
+                  }
+                }}
+                onBlur={(e) => {
+                  if (e.target.value === '' || parseInt(e.target.value) === 0) {
+                    setChimjungsanCount(1)
+                  }
+                }}
+                className="w-30 px-3 py-2 border border-border rounded-md bg-background text-foreground text-center focus:outline-none focus:ring-1 focus:ring-accent"
               />
 
               <button
                 onClick={handleChimjungsanRoll}
-                disabled={isRolling}
+                disabled={isRolling || chimjungsanCount <= 0}
                 className="px-6 py-3 rounded-md bg-surface border border-border text-foreground hover:bg-foreground/5 disabled:opacity-50 disabled:cursor-not-allowed transition"
               >
                 {isRolling ? '뽑는 중...' : '침중산 사용'}
@@ -478,7 +501,9 @@ export default function MysticSimulatorPage() {
             <p className="text-xs text-muted-foreground">
               서표 5개 = <strong className="text-accent">유파 상자 1개</strong>
               {state.fragmentBoxesThisWeek >= 600 ? (
-                <span className="text-red-500 block mt-1">(이번 주 제한 도달)</span>
+                <span className="text-red-500 block mt-1">
+                  (이번 주 제한 도달 1주일 뽑기 누르세요)
+                </span>
               ) : (
                 <span className="block mt-1">
                   (이번 주 남은 상자: {600 - state.fragmentBoxesThisWeek}개)
@@ -496,14 +521,19 @@ export default function MysticSimulatorPage() {
           </button>
 
           {/* 서표로 변환 (Danger - outline only) */}
-          {lastResult.length > 0 && (
-            <button
-              onClick={handleDismantleAll}
-              className=" px-6 py-3 rounded-md border border-red-500 text-red-500 hover:bg-red-500/10 transition"
-            >
-              서표로 변환 ({lastResult.length}개)
-            </button>
-          )}
+          {(() => {
+            const cardsToDismantle = lastResult.filter(
+              (card) => !trackedKeys.has(`${card.title}-${card.등급}`),
+            )
+            return cardsToDismantle.length > 0 ? (
+              <button
+                onClick={handleDismantleAll}
+                className=" px-6 py-3 rounded-md border border-red-500 text-red-500 hover:bg-red-500/10 transition"
+              >
+                서표로 변환 ({cardsToDismantle.length}개)
+              </button>
+            ) : null
+          })()}
         </div>
       </div>
 
