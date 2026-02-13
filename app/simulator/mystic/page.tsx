@@ -108,7 +108,8 @@ export default function MysticSimulatorPage() {
 
             return {
               id: item.id || 0,
-              유파_code: item.유파 || '',
+              유파_code: item.유파_code || '',
+              유파: item.유파 || '',
               title: item.심법명 || '',
               body: '',
               순서: item.순서 || 0,

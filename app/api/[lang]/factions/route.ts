@@ -33,14 +33,14 @@ import type { Lang } from '@/types/martial'
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ lang: string }> }
+  { params }: { params: Promise<{ lang: string }> },
 ) {
   try {
     const { lang } = await params
-    
+
     const factionService = new FactionService()
-    const factions = await factionService.getAll(lang as Lang)
-    
+    const factions = await factionService.getAllExceptCommon(lang as Lang)
+
     return responseOk(factions)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to fetch factions'

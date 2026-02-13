@@ -13,6 +13,7 @@ export class InnerwayRepository {
   async findAll(lang: Lang): Promise<Innerway[]> {
     return await query<Innerway>(
       `SELECT 
+        s.유파_code,
         UDF_BaseCode(s.유파_code, ?) AS 유파,
         UDF_BaseCode(s.title, ?) AS 심법명,
         s.순서,
@@ -49,7 +50,7 @@ export class InnerwayRepository {
       LEFT JOIN T_이미지 심법_이미지 ON s.img = 심법_이미지.id
       LEFT JOIN T_이미지 유파_이미지 ON s.유파_code = 유파_이미지.code
       WHERE s.id = ?`,
-      [lang, lang, id]
+      [lang, lang, id],
     )
     return results[0] || null
   }

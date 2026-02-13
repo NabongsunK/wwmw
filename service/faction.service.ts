@@ -16,4 +16,9 @@ export class FactionService {
   async getAll(lang: Lang): Promise<Faction[]> {
     return await this.factionRepository.findAll(lang)
   }
+
+  async getAllExceptCommon(lang: Lang): Promise<Faction[]> {
+    const factions = await this.factionRepository.findAll(lang)
+    return factions.filter((faction) => faction.code !== '1001000')
+  }
 }
