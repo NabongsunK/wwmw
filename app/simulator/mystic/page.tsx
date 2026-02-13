@@ -492,10 +492,15 @@ export default function MysticSimulatorPage() {
           <div className="flex flex-col gap-2">
             <button
               onClick={handleExchangeFragments}
-              disabled={isRolling || state.fragments < 5 || state.fragmentBoxesThisWeek >= 600}
-              className="px-6 py-3 rounded-md bg-surface border border-border text-foreground hover:bg-foreground/5 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              disabled={
+                isRolling ||
+                state.fragments < 5 ||
+                state.fragmentBoxesThisWeek >= 600 ||
+                Math.floor(state.fragments / 5) === 0
+              }
+              className="px-6 py-3 rounded-md bg-purple-600 text-white border border-purple-700 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-500 disabled:border-gray-600 transition"
             >
-              서표로 상자 뽑기
+              서표로 상자 뽑기 ({Math.floor(state.fragments / 5)}개)
             </button>
 
             <p className="text-xs text-muted-foreground">
@@ -512,28 +517,31 @@ export default function MysticSimulatorPage() {
             </p>
           </div>
 
+          {/* 서표로 변환 */}
+          <div className="flex flex-col gap-2">
+            {(() => {
+              const cardsToDismantle = lastResult.filter(
+                (card) => !trackedKeys.has(`${card.title}-${card.등급}`),
+              )
+              return (
+                <button
+                  onClick={handleDismantleAll}
+                  disabled={isRolling || cardsToDismantle.length === 0}
+                  className="px-6 py-3 rounded-md bg-purple-600 text-white border border-purple-700 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-500 disabled:border-gray-600 transition"
+                >
+                  서표로 변환 ({cardsToDismantle.length}개)
+                </button>
+              )
+            })()}
+          </div>
+
           {/* 리셋 */}
           <button
             onClick={handleReset}
-            className="px-4 py-3 rounded-md bg-surface border border-border text-muted-foreground hover:bg-foreground/5 transition"
+            className="px-4 py-3 rounded-md bg-surface border border-red-500 text-red-500 hover:bg-red-500/10 transition"
           >
             리셋
           </button>
-
-          {/* 서표로 변환 (Danger - outline only) */}
-          {(() => {
-            const cardsToDismantle = lastResult.filter(
-              (card) => !trackedKeys.has(`${card.title}-${card.등급}`),
-            )
-            return cardsToDismantle.length > 0 ? (
-              <button
-                onClick={handleDismantleAll}
-                className=" px-6 py-3 rounded-md border border-red-500 text-red-500 hover:bg-red-500/10 transition"
-              >
-                서표로 변환 ({cardsToDismantle.length}개)
-              </button>
-            ) : null
-          })()}
         </div>
       </div>
 
