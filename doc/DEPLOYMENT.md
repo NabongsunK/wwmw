@@ -5,10 +5,16 @@
 ## 필수 요구사항
 
 - macOS (맥미니)
-- Node.js 18 이상
-- MySQL 8.0 이상
+- Node.js 18 이상 (nvm 사용 권장)
+- MySQL 8.0 이상 (Docker 사용 권장, 또는 Homebrew)
 - PM2 (프로세스 관리자)
 - Nginx (선택사항, 도메인 사용 시)
+
+**배포 구성 요약**
+
+- 앱: Next.js를 맥미니에서 PM2로 실행 (포트 3000).
+- DB: MySQL 8 — Docker(`deploy/Dockerfile`) 사용 권장, 또는 Homebrew 설치.
+- 배포 스크립트: `deploy/deploy.sh` (프로젝트 루트에서 실행).
 
 ## 1. 초기 설정
 
@@ -18,40 +24,62 @@
 # Homebrew가 없다면 설치
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# Node.js 설치 (nvm 사용 권장)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+# Node.js 설치 (nvm 사용 권장 - 전역 패키지 권한 문제 방지)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+# 터미널 재시작 또는: source ~/.zshrc
 nvm install 20
 nvm use 20
 
-# PM2 전역 설치
+# PM2 전역 설치 (nvm 사용 시 sudo 불필요)
 npm install -g pm2
-
-# MySQL 설치 (아직 없다면)
-brew install mysql
-brew services start mysql
 ```
+
+**PM2 설치 시 EACCES 권한 오류가 나는 경우** (nvm 미사용 시):
+
+- 임시: `sudo npm install -g pm2`
+- 권장: [nvm 설치 후](#11-nodejs-및-필수-도구-설치) 위 순서대로 설치하거나, npm 전역 prefix를 사용자 디렉터리로 변경한 뒤 설치
 
 ### 1.2 프로젝트 클론 및 설정
 
 ```bash
-# 프로젝트 디렉토리로 이동
-cd /path/to/wwe
+# 프로젝트 디렉토리로 이동 (실제 경로로 변경)
+cd /path/to/WWE
 
 # 의존성 설치
 npm install
 
-# 환경 변수 설정
-cp .env.production.example .env.production
-# .env.production 파일을 편집하여 실제 값 입력
+# 환경 변수 설정: .env.production 생성 후 아래 항목 입력
+# (프로젝트에 .env.production.example이 있다면 복사 후 편집)
 ```
 
 ### 1.3 MySQL 데이터베이스 설정
 
+**방법 A: Docker 사용 (권장)**
+
+프로젝트의 `deploy/` 디렉터리에 MySQL Dockerfile이 있습니다. README와 동일한 방식으로 사용합니다.
+
 ```bash
+# WWE 프로젝트의 deploy 디렉터리에서
+cd /path/to/WWE/deploy
+docker build -t wwe-mysql .
+docker run -d -p 3306:3306 --name wwe-mysql wwe-mysql
+
+# 재부팅 후 MySQL만 다시 켜려면
+docker start wwe-mysql
+```
+
+Docker 이미지에 이미 `wwe_db`, `wwe_user` / `wwe_password`가 설정되어 있으므로 별도 DB 생성 없이 `.env.production`만 맞추면 됩니다.
+
+**방법 B: Homebrew로 MySQL 설치**
+
+```bash
+brew install mysql
+brew services start mysql
+
 # MySQL 접속
 mysql -u root -p
 
-# 데이터베이스 및 사용자 생성
+# 데이터베이스 및 사용자 생성 (Docker와 동일한 이름 권장)
 CREATE DATABASE wwe_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER 'wwe_user'@'localhost' IDENTIFIED BY 'your_secure_password';
 GRANT ALL PRIVILEGES ON wwe_db.* TO 'wwe_user'@'localhost';
@@ -59,25 +87,52 @@ FLUSH PRIVILEGES;
 EXIT;
 ```
 
+### 1.4 환경 변수 (.env.production)
+
+프로젝트 루트에 `.env.production` 파일을 만들고 다음을 설정하세요. (README의 `.env.local`과 동일한 키, 프로덕션용 값 사용)
+
+```env
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=wwe_user
+MYSQL_PASSWORD=wwe_password
+MYSQL_DATABASE=wwe_db
+```
+
+**관리자 uid (선택)**  
+빌드 수정/삭제를 모든 글에 할 수 있는 관리자 uid를 두려면:
+
+```env
+ADMIN_UIDS=발급받은-uuid-1,발급받은-uuid-2
+```
+
+- 비워두면 작성자만 자신의 글 수정/삭제 가능.
+- uid는 브라우저에서 로그인/접속 후 `POST /api/uid`로 발급받은 값입니다.
+
 ## 2. PM2 설정
 
 ### 2.1 PM2 설정 파일 수정
 
-`ecosystem.config.js` 파일의 `cwd` 경로를 실제 프로젝트 경로로 변경:
+프로젝트 루트의 `ecosystem.config.js`에서 `cwd`를 실제 WWE 프로젝트 경로로 변경:
 
 ```javascript
-cwd: '/Users/your-username/path/to/wwe',  // 실제 경로로 변경
+cwd: '/Users/your-username/sideProject/WWE',  // 실제 경로로 변경
 ```
 
 ### 2.2 로그 디렉토리 생성
 
 ```bash
+# 프로젝트 루트에서
+cd /path/to/WWE
 mkdir -p logs
 ```
 
 ### 2.3 PM2로 앱 시작
 
 ```bash
+# 프로젝트 루트에서
+cd /path/to/WWE
+
 # 빌드 먼저 실행
 npm run build
 
@@ -102,7 +157,7 @@ brew install nginx
 ### 3.2 설정 파일 생성
 
 ```bash
-# 설정 파일 복사
+# 설정 파일 복사 (Apple Silicon: /opt/homebrew/etc/nginx, Intel: /usr/local/etc/nginx)
 sudo cp nginx.conf.example /usr/local/etc/nginx/servers/wwe
 
 # 설정 파일 편집 (도메인 등 수정)
@@ -125,22 +180,30 @@ sudo nginx -s reload
 
 ### 4.1 자동 배포 스크립트 사용
 
+`deploy/deploy.sh`는 의존성 설치 → 빌드 → PM2 재시작까지 수행합니다. **프로젝트 루트(WWE)**에서 실행하세요.
+
 ```bash
-# 실행 권한 부여
-chmod +x deploy.sh
+cd /path/to/WWE
+
+# 실행 권한 부여 (최초 1회)
+chmod +x deploy/deploy.sh
 
 # 배포 실행
-./deploy.sh
+./deploy/deploy.sh
 ```
+
+코드 반영이 필요하면 `deploy/deploy.sh` 안의 `git pull origin main` 주석을 해제한 뒤 사용하세요.
 
 ### 4.2 수동 배포
 
 ```bash
+cd /path/to/WWE
+
 # 1. 코드 업데이트 (Git 사용 시)
 git pull origin main
 
 # 2. 의존성 설치
-npm ci
+npm ci --production=false
 
 # 3. 빌드
 npm run build
@@ -228,9 +291,10 @@ kill -9 <PID>
 
 ### 7.2 MySQL 연결 오류
 
-- `.env.production` 파일의 MySQL 설정 확인
-- MySQL 서비스가 실행 중인지 확인: `brew services list`
-- 방화벽 설정 확인
+- `.env.production`의 `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE` 확인
+- **Docker 사용 시**: `docker ps`로 MySQL 컨테이너 실행 여부 확인. 중지됐으면 `docker start wwe-mysql`
+- **Homebrew 사용 시**: `brew services list`로 mysql 실행 여부 확인
+- 방화벽에서 3306 포트 차단 여부 확인
 
 ### 7.3 빌드 오류
 
@@ -261,6 +325,18 @@ exec_mode: 'cluster',  // 클러스터 모드
 
 ### 9.1 데이터베이스 백업
 
+**Docker MySQL 사용 시:**
+
+```bash
+# 백업 (컨테이너 이름은 wwe-mysql 가정)
+docker exec wwe-mysql mysqldump -u wwe_user -pwwe_password wwe_db > backup_$(date +%Y%m%d).sql
+
+# 복구
+docker exec -i wwe-mysql mysql -u wwe_user -pwwe_password wwe_db < backup_20240213.sql
+```
+
+**Homebrew(로컬) MySQL 사용 시:**
+
 ```bash
 # 백업
 mysqldump -u wwe_user -p wwe_db > backup_$(date +%Y%m%d).sql
@@ -271,11 +347,18 @@ mysql -u wwe_user -p wwe_db < backup_20240213.sql
 
 ### 9.2 자동 백업 스크립트 (cron)
 
+Docker 사용 시 예시 (백업 디렉터리 존재해야 함):
+
 ```bash
-# crontab 편집
 crontab -e
 
 # 매일 새벽 2시에 백업
+0 2 * * * docker exec wwe-mysql mysqldump -u wwe_user -pwwe_password wwe_db > /backup/wwe_db_$(date +\%Y\%m\%d).sql
+```
+
+로컬 MySQL 사용 시:
+
+```bash
 0 2 * * * /usr/local/bin/mysqldump -u wwe_user -p'password' wwe_db > /backup/wwe_db_$(date +\%Y\%m\%d).sql
 ```
 
