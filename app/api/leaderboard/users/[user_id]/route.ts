@@ -33,17 +33,18 @@ const leaderboardService = new LeaderboardService()
  * GET /api/leaderboard/users/[user_id] - 사용자별 리더보드 조회
  * Query: ?best=true (최고 점수만)
  */
-export async function GET(request: NextRequest, { params }: { params: { user_id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ user_id: string }> }) {
   try {
+    const { user_id } = await params
     const searchParams = request.nextUrl.searchParams
     const best = searchParams.get('best') === 'true'
 
     if (best) {
-      const bestScore = await leaderboardService.getBestScoreByUserId(params.user_id)
+      const bestScore = await leaderboardService.getBestScoreByUserId(user_id)
       return responseOk(bestScore)
     }
 
-    const entries = await leaderboardService.getByUserId(params.user_id)
+    const entries = await leaderboardService.getByUserId(user_id)
     return responseOk(entries)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to fetch leaderboard'

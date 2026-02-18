@@ -11,8 +11,12 @@ server {
     # ssl_certificate_key /path/to/key.pem;
 
     # 로그 설정
-    access_log /var/log/nginx/wwe-access.log;
-    error_log /var/log/nginx/wwe-error.log;
+    # macOS: 프로젝트 logs 디렉토리 사용 (프로젝트 경로에 맞게 수정 필요)
+    access_log /Users/nabongsun/sideProject/WWE/logs/nginx-access.log;
+    error_log /Users/nabongsun/sideProject/WWE/logs/nginx-error.log;
+    # 또는 로그 비활성화:
+    # access_log off;
+    # error_log off;
 
     # 클라이언트 최대 업로드 크기
     client_max_body_size 10M;

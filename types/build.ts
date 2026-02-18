@@ -43,7 +43,8 @@ export interface CreateBuildDto {
   category: BuildCategory // 필수: 빌드 용도 선택
   /** 작성자 uid (T_UID.uid). 글쓸 때 누가 썼는지 저장 */
   uid?: string
-  // version은 서버에서 자동으로 현재 활성 버전으로 설정
+  /** DB version 컬럼 (미지정 시 서버에서 null 또는 활성 버전으로 설정 가능) */
+  version?: string | null
   status?: 'active' | 'inactive' | 'archived'
   무술들?: BuildItem[]
   심법들?: BuildItem[]
@@ -54,6 +55,7 @@ export interface UpdateBuildDto {
   name?: string
   description?: string
   category?: BuildCategory
+  version?: string | null
   status?: 'active' | 'inactive' | 'archived'
   무술들?: BuildItem[]
   심법들?: BuildItem[]

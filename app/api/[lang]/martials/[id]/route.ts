@@ -51,7 +51,7 @@ export async function GET(
     const id = parseInt(idStr)
 
     const martialService = new MartialService()
-    const item = await martialService.getById(id, lang)
+    const item = await martialService.getById(id, lang as Lang)
     return responseOk(item)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to fetch martial'

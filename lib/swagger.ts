@@ -1,6 +1,6 @@
 import { createSwaggerSpec } from 'next-swagger-doc'
 
-export const getApiDocs = async () => {
+export const getApiDocs = async (): Promise<Record<string, unknown>> => {
   const spec = createSwaggerSpec({
     apiFolder: 'app/api',
     definition: {
@@ -18,5 +18,5 @@ export const getApiDocs = async () => {
       ],
     },
   })
-  return spec
+  return spec as Record<string, unknown>
 }
