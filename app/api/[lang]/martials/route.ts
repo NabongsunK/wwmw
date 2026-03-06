@@ -48,11 +48,11 @@ export async function GET(
     const martialService = new MartialService()
 
     if (유파_code) {
-      const items = await martialService.getBy유파Code(유파_code, lang)
+      const items = await martialService.getBy유파Code(유파_code, lang as Lang)
       return responseOk(items)
     }
 
-    const items = await martialService.getAll(lang)
+    const items = await martialService.getAll(lang as Lang)
     return responseOk(items)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to fetch martials'

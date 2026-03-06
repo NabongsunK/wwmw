@@ -33,10 +33,9 @@ export function LanguageSwitcher() {
       }
     }
 
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
+    if (!isOpen) return undefined
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [isOpen])
 
   if (!mounted) {

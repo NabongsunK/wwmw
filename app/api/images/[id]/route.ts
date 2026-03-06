@@ -71,9 +71,10 @@ const imageService = new ImageService()
 /**
  * GET /api/images/[id] - ID로 이미지 조회
  */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id)
+    const { id: idStr } = await params
+    const id = parseInt(idStr)
     const image = await imageService.getById(id)
     return responseOk(image)
   } catch (error) {
@@ -86,9 +87,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 /**
  * PUT /api/images/[id] - 이미지 업데이트
  */
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id)
+    const { id: idStr } = await params
+    const id = parseInt(idStr)
     const body = await request.json()
     const image = await imageService.update(id, body)
     return responseOk(image)
@@ -102,9 +104,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 /**
  * DELETE /api/images/[id] - 이미지 삭제
  */
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id)
+    const { id: idStr } = await params
+    const id = parseInt(idStr)
     await imageService.delete(id)
     return responseOk({ message: 'Deleted successfully' })
   } catch (error) {

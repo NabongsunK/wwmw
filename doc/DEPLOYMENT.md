@@ -34,24 +34,6 @@ nvm use 20
 npm install -g pm2
 ```
 
-**PM2 설치 시 EACCES 권한 오류가 나는 경우** (nvm 미사용 시):
-
-- 임시: `sudo npm install -g pm2`
-- 권장: [nvm 설치 후](#11-nodejs-및-필수-도구-설치) 위 순서대로 설치하거나, npm 전역 prefix를 사용자 디렉터리로 변경한 뒤 설치
-
-### 1.2 프로젝트 클론 및 설정
-
-```bash
-# 프로젝트 디렉토리로 이동 (실제 경로로 변경)
-cd /path/to/WWE
-
-# 의존성 설치
-npm install
-
-# 환경 변수 설정: .env.production 생성 후 아래 항목 입력
-# (프로젝트에 .env.production.example이 있다면 복사 후 편집)
-```
-
 ### 1.3 MySQL 데이터베이스 설정
 
 **방법 A: Docker 사용 (권장)**
@@ -60,7 +42,7 @@ npm install
 
 ```bash
 # WWE 프로젝트의 deploy 디렉터리에서
-cd /path/to/WWE/deploy
+cd ./sideProject/WWE/deploy
 docker build -t wwe-mysql .
 docker run -d -p 3306:3306 --name wwe-mysql wwe-mysql
 
@@ -70,22 +52,6 @@ docker start wwe-mysql
 
 Docker 이미지에 이미 `wwe_db`, `wwe_user` / `wwe_password`가 설정되어 있으므로 별도 DB 생성 없이 `.env.production`만 맞추면 됩니다.
 
-**방법 B: Homebrew로 MySQL 설치**
-
-```bash
-brew install mysql
-brew services start mysql
-
-# MySQL 접속
-mysql -u root -p
-
-# 데이터베이스 및 사용자 생성 (Docker와 동일한 이름 권장)
-CREATE DATABASE wwe_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'wwe_user'@'localhost' IDENTIFIED BY 'your_secure_password';
-GRANT ALL PRIVILEGES ON wwe_db.* TO 'wwe_user'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
-```
 
 ### 1.4 환경 변수 (.env.production)
 
@@ -156,13 +122,22 @@ brew install nginx
 
 ### 3.2 설정 파일 생성
 
+**Apple Silicon 맥미니** (M1/M2/M3 등):
+
 ```bash
-# 설정 파일 복사 (Apple Silicon: /opt/homebrew/etc/nginx, Intel: /usr/local/etc/nginx)
-sudo cp nginx.conf.example /usr/local/etc/nginx/servers/wwe
+# servers 디렉토리 생성 (없으면)
+sudo mkdir -p /opt/homebrew/etc/nginx/servers
+
+# 설정 파일 복사
+sudo cp nginx.conf.example /opt/homebrew/etc/nginx/servers/wwe
 
 # 설정 파일 편집 (도메인 등 수정)
-sudo nano /usr/local/etc/nginx/servers/wwe
+sudo vi /opt/homebrew/etc/nginx/servers/wwe
 ```
+
+
+**설정 파일 수정 사항:**
+- `server_name your-domain.com;` → 실제 도메인 또는 `localhost` (로컬 테스트 시)
 
 ### 3.3 Nginx 시작 및 재시작
 
@@ -170,11 +145,46 @@ sudo nano /usr/local/etc/nginx/servers/wwe
 # 설정 테스트
 sudo nginx -t
 
-# Nginx 시작/재시작
-sudo brew services start nginx
+# Nginx 시작 (부팅 시 자동 시작)
+brew services start nginx
+
+# 또는 수동 시작 (백그라운드 서비스 없이)
+sudo /opt/homebrew/opt/nginx/bin/nginx
+
+# 재시작 (설정 변경 후)
+brew services restart nginx
 # 또는
 sudo nginx -s reload
 ```
+
+### 3.4 다른 기기에서 접근하기
+
+Nginx가 실행 중이면, 같은 Wi‑Fi/네트워크의 다른 기기(휴대폰, 다른 PC 등)에서도 접근할 수 있습니다.
+
+**1. 맥미니 IP 주소 확인:**
+
+```bash
+# Wi‑Fi IP 확인 (일반적으로 en0)
+ipconfig getifaddr en0
+
+# 또는 모든 네트워크 인터페이스 확인
+ifconfig | grep "inet " | grep -v 127.0.0.1
+```
+
+**2. 방화벽 설정:**
+
+- **시스템 설정 → 네트워크 → 방화벽 → 옵션**
+- "자동으로 서명된 소프트웨어가 들어오는 연결 허용" 체크
+- 또는 방화벽에서 nginx/포트 80 허용
+
+**3. 다른 기기에서 접속:**
+
+- 브라우저에서 `http://<맥미니IP>` 입력
+- 예: `http://192.168.0.10`
+
+**참고:**
+- `server_name localhost;`로 설정되어 있어도 IP로 접근 가능합니다.
+- 도메인을 사용하려면 `server_name`에 도메인을 추가하거나 `_` (모든 호스트 허용)를 사용할 수 있습니다.
 
 ## 4. 배포 프로세스
 

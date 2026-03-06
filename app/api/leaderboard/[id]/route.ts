@@ -29,9 +29,10 @@ const leaderboardService = new LeaderboardService()
 /**
  * GET /api/leaderboard/[id] - ID로 리더보드 조회
  */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id)
+    const { id: idStr } = await params
+    const id = parseInt(idStr)
     const entry = await leaderboardService.getById(id)
     return responseOk(entry)
   } catch (error) {

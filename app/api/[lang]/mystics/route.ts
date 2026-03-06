@@ -38,7 +38,7 @@ export async function GET(
   try {
     const { lang } = await params
     const mysticService = new MysticService()
-    const mystics = await mysticService.getAll(lang)
+    const mystics = await mysticService.getAll(lang as Lang)
     return responseOk(mystics)
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to fetch mystics'

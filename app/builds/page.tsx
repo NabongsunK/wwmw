@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { BuildList } from '@/app/components/BuildList'
 import { PopularBuilds } from '@/app/components/PopularBuilds'
 
@@ -13,7 +14,9 @@ export default function BuildsPage() {
       <PopularBuilds period="trending" limit={6} />
 
       {/* 전체 빌드 목록 */}
-      <BuildList />
+      <Suspense fallback={<div className="py-8">로딩 중...</div>}>
+        <BuildList />
+      </Suspense>
     </div>
   )
 }
