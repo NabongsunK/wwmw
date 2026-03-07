@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useUid } from '@/app/hooks/useUid'
+import { useUid } from '@/hooks/useUid'
 import type { Build, BuildItem } from '@/types/build'
 
 function parseList(

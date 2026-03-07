@@ -7,7 +7,7 @@ import type { MartialHierarchyWithNames } from '@/types/martial'
 import type { Mystic } from '@/types/mystic'
 import type { Innerway } from '@/types/innerway'
 import Button from './ui/Button'
-import { useUid } from '@/app/hooks/useUid'
+import { useUid } from '@/hooks/useUid'
 
 interface BuildFormProps {
   editBuildId?: number // 수정 모드: 빌드 ID 전달
@@ -398,8 +398,8 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                   currentStep === step.id
                     ? 'bg-foreground text-background'
                     : index < currentStepIndex
-                    ? 'bg-foreground/20 text-foreground cursor-pointer hover:bg-foreground/30'
-                    : 'text-muted-foreground'
+                      ? 'bg-foreground/20 text-foreground cursor-pointer hover:bg-foreground/30'
+                      : 'text-muted-foreground'
                 }`}
               >
                 <span>{step.icon}</span>
@@ -450,8 +450,8 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                               currentWeaponSlot === slot
                                 ? 'border-foreground bg-foreground/10'
                                 : isComplete
-                                ? 'border-green-500 bg-green-500/10'
-                                : 'border-border hover:border-foreground/50'
+                                  ? 'border-green-500 bg-green-500/10'
+                                  : 'border-border hover:border-foreground/50'
                             }`}
                           >
                             <div className="flex items-center justify-between mb-1">
@@ -549,8 +549,8 @@ export function BuildForm({ editBuildId, onClose, onSuccess }: BuildFormProps) {
                                   isSelected
                                     ? 'border-foreground bg-foreground/10 ring-2 ring-foreground'
                                     : isUsedInOtherSlot
-                                    ? 'border-border bg-muted/50 opacity-50 cursor-not-allowed'
-                                    : 'border-border hover:border-foreground/50'
+                                      ? 'border-border bg-muted/50 opacity-50 cursor-not-allowed'
+                                      : 'border-border hover:border-foreground/50'
                                 }`}
                               >
                                 {martial.무술_img_path ? (

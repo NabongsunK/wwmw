@@ -1,10 +1,10 @@
-// 언어 전환 컴포넌트 (Safe 버전)
-
+// 언어 전환 컴포넌트
 'use client'
 
-import { useLanguage } from '@/app/providers/LanguageProvider'
-import { useState, useEffect, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import type { Lang } from '@/types/martial'
+import { useState, useEffect, useRef } from 'react'
+import { useLanguage } from '@/app/providers/LanguageProvider'
 
 const LANGUAGES = [
   { code: 'ko' as Lang, label: '한국어', flag: '🇰🇷', short: 'KO' },
@@ -93,17 +93,8 @@ function LanguageSwitcherInner() {
   )
 }
 
-export function LanguageSwitcher() {
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // CSR에서만 렌더링
-  if (!mounted) {
-    return <div className="h-9 w-9 rounded-full border border-border bg-surface" />
-  }
-
-  return <LanguageSwitcherInner />
-}
+export const LanguageSwitcher = dynamic(() => Promise.resolve(LanguageSwitcherInner), {
+  ssr: false,
+  // Skeleton UI
+  loading: () => <div className="h-9 w-9 rounded-full border border-border bg-surface" />,
+})
