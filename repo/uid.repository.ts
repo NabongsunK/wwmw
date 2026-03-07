@@ -21,6 +21,10 @@ export class UidRepository {
     if (!data?.uid || typeof data.uid !== 'string') {
       throw new Error('Uid is required')
     }
+    console.warn(
+      `INSERT INTO ${this.tableName} (uid, created_at, updated_at) VALUES (${data.uid}, NOW(), NOW())`,
+      [data.uid],
+    )
     await query(
       `INSERT INTO ${this.tableName} (uid, created_at, updated_at) VALUES (?, NOW(), NOW())`,
       [data.uid],

@@ -1,23 +1,17 @@
-// 심법 API 라우트 (조회 전용)
+// 심법 API 라우트 (조회 전용) - lang은 쿠키로 전달
 
 import { NextRequest } from 'next/server'
 import { responseOk, responseServerError } from '@/lib/api-response'
+import { getLangFromRequest } from '@/lib/api-lang'
 import { InnerwayService } from '@/service/innerway.service'
-import type { Lang } from '@/types/martial'
 
 /**
  * @swagger
- * /api/{lang}/innerways:
+ * /api/innerways:
  *   get:
- *     summary: 모든 심법 조회 (다국어 지원)
+ *     summary: 모든 심법 조회 (다국어 지원, 쿠키 lang 사용)
  *     tags: [Innerways]
  *     parameters:
- *       - in: path
- *         name: lang
- *         required: true
- *         schema:
- *           type: string
- *           enum: [ko, en, ja, zh]
  *       - in: query
  *         name: 유파_code
  *         schema:
@@ -29,20 +23,12 @@ import type { Lang } from '@/types/martial'
  *     responses:
  *       200:
  *         description: 심법 목록
- *       400:
- *         description: 잘못된 lang
  *       500:
  *         description: 서버 오류
  */
-
-/**
- * GET /api/{lang}/innerways - 모든 심법 조회 (다국어 지원)
- * Path: lang (ko|en|ja|zh)
- * Query: ?유파_code=xxx&등급=1
- */
-export async function GET(request: NextRequest, { params }: { params: Promise<{ lang: string }> }) {
+export async function GET(request: NextRequest) {
   try {
-    const { lang } = (await params) as { lang: Lang }
+    const lang = getLangFromRequest(request)
     const searchParams = request.nextUrl.searchParams
     const 유파_code = searchParams.get('유파_code')
     const 등급 = searchParams.get('등급')

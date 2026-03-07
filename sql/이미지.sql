@@ -52,7 +52,16 @@ values
   (
     '1002012', 
     '/img/무술/소생의향.png'
-  );
+  ),
+  (
+    '1002013', 
+    '/img/무술/운진의궤적.png'
+  ),
+  (
+    '1002014', 
+    '/img/무술/일장춘몽.png'
+  )
+  ON DUPLICATE KEY UPDATE img_path = VALUES(img_path);
 
 -- 비결 이미지 매핑
 insert into 
@@ -156,7 +165,13 @@ values
   (
     '1005024', 
     '/img/비결/묘령의그림자.png'
-  );
+  ),
+  (
+    '1005025', 
+    '/img/비결/격랑의파도.png'
+  )
+  ON DUPLICATE KEY UPDATE img_path = VALUES(img_path);
+
 
 -- 심법 이미지 매핑
 insert into 
@@ -217,6 +232,10 @@ values
   (
     '1006013', 
     '/img/심법/common/핏빛찬가.png'
+  ),
+  (
+    '1006038', 
+    '/img/심법/common/사막의춤.png'
   ),
   -- 명금(홍)
   (
@@ -319,7 +338,25 @@ values
   (
     '1006037', 
     '/img/심법/견사림/회복의실.png'
-  );
+  ),
+  (
+    '1006039', 
+    '/img/심법/파죽진/천군의함성.png'
+  ),
+  (
+    '1006040', 
+    '/img/심법/파죽진/대당의노래.png'
+  ),
+
+  (
+    '1006041', 
+    '/img/심법/파죽진/이동하는나무배.png'
+  ),
+  (
+    '1006042', 
+    '/img/심법/파죽진/밝은등불.png'
+  )
+  ON DUPLICATE KEY UPDATE img_path = VALUES(img_path);
 
 
 insert into 
@@ -355,5 +392,10 @@ values
   (
     '1001006', 
     '/img/유파/견사림.png'
-  );
+  ),
+  (
+    '1001007', 
+    '/img/유파/파죽진.png'
+  )
+  ON DUPLICATE KEY UPDATE img_path = VALUES(img_path);
   -- 유파 이미지 매핑

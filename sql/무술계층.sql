@@ -1,6 +1,7 @@
 -- ============================================
 -- T_CodeBase (다국어 코드) INSERT
 -- ============================================
+-- 반복 실행 가능: 동일 (code, lang) 있으면 code_nm만 갱신 (ON DUPLICATE KEY UPDATE)
 -- 코드 체계:
 -- 1001xxx: 유파 코드
 -- 1002xxx: 무술 코드  
@@ -11,15 +12,19 @@
 -- ============================================
 
 
+
 -- 유파 코드
+
 INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 ('1001000', 'ko', '공용'),
 ('1001001', 'ko', '명금(홍)'),
 ('1001002', 'ko', '명금(영)'),
-('1001003', 'ko', '열석-위'),
-('1001004', 'ko', '견사-옥'),
-('1001005', 'ko', '파죽-풍'),
-('1001006', 'ko', '견사-림');
+('1001003', 'ko', '열석(위)'),
+('1001004', 'ko', '견사(옥)'),
+('1001005', 'ko', '파죽(풍)'),
+('1001006', 'ko', '견사(림)'),
+('1001007', 'ko', '파죽(진)')
+ON DUPLICATE KEY UPDATE code_nm = VALUES(code_nm);
 
 -- 장비(무기) 코드
 INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
@@ -29,7 +34,8 @@ INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 ('1003004', 'ko', '맥도'),
 ('1003005', 'ko', '우산'),
 ('1003006', 'ko', '쌍검'),
-('1003007', 'ko', '승표');
+('1003007', 'ko', '승표')
+ON DUPLICATE KEY UPDATE code_nm = VALUES(code_nm);
 
 -- 무술 코드
 INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
@@ -44,7 +50,10 @@ INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 ('1002009', 'ko', '윤회의 가르침'),
 ('1002010', 'ko', '속세의 지혜'),
 ('1002011', 'ko', '천계의 수호'),
-('1002012', 'ko', '소생의 향');
+('1002012', 'ko', '소생의 향'),
+('1002013', 'ko', '운진의 궤적'),
+('1002014', 'ko', '일장춘몽')
+ON DUPLICATE KEY UPDATE code_nm = VALUES(code_nm);
 
 -- 비결 타입 코드
 INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
@@ -53,7 +62,8 @@ INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 ('1004003', 'ko', '단체 피해'),
 ('1004004', 'ko', '단일 제어'),
 ('1004005', 'ko', '단일 폭발'),
-('1004006', 'ko', '지원');
+('1004006', 'ko', '지원')
+ON DUPLICATE KEY UPDATE code_nm = VALUES(code_nm);
 
 INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 -- 수수께끼(1004001)
@@ -68,6 +78,7 @@ INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 ('1005007', 'ko', '귀혈수'),
 ('1005008', 'ko', '호법의 권세'),
 ('1005009', 'ko', '유성 낙화'),
+('1005025', 'ko', '격랑의 파도'),
 -- 단일 제어(1004004)
 ('1005010', 'ko', '응조권법'),
 ('1005011', 'ko', '금강의 호법'),
@@ -85,7 +96,8 @@ INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 ('1005021', 'ko', '음양의 조화'),
 ('1005022', 'ko', '거위의 절규'),
 ('1005023', 'ko', '암야의 휘광'),
-('1005024', 'ko', '묘령의 그림자');
+('1005024', 'ko', '묘령의 그림자')
+ON DUPLICATE KEY UPDATE code_nm = VALUES(code_nm);
 
 -- 심법 코드
 -- 등급: 1=일반, 2=희귀, 3=영웅, 4=전설
@@ -105,6 +117,7 @@ INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 ('1006011', 'ko', '철포삼'),
 ('1006012', 'ko', '월하의 섬광'),
 ('1006013', 'ko', '핏빛 찬가'),
+('1006038', 'ko', '사막의 춤'),
 -- 명금(홍)
 ('1006014', 'ko', '무명 심법'),
 ('1006015', 'ko', '천산의 의지'),
@@ -115,27 +128,32 @@ INSERT INTO `T_CodeBase` (code, lang, code_nm) VALUES
 ('1006019', 'ko', '굶주린 늑대'),
 ('1006020', 'ko', '무공의 경지'),
 ('1006021', 'ko', '통찰의 눈'),
--- 열석-위
+-- 열석(위)
 ('1006022', 'ko', '지축의 분노'),
 ('1006023', 'ko', '맹수의 혼'),
 ('1006024', 'ko', '저항의 법칙'),
 ('1006025', 'ko', '강철의 비기'),
--- 견사-옥
+-- 견사(옥)
 ('1006026', 'ko', '월광의 계율'),
 ('1006027', 'ko', '비상하는 호리병'),
 ('1006028', 'ko', '춘뢰일섬'),
 ('1006029', 'ko', '천공참'),
--- 파죽-풍
+-- 파죽(풍)
 ('1006030', 'ko', '망각의 울림'),
 ('1006031', 'ko', '심연의 늪'),
 ('1006032', 'ko', '파괴의 서막'),
 ('1006033', 'ko', '파도의 검기'),
--- 견사-림
+-- 견사(림)
 ('1006034', 'ko', '군신의 묘약'),
 ('1006035', 'ko', '만개한 복사꽃'),
 ('1006036', 'ko', '생명의 고서'),
-('1006037', 'ko', '회복의 실');
-
+('1006037', 'ko', '회복의 실'),
+-- 파죽(진)
+('1006039', 'ko', '천군의 함성'),
+('1006040', 'ko', '대당의 노래'),
+('1006041', 'ko', '이동하는 나무배'),
+('1006042', 'ko', '밝은 등불')
+ON DUPLICATE KEY UPDATE code_nm = VALUES(code_nm);
 
 -- 심법 데이터 삽입
 DELETE FROM `T_심법`;
@@ -156,6 +174,7 @@ INSERT INTO `T_심법` (유파_code, title, body, 순서, 등급, img) VALUES
 ('1001000', '1006011', '철포삼', 11, 1, (SELECT id FROM T_이미지 WHERE code = '1006011')),
 ('1001000', '1006012', '월하의 섬광', 12, 1, (SELECT id FROM T_이미지 WHERE code = '1006012')),
 ('1001000', '1006013', '핏빛 찬가', 13, 1, (SELECT id FROM T_이미지 WHERE code = '1006013')),
+('1001000', '1006038', '사막의 춤', 14, 1, (SELECT id FROM T_이미지 WHERE code = '1006038')),
 -- 명금(홍) - 1001001
 ('1001001', '1006014', '무명 심법', 1, 3, (SELECT id FROM T_이미지 WHERE code = '1006014')),
 ('1001001', '1006015', '천산의 의지', 2, 2, (SELECT id FROM T_이미지 WHERE code = '1006015')),
@@ -166,26 +185,54 @@ INSERT INTO `T_심법` (유파_code, title, body, 순서, 등급, img) VALUES
 ('1001002', '1006019', '굶주린 늑대', 2, 2, (SELECT id FROM T_이미지 WHERE code = '1006019')),
 ('1001002', '1006020', '무공의 경지', 3, 2, (SELECT id FROM T_이미지 WHERE code = '1006020')),
 ('1001002', '1006021', '통찰의 눈', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006021')),
--- 열석-위 - 1001003
+-- 열석(위) - 1001003
 ('1001003', '1006022', '지축의 분노', 1, 3, (SELECT id FROM T_이미지 WHERE code = '1006022')),
 ('1001003', '1006023', '맹수의 혼', 2, 2, (SELECT id FROM T_이미지 WHERE code = '1006023')),
 ('1001003', '1006024', '저항의 법칙', 3, 2, (SELECT id FROM T_이미지 WHERE code = '1006024')),
 ('1001003', '1006025', '강철의 비기', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006025')),
--- 견사-옥 - 1001004
+-- 견사(옥) - 1001004
 ('1001004', '1006026', '월광의 계율', 1, 3, (SELECT id FROM T_이미지 WHERE code = '1006026')),
 ('1001004', '1006027', '비상하는 호리병', 2, 2, (SELECT id FROM T_이미지 WHERE code = '1006027')),
 ('1001004', '1006028', '춘뢰일섬', 3, 2, (SELECT id FROM T_이미지 WHERE code = '1006028')),
 ('1001004', '1006029', '천공참', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006029')),
--- 파죽-풍 - 1001005
+-- 파죽(풍) - 1001005
 ('1001005', '1006030', '망각의 울림', 1, 3, (SELECT id FROM T_이미지 WHERE code = '1006030')),
 ('1001005', '1006031', '심연의 늪', 2, 2, (SELECT id FROM T_이미지 WHERE code = '1006031')),
 ('1001005', '1006032', '파괴의 서막', 3, 2, (SELECT id FROM T_이미지 WHERE code = '1006032')),
 ('1001005', '1006033', '파도의 검기', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006033')),
--- 견사-림 - 1001006
+-- 견사(림) - 1001006
 ('1001006', '1006034', '군신의 묘약', 1, 3, (SELECT id FROM T_이미지 WHERE code = '1006034')),
 ('1001006', '1006035', '만개한 복사꽃', 2, 2, (SELECT id FROM T_이미지 WHERE code = '1006035')),
 ('1001006', '1006036', '생명의 고서', 3, 2, (SELECT id FROM T_이미지 WHERE code = '1006036')),
-('1001006', '1006037', '회복의 실', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006037'));
+('1001006', '1006037', '회복의 실', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006037')),
+-- 파죽(진) - 1001007
+('1001007', '1006039', '천군의 함성', 1, 3, (SELECT id FROM T_이미지 WHERE code = '1006039')),
+('1001007', '1006040', '대당의 노래', 2, 2, (SELECT id FROM T_이미지 WHERE code = '1006040')),
+('1001007', '1006041', '이동하는 나무배', 3, 2, (SELECT id FROM T_이미지 WHERE code = '1006041')),
+('1001007', '1006042', '밝은 등불', 4, 2, (SELECT id FROM T_이미지 WHERE code = '1006042'));
+
+
+select * from `T_심법`
+where title = '1006040'
+
+select * from `T_CodeBase`
+where code = '1006040'
+
+select `UDF_BaseCode`(1006040,'ko')
+
+SELECT 
+        s.유파_code,
+        UDF_BaseCode(s.유파_code, 'ko') AS 유파,
+        s.title,
+        UDF_BaseCode(s.title, 'ko') AS 심법명,
+        s.순서,
+        s.등급,
+        심법_이미지.img_path AS 심법_이미지_url,
+        유파_이미지.img_path AS 유파_이미지_url
+      FROM T_심법 s
+      LEFT JOIN T_이미지 심법_이미지 ON s.img = 심법_이미지.id
+      LEFT JOIN T_이미지 유파_이미지 ON s.유파_code = 유파_이미지.code
+      ORDER BY s.유파_code, s.순서 ASC, s.created_at DESC
 
 -- ============================================
 -- T_무술계층 INSERT
@@ -221,7 +268,11 @@ INSERT INTO `T_무술계층` (유파_code, 장비_code, 무술_code, 스킬_code
 -- 견사-림 - 부채 - 천계의 수호
 ('1001006', '1003003', '1002011', NULL, 1, NULL, NULL, (SELECT id FROM T_이미지 WHERE code = '1002011'), NULL),
 -- 견사-림 - 우산 - 소생의 향
-('1001006', '1003005', '1002012', NULL, 2, NULL, NULL, (SELECT id FROM T_이미지 WHERE code = '1002012'), NULL);
+('1001006', '1003005', '1002012', NULL, 2, NULL, NULL, (SELECT id FROM T_이미지 WHERE code = '1002012'), NULL),
+-- 파죽(풍) - 우산 - 일장춘몽
+('1001005', '1003006', '1002013', NULL, 1, NULL, NULL, (SELECT id FROM T_이미지 WHERE code = '1002013'), NULL),
+-- 파죽(풍) - 승표 - 운진의 궤적
+('1001005', '1003007', '1002014', NULL, 2, NULL, NULL, (SELECT id FROM T_이미지 WHERE code = '1002014'), NULL);
 
 -- 비결 코드
 INSERT INTO `T_비결` (title, type, body, 순서, img) VALUES
@@ -248,4 +299,9 @@ INSERT INTO `T_비결` (title, type, body, 순서, img) VALUES
 ('1005021', '1004006', '음양의 조화', 4, (SELECT id FROM T_이미지 WHERE code = '1005021')),
 ('1005022', '1004006', '거위의 절규', 5, (SELECT id FROM T_이미지 WHERE code = '1005022')),
 ('1005023', '1004006', '암야의 휘광', 6, (SELECT id FROM T_이미지 WHERE code = '1005023')),
-('1005024', '1004006', '묘령의 그림자', 7, (SELECT id FROM T_이미지 WHERE code = '1005024'));
+('1005024', '1004006', '묘령의 그림자', 7, (SELECT id FROM T_이미지 WHERE code = '1005024')),
+('1005025', '1004003', '격랑의 파도', 8, (SELECT id FROM T_이미지 WHERE code = '1005025'));
+
+
+
+select * from `T_UID`

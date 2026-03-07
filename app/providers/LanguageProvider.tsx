@@ -1,10 +1,12 @@
-// 언어 관리 Context Provider
+// 언어 + uid 관리 Context Provider (진입 시 lang/uid 쿠키 초기화)
 
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import type { Lang } from '@/types/martial'
 import { SUPPORTED_LANGS } from '@/lib/lang-validator'
+import { setLangCookie, getLangCookie } from '@/lib/lang-cookie-client'
+import { getUidCookie, setUidCookie } from '@/lib/uid-cookie-client'
 
 interface LanguageContextType {
   lang: Lang
@@ -17,25 +19,54 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>('ko')
   const [mounted, setMounted] = useState(false)
 
-  // 초기 로드 시 localStorage에서 언어 설정 가져오기
+  // 초기 로드: lang 쿠키/스토리지 동기화 + uid 쿠키 없으면 발급
   useEffect(() => {
-    setTimeout(() => {
-      setMounted(true)
-    }, 0)
-    const savedLang = localStorage.getItem('wwe-language') as Lang | null
-    if (savedLang && SUPPORTED_LANGS.includes(savedLang)) {
+    // 1) 언어: 쿠키 우선 → localStorage → state 반영 후 쿠키 동기화
+    const fromCookie = getLangCookie()
+    const fromStorage = localStorage.getItem('wwe-language') as Lang | null
+    const savedLang = (
+      fromCookie && SUPPORTED_LANGS.includes(fromCookie as Lang)
+        ? fromCookie
+        : fromStorage && SUPPORTED_LANGS.includes(fromStorage)
+          ? fromStorage
+          : null
+    ) as Lang | null
+
+    if (savedLang) {
       setTimeout(() => {
         setLang(savedLang)
       }, 0)
+      setLangCookie(savedLang)
+      if (savedLang !== fromStorage) localStorage.setItem('wwe-language', savedLang)
+    } else {
+      setLangCookie('ko')
     }
+
+    // 2) uid: 쿠키 없으면 발급받아 저장
+    if (!getUidCookie()) {
+      fetch('/api/uid', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+      })
+        .then((res) => res.json())
+        .then((body: { success?: boolean; data?: { uid?: string } }) => {
+          if (body.success && body.data?.uid) setUidCookie(body.data.uid)
+        })
+        .catch((err) => console.warn('Failed to issue uid:', err))
+    }
+
+    setTimeout(() => {
+      setMounted(true)
+    }, 0)
   }, [])
 
-  // 언어 변경 시 localStorage에 저장
+  // 언어 변경 시 localStorage + 쿠키 동시 저장 (API는 쿠키로 lang 전달)
   const handleSetLang = (newLang: Lang) => {
     setLang(newLang)
     if (mounted) {
       localStorage.setItem('wwe-language', newLang)
-      // custom event 발생 (같은 탭 내에서 감지)
+      setLangCookie(newLang)
       window.dispatchEvent(new Event('languageChange'))
     }
   }

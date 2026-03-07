@@ -88,7 +88,7 @@ docker start wwe-mysql
 ### 3. 개발 서버 실행
 
 ```bash
-cd 'F:\Users\user\sideProject\wwe\'
+cd 'F:\Users\user\project\sideProject\wwe\'
 npm run dev
 # or
 yarn dev

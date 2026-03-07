@@ -15,8 +15,8 @@ import { Providers } from './providers/Providers'
 // })
 
 export const metadata: Metadata = {
-  title: 'WWE - Build Management',
-  description: 'WWE Build Management System',
+  title: 'WWMW - 연운 도구',
+  description: 'WWMW - 심법뽑기, 스무고개족보',
 }
 
 export default function RootLayout({
