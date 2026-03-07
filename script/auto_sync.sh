@@ -30,11 +30,15 @@ log_error() {
 
 # 설정 변수
 REPO_PATH="$(cd "$(dirname "$0")/.." && pwd)"
+GIT_ROOT="$(git -C "$REPO_PATH" rev-parse --show-toplevel 2>/dev/null)"
+GIT_ROOT="${GIT_ROOT:-$REPO_PATH}"
 BRANCH="main"
 REMOTE="origin"
 CHECK_INTERVAL=30
 LOG_FILE="$REPO_PATH/logs/auto_sync.log"
-PM2_APP_NAME="wwe"
+PM2_APP_NAME="wwe-nextjs"
+CLOUDFLARED_TUNNEL="wwe"
+CLOUDFLARED_LOG="$REPO_PATH/logs/cloudflared.log"
 
 # 로그 폴더 생성
 mkdir -p "$REPO_PATH/logs"
@@ -88,10 +92,28 @@ start_application() {
     fi
 }
 
-# Git 동기화 후 필요 시 빌드·재시작
+# Cloudflared 터널 기동 (이미 떠 있으면 스킵)
+start_cloudflared_tunnel() {
+    if ! command -v cloudflared > /dev/null 2>&1; then
+        log_warning "cloudflared not found. Skip tunnel. (Install: brew install cloudflared)"
+        return 0
+    fi
+    if pgrep -f "cloudflared.*tunnel.*run.*$CLOUDFLARED_TUNNEL" > /dev/null 2>&1; then
+        log_info "Cloudflared tunnel '$CLOUDFLARED_TUNNEL' already running"
+        return 0
+    fi
+    log_info "Starting cloudflared tunnel: $CLOUDFLARED_TUNNEL"
+    nohup cloudflared tunnel run "$CLOUDFLARED_TUNNEL" >> "$CLOUDFLARED_LOG" 2>&1 &
+    sleep 2
+    if pgrep -f "cloudflared.*tunnel.*run.*$CLOUDFLARED_TUNNEL" > /dev/null 2>&1; then
+        log_success "Cloudflared tunnel started (log: $CLOUDFLARED_LOG)"
+    else
+        log_warning "Cloudflared tunnel may have failed. Check $CLOUDFLARED_LOG"
+    fi
+}
 sync_repository() {
     log_info "Syncing Git repository..."
-    cd "$REPO_PATH" || return 1
+    cd "$GIT_ROOT" || return 1
 
     if ! git fetch "$REMOTE" 2>/dev/null; then
         log_error "Git fetch failed"
@@ -118,6 +140,7 @@ sync_repository() {
 
     log_success "Code updated"
     log_info "Installing dependencies..."
+    cd "$REPO_PATH" || return 1
     if ! npm ci --production=false 2>/dev/null; then
         npm install
     fi
@@ -162,10 +185,11 @@ trap cleanup SIGINT SIGTERM
 main() {
     log_info "WWE Auto Sync Started"
     log_info "Repository: $REPO_PATH"
+    [ -n "$GIT_ROOT" ] && [ "$GIT_ROOT" != "$REPO_PATH" ] && log_info "Git root: $GIT_ROOT"
     log_info "Branch: $BRANCH, interval: ${CHECK_INTERVAL}s"
 
-    if [ ! -d "$REPO_PATH/.git" ]; then
-        log_error "Not a Git repository: $REPO_PATH"
+    if [ ! -d "$GIT_ROOT/.git" ]; then
+        log_error "Not a Git repository: $GIT_ROOT (REPO_PATH=$REPO_PATH)"
         exit 1
     fi
 
@@ -176,6 +200,9 @@ main() {
 
     # 최초 1회 시작
     start_application || exit 1
+
+    # Cloudflared 터널 기동 (wwe)
+    start_cloudflared_tunnel
 
     COUNT=0
     while true; do
