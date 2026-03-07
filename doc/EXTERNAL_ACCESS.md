@@ -52,17 +52,17 @@
 
 4. **설정 파일 예시** (`~/.cloudflared/config.yml`)
 
-   ```yaml
-   tunnel: <TUNNEL_ID>
-   credentials-file: /Users/youruser/.cloudflared/<TUNNEL_ID>.json
+```
+    cat > ~/.cloudflared/config.yml << 'EOF'
+tunnel: <TUNNEL_ID>
+credentials-file: /Users/nabongsun/.cloudflared/<TUNNEL_ID>.json
 
-   ingress:
-     - hostname: wwmw.shop
-       service: http://localhost:3000
-     - hostname: www.wwmw.shop
-       service: http://localhost:3000
-     - service: http_status:404
-   ```
+ingress:
+  - hostname: wwmw.shop
+    service: http://localhost:3000
+  - service: http_status:404
+EOF
+```
 
 5. **터널 실행** (백그라운드 서비스로 등록 권장)
 
