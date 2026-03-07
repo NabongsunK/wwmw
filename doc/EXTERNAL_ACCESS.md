@@ -46,7 +46,7 @@
 3. **터널 생성 및 설정**
 
    ```bash
-   cloudflared tunnel create wwe-macmini
+   cloudflared tunnel create wwe
    # Tunnel ID 확인 후, config 파일 작성
    ```
 
