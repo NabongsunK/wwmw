@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import Image from 'next/image'
 // import Link from 'next/link'
 import { useApi } from '@/hooks/useApi'
 import {
@@ -19,6 +18,10 @@ import {
   exchangeFragmentsForBoxes,
 } from '@/lib/mystic-gacha'
 
+import useInput from '@/hooks/useInput'
+import RoundInput from '@/app/components/ui/RoundInput'
+import MysticCardComponent from '@/app/components/ui/MysticCard'
+
 export default function MysticSimulatorPage() {
   const { fetchApi } = useApi()
   const [allCards, setAllCards] = useState<MysticCard[]>([])
@@ -33,7 +36,7 @@ export default function MysticSimulatorPage() {
   const [isRolling, setIsRolling] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [trackedKeys, setTrackedKeys] = useState<Set<string>>(new Set()) // 추적 중인 카드 키만 저장
-  const [searchQuery, setSearchQuery] = useState<string>('') // 보관함 검색어
+  const searchQuery = useInput('') // 보관함 검색어
 
   // 유파 데이터 로드 (언어 변경 시 자동 갱신)
   useEffect(() => {
@@ -62,7 +65,7 @@ export default function MysticSimulatorPage() {
       try {
         const json = await fetchApi('innerways/simulator')
 
-        console.log('API Response:', json) // 디버깅용
+        // console.log('API Response:', json) // 디버깅용
 
         if (!json?.success) {
           console.error('API returned error:', json?.message || 'Unknown error')
@@ -76,7 +79,7 @@ export default function MysticSimulatorPage() {
           return
         }
 
-        console.log(`Raw data count: ${json.data.length}`)
+        // console.log(`Raw data count: ${json.data.length}`)
 
         const cards: MysticCard[] = json.data
           .filter((item: any) => {
@@ -113,7 +116,7 @@ export default function MysticSimulatorPage() {
           })
           .filter((card: any): card is MysticCard => card != null)
 
-        console.log(`Valid cards after processing: ${cards.length}`)
+        // console.log(`Valid cards after processing: ${cards.length}`)
 
         if (cards.length === 0) {
           const errorMsg =
@@ -126,7 +129,7 @@ export default function MysticSimulatorPage() {
 
         setError(null) // 성공 시 에러 초기화
 
-        console.log(`Loaded ${cards.length} cards`)
+        // console.log(`Loaded ${cards.length} cards`)
         setAllCards(cards)
 
         // 전체 배너 생성
@@ -340,7 +343,7 @@ export default function MysticSimulatorPage() {
               setLoading(true)
               window.location.reload()
             }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-6 py-3 rounded-md font-medium transition-colors bg-red-600 text-white hover:bg-red-700"
           >
             다시 시도
           </button>
@@ -366,18 +369,12 @@ export default function MysticSimulatorPage() {
 
   return (
     <div className="container mx-auto py-8">
-      {/* <div className="mb-6">
-        <Link href="/builds" className="text-muted-foreground hover:text-foreground text-sm">
-          ← 빌드 목록으로
-        </Link>
-      </div> */}
-
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">심법 뽑기 시뮬레이터</h1>
+        <h1 className="text-3xl font-semibold tracking-tight mb-6">심법 뽑기 시뮬레이터</h1>
       </div>
 
       {/* 컨트롤 패널 */}
-      <div className="bg-card border rounded-lg p-6 mb-6 space-y-6">
+      <div className="bg-card border border-border rounded-lg p-6 mb-6 space-y-6 shadow-sm">
         {/* 통계 */}
         <div className="flex gap-6 text-sm text-muted-foreground pb-4 border-b border-border">
           <div>
@@ -436,7 +433,7 @@ export default function MysticSimulatorPage() {
             <button
               onClick={handleWeeklyRoll}
               disabled={isRolling}
-              className="px-6 py-3 rounded-md bg-accent text-background hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="px-6 py-3 rounded-md font-medium bg-accent text-background hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isRolling ? '뽑는 중...' : '1주일 뽑기 (108개)'}
             </button>
@@ -476,7 +473,7 @@ export default function MysticSimulatorPage() {
               <button
                 onClick={handleChimjungsanRoll}
                 disabled={isRolling || chimjungsanCount <= 0}
-                className="px-6 py-3 rounded-md bg-surface border border-border text-foreground hover:bg-foreground/5 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                className="px-6 py-3 rounded-md font-medium bg-surface border border-border hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isRolling ? '뽑는 중...' : '침중산 사용'}
               </button>
@@ -498,7 +495,7 @@ export default function MysticSimulatorPage() {
                 state.fragmentBoxesThisWeek >= 600 ||
                 Math.floor(state.fragments / 5) === 0
               }
-              className="px-6 py-3 rounded-md bg-purple-600 text-white border border-purple-700 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-500 disabled:border-gray-600 transition"
+              className="px-6 py-3 rounded-md font-medium bg-accent/90 text-background hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               서표로 상자 뽑기 ({Math.floor(state.fragments / 5)}개)
             </button>
@@ -527,7 +524,7 @@ export default function MysticSimulatorPage() {
                 <button
                   onClick={handleDismantleAll}
                   disabled={isRolling || cardsToDismantle.length === 0}
-                  className="px-6 py-3 rounded-md bg-purple-600 text-white border border-purple-700 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-500 disabled:border-gray-600 transition"
+                  className="px-6 py-3 rounded-md font-medium bg-accent/90 text-background hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   서표로 변환 ({cardsToDismantle.length}개)
                 </button>
@@ -538,7 +535,7 @@ export default function MysticSimulatorPage() {
           {/* 리셋 */}
           <button
             onClick={handleReset}
-            className="px-4 py-3 rounded-md bg-surface border border-red-500 text-red-500 hover:bg-red-500/10 transition"
+            className="px-4 py-3 rounded-md border border-red-500 text-red-500 hover:bg-red-500/10 transition-colors"
           >
             리셋
           </button>
@@ -547,14 +544,14 @@ export default function MysticSimulatorPage() {
 
       {/* 보관함 */}
       <div className="mb-8">
-        <div className="bg-card border rounded-lg p-6">
+        <div className="bg-card border border-border rounded-lg p-6 mb-6 space-y-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">심법 보관함 ({trackedKeys.size}개)</h2>
             {trackedKeys.size > 0 && (
               <button
                 onClick={() => {
                   setTrackedKeys(new Set())
-                  setSearchQuery('')
+                  searchQuery.reset()
                 }}
                 className="px-4 py-2 border border-border rounded-lg hover:bg-muted text-sm"
               >
@@ -565,26 +562,26 @@ export default function MysticSimulatorPage() {
 
           {/* 검색 */}
           <div className="mb-4">
-            <input
-              type="text"
+            <RoundInput
+              value={searchQuery.value}
+              onChange={searchQuery.onChange}
               placeholder="전체 심법 검색 (추적하려는 심법 이름 입력)..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground"
             />
           </div>
 
           {/* 검색 결과 (전체 심법에서 검색) */}
-          {searchQuery && (
+          {searchQuery.value && (
             <div className="mb-6">
               <h3 className="text-sm font-medium mb-2 text-muted-foreground">
-                검색 결과 (클릭하여 추적)
+                검색 결과 ( 보관함 뿐 아닌 전체 심법 표출 )
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 bg-muted/30 rounded-lg">
                 {(() => {
                   // 전체 심법에서 검색
                   const searchResults = allCards
-                    .filter((card) => card.title.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .filter((card) =>
+                      card.title.toLowerCase().includes(searchQuery.value.toLowerCase()),
+                    )
                     .reduce(
                       (acc, card) => {
                         const key = `${card.title}-${card.등급}`
@@ -614,47 +611,15 @@ export default function MysticSimulatorPage() {
                   return results.map((card, idx) => {
                     const key = `${card.title}-${card.등급}`
                     const isTracked = trackedKeys.has(key)
-
+                    const moveToSaved = () => setTrackedKeys((prev) => new Set(prev).add(key))
                     return (
-                      <button
-                        key={`search-${idx}`}
-                        onClick={() => {
-                          setTrackedKeys((prev) => new Set(prev).add(key))
-                        }}
-                        disabled={isTracked}
-                        className={`border-2 rounded-lg p-2 ${getRarityColorClass(card.등급)} flex items-center gap-3 ${
-                          isTracked
-                            ? 'opacity-50 cursor-not-allowed'
-                            : 'hover:scale-105 cursor-pointer'
-                        } transition-all`}
-                      >
-                        {card.심법_img && (
-                          <div className="relative w-12 h-12 rounded overflow-hidden bg-black flex-shrink-0">
-                            <Image
-                              src={card.심법_img}
-                              alt={card.title}
-                              fill
-                              className="object-contain text-white text-sm"
-                            />
-                          </div>
-                        )}
-                        <div className="flex-1 text-left">
-                          <div className="font-medium text-black -mb-[5px]">{card.title}</div>
-                          {card.유파_img && (
-                            <div className="relative w-8 h-8 inline-block mt-0.5">
-                              <Image
-                                src={card.유파_img}
-                                alt={card.유파 || card.title}
-                                fill
-                                className="object-contain"
-                              />
-                            </div>
-                          )}
-                        </div>
-                        <div className={isTracked ? 'text-blue-600' : 'text-green-600'}>
-                          {isTracked ? '✓' : '+'}
-                        </div>
-                      </button>
+                      <MysticCardComponent
+                        key={`${card.id}-${idx}`}
+                        card={card}
+                        isTracked={isTracked}
+                        onSave={moveToSaved}
+                        getRarityColorClass={getRarityColorClass}
+                      />
                     )
                   })
                 })()}
@@ -710,49 +675,13 @@ export default function MysticSimulatorPage() {
                 }
 
                 return (
-                  <div
+                  <MysticCardComponent
                     key={key}
-                    className={`border-2 rounded-lg p-2 ${getRarityColorClass(card.등급)} flex items-center justify-between relative`}
-                  >
-                    {/* 제거 버튼 */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        removeCard()
-                      }}
-                      className="absolute -top-2 -right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-red-600 hover:bg-red-700 text-white text-sm transition-all"
-                      title={`${card.title} 전체 제거`}
-                    >
-                      ✕
-                    </button>
-
-                    <div className="flex items-center gap-3">
-                      {card.심법_img && (
-                        <div className="relative w-12 h-12 rounded overflow-hidden bg-black flex-shrink-0">
-                          <Image
-                            src={card.심법_img}
-                            alt={card.title}
-                            fill
-                            className="object-contain text-white text-sm"
-                          />
-                        </div>
-                      )}
-                      <div>
-                        <div className="font-medium text-black -mb-[5px]">{card.title}</div>
-                        {card.유파_img && (
-                          <div className="relative w-8 h-8 inline-block mt-0.5">
-                            <Image
-                              src={card.유파_img}
-                              alt={card.유파 || card.title}
-                              fill
-                              className="object-contain"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-2xl font-bold text-black">×{count}</div>
-                  </div>
+                    card={card}
+                    count={count}
+                    removeCard={removeCard}
+                    getRarityColorClass={getRarityColorClass}
+                  />
                 )
               })
             })()}
@@ -763,7 +692,7 @@ export default function MysticSimulatorPage() {
       {/* 최근 뽑기 결과 */}
       {lastResult.length > 0 && (
         <div className="mb-8">
-          <div className="bg-card border rounded-lg p-6">
+          <div className="bg-card border border-border rounded-lg p-6 mb-6 space-y-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">뽑기 결과 ({lastResult.length}개)</h2>
             </div>
@@ -805,60 +734,14 @@ export default function MysticSimulatorPage() {
                   }
 
                   return (
-                    <div
+                    <MysticCardComponent
                       key={`${card.id}-${idx}`}
-                      className={`border-2 rounded-lg p-2 ${getRarityColorClass(card.등급)} flex items-center justify-between relative ${
-                        isTracked ? 'opacity-75' : ''
-                      }`}
-                    >
-                      {/* 자물쇠 아이콘 */}
-                      {isTracked ? (
-                        <div
-                          className="absolute -top-2 -right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full text-sm bg-gray-600 text-white"
-                          title="보관함에 저장됨"
-                        >
-                          🔒
-                        </div>
-                      ) : (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            moveToSaved()
-                          }}
-                          className="absolute -top-2 -right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full text-sm transition-all bg-blue-600 hover:bg-blue-700 text-white"
-                          title="보관함으로 이동"
-                        >
-                          🔓
-                        </button>
-                      )}
-
-                      <div className="flex items-center gap-3">
-                        {card.심법_img && (
-                          <div className="relative w-12 h-12 rounded overflow-hidden bg-black flex-shrink-0">
-                            <Image
-                              src={card.심법_img}
-                              alt={card.title}
-                              fill
-                              className="object-contain text-white text-sm"
-                            />
-                          </div>
-                        )}
-                        <div>
-                          <div className="font-medium text-black -mb-[5px]">{card.title}</div>
-                          {card.유파_img && (
-                            <div className="relative w-8 h-8 inline-block mt-0.5">
-                              <Image
-                                src={card.유파_img}
-                                alt={card.유파 || card.title}
-                                fill
-                                className="object-contain"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-2xl font-bold text-black">×{count}</div>
-                    </div>
+                      card={card}
+                      count={count}
+                      isTracked={isTracked}
+                      onSave={moveToSaved}
+                      getRarityColorClass={getRarityColorClass}
+                    />
                   )
                 })
               })()}
@@ -869,11 +752,11 @@ export default function MysticSimulatorPage() {
 
       {/* 통계 */}
       {totalPulls > 0 && (
-        <div className="bg-card border rounded-lg p-6 mb-6">
+        <div className=" border border-border rounded-lg p-6 mb-6 space-y-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-4">통계</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 ">
             {([1, 2, 3] as const).map((rarity) => (
-              <div key={rarity} className="border rounded-lg p-4">
+              <div key={rarity} className="border border-border rounded-lg p-4 bg-surface">
                 <div className="text-sm text-muted-foreground mb-1">{getRarityName(rarity)}</div>
                 <div className="text-2xl font-bold mb-2">{state.rarityCount[rarity]}개</div>
                 <div className="text-xs text-muted-foreground">
@@ -901,7 +784,7 @@ export default function MysticSimulatorPage() {
       {/* 배너 정보 */}
       <div className="grid md:grid-cols-2 gap-6">
         {/* 유파 상자 */}
-        <div className="bg-card border rounded-lg p-6">
+        <div className="bg-card border border-border rounded-lg p-6 mb-6 space-y-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-4">유파 상자</h2>
           <div className="space-y-2 text-sm">
             <div>
@@ -925,7 +808,7 @@ export default function MysticSimulatorPage() {
         </div>
 
         {/* 전체 상자 */}
-        <div className="bg-card border rounded-lg p-6">
+        <div className="bg-card border border-border rounded-lg p-6 mb-6 space-y-6 shadow-sm">
           <h2 className="text-xl font-semibold mb-4">전체 상자</h2>
           <div className="space-y-2 text-sm">
             <div>
