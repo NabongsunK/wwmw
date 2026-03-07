@@ -22,11 +22,11 @@ export function Header() {
         {/* 로고 */}
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-xl font-semibold tracking-wide">연운</span>
+            <span className="text-xl font-semibold tracking-wide font-soonbatang">위무위</span>
             {/* <span className="text-xs text-muted-foreground">WWE</span> */}
           </Link>
 
-          <nav className="hidden md:flex items-center gap-6 text-sm">
+          <nav className="flex items-center gap-6 text-sm">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.label}

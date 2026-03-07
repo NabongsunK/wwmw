@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { BuildForm } from './BuildForm'
-import { useUid } from '@/app/hooks/useUid'
+import { useUid } from '@/hooks/useUid'
 import type { Build } from '@/types/build'
 
 export function BuildList() {
@@ -145,15 +145,15 @@ export function BuildList() {
                       build.status === 'active'
                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                         : build.status === 'inactive'
-                        ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
-                        : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                          ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                          : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
                     }`}
                   >
                     {build.status === 'active'
                       ? '활성'
                       : build.status === 'inactive'
-                      ? '비활성'
-                      : '보관됨'}
+                        ? '비활성'
+                        : '보관됨'}
                   </span>
                 </div>
               </div>
@@ -197,8 +197,8 @@ export function BuildList() {
                       {likeLoadingId === build.id
                         ? '...'
                         : likedIds.has(build.id)
-                        ? '좋아요 취소'
-                        : '좋아요'}
+                          ? '좋아요 취소'
+                          : '좋아요'}
                     </span>
                   </button>
                 )}
