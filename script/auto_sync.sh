@@ -30,8 +30,6 @@ log_error() {
 
 # 설정 변수
 REPO_PATH="$(cd "$(dirname "$0")/.." && pwd)"
-GIT_ROOT="$(git -C "$REPO_PATH" rev-parse --show-toplevel 2>/dev/null)"
-GIT_ROOT="${GIT_ROOT:-$REPO_PATH}"
 BRANCH="main"
 REMOTE="origin"
 CHECK_INTERVAL=30
