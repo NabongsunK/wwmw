@@ -31,9 +31,10 @@ export function Header() {
               <Link
                 key={item.label}
                 href={item.href}
+                // TODO: 나중에 메인페이지 변경 시 수정해줘야함. 26.03.07 - 김무겸
                 className={`
                   relative hover:text-foreground transition
-                  ${item.href === pathname ? 'text-foreground' : 'text-muted-foreground'}
+                  ${item.href === pathname ? 'text-foreground' : pathname === '/' && item.label === '심법 뽑기' ? 'text-foreground' : 'text-muted-foreground'}
                 `}
               >
                 {item.label}
