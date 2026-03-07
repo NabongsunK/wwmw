@@ -57,9 +57,9 @@
    credentials-file: /Users/youruser/.cloudflared/<TUNNEL_ID>.json
 
    ingress:
-     - hostname: yourdomain.com
+     - hostname: wwmw.shop
        service: http://localhost:3000
-     - hostname: www.yourdomain.com
+     - hostname: www.wwmw.shop
        service: http://localhost:3000
      - service: http_status:404
    ```
@@ -67,7 +67,7 @@
 5. **터널 실행** (백그라운드 서비스로 등록 권장)
 
    ```bash
-   cloudflared tunnel run wwe-macmini
+   cloudflared tunnel run wwe
    ```
 
    - 영구 실행: `brew services` 또는 launchd로 등록
