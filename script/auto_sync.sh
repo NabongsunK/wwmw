@@ -30,7 +30,7 @@ log_error() {
 
 # 설정 변수
 REPO_PATH="$(cd "$(dirname "$0")/.." && pwd)"
-BRANCH="main"
+BRANCH="master"
 REMOTE="origin"
 CHECK_INTERVAL=30
 LOG_FILE="$REPO_PATH/logs/auto_sync.log"
