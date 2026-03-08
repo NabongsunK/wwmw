@@ -56,10 +56,10 @@ export default function TwentyQuestionsPage() {
   }, [searchQuery.value, fetchApi])
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">스무고개</h1>
-      </div>
+    <main className="container max-w-5xl py-6 min-h-screen">
+      <header className="mb-8 space-y-4">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">스무고개</h1>
+      </header>
 
       <RoundInput
         value={searchQuery.value}
@@ -106,6 +106,6 @@ export default function TwentyQuestionsPage() {
           </tbody>
         </table>
       </div>
-    </div>
+    </main>
   )
 }

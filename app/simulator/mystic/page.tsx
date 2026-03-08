@@ -82,14 +82,14 @@ export default function MysticSimulatorPage() {
         // console.log(`Raw data count: ${json.data.length}`)
 
         const cards: MysticCard[] = json.data
-          .filter((item: any) => {
+          .filter((item: MysticCard) => {
             if (!item || item.등급 == null) {
               console.warn('Filtered out item (null or missing 등급):', item)
               return false
             }
             return true
           })
-          .map((item: any) => {
+          .map((item: MysticCard) => {
             // 등급이 숫자가 아니면 변환
             const 등급 = typeof item.등급 === 'number' ? item.등급 : parseInt(item.등급, 10)
 
@@ -106,15 +106,14 @@ export default function MysticSimulatorPage() {
               id: item.id || 0,
               유파_code: item.유파_code || '',
               유파: item.유파 || '',
-              title: item.심법명 || '',
-              body: '',
+              심법명: item.심법명 || '',
               순서: item.순서 || 0,
               등급: valid등급,
-              심법_img: item.심법_이미지_url || null,
-              유파_img: item.유파_이미지_url || null,
+              심법_이미지_url: item.심법_이미지_url || null,
+              유파_이미지_url: item.유파_이미지_url || null,
             }
           })
-          .filter((card: any): card is MysticCard => card != null)
+          .filter((card): card is MysticCard => card != null)
 
         // console.log(`Valid cards after processing: ${cards.length}`)
 
@@ -244,7 +243,7 @@ export default function MysticSimulatorPage() {
   const handleDismantleAll = useCallback(() => {
     // 보관함에 있는 심법 제외
     const cardsToDismantle = lastResult.filter(
-      (card) => !trackedKeys.has(`${card.title}-${card.등급}`),
+      (card) => !trackedKeys.has(`${card.심법명}-${card.등급}`),
     )
 
     if (cardsToDismantle.length === 0) {
@@ -264,7 +263,7 @@ export default function MysticSimulatorPage() {
     ) {
       setState(dismantleCards(cardsToDismantle, state))
       // 보관함에 없는 카드만 제거
-      setLastResult((prev) => prev.filter((card) => trackedKeys.has(`${card.title}-${card.등급}`)))
+      setLastResult((prev) => prev.filter((card) => trackedKeys.has(`${card.심법명}-${card.등급}`)))
     }
   }, [lastResult, state, trackedKeys])
 
@@ -368,10 +367,10 @@ export default function MysticSimulatorPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight mb-6">심법 뽑기 시뮬레이터</h1>
-      </div>
+    <main className="container max-w-5xl py-6 min-h-screen">
+      <header className="mb-8 space-y-4">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">심법 뽑기 시뮬레이터</h1>
+      </header>
 
       {/* 컨트롤 패널 */}
       <div className="bg-card border border-border rounded-lg p-6 mb-6 space-y-6 shadow-sm">
@@ -518,7 +517,7 @@ export default function MysticSimulatorPage() {
           <div className="flex flex-col gap-2">
             {(() => {
               const cardsToDismantle = lastResult.filter(
-                (card) => !trackedKeys.has(`${card.title}-${card.등급}`),
+                (card) => !trackedKeys.has(`${card.심법명}-${card.등급}`),
               )
               return (
                 <button
@@ -580,11 +579,11 @@ export default function MysticSimulatorPage() {
                   // 전체 심법에서 검색
                   const searchResults = allCards
                     .filter((card) =>
-                      card.title.toLowerCase().includes(searchQuery.value.toLowerCase()),
+                      card.심법명.toLowerCase().includes(searchQuery.value.toLowerCase()),
                     )
                     .reduce(
                       (acc, card) => {
-                        const key = `${card.title}-${card.등급}`
+                        const key = `${card.심법명}-${card.등급}`
                         if (!acc[key]) {
                           acc[key] = card
                         }
@@ -597,7 +596,7 @@ export default function MysticSimulatorPage() {
                     if (a.등급 !== b.등급) {
                       return b.등급 - a.등급
                     }
-                    return a.title.localeCompare(b.title)
+                    return a.심법명.localeCompare(b.심법명)
                   })
 
                   if (results.length === 0) {
@@ -609,7 +608,7 @@ export default function MysticSimulatorPage() {
                   }
 
                   return results.map((card, idx) => {
-                    const key = `${card.title}-${card.등급}`
+                    const key = `${card.심법명}-${card.등급}`
                     const isTracked = trackedKeys.has(key)
                     const moveToSaved = () => setTrackedKeys((prev) => new Set(prev).add(key))
                     return (
@@ -634,7 +633,7 @@ export default function MysticSimulatorPage() {
               // lastResult에서 추적 중인 카드만 그룹화
               const savedGroups = lastResult.reduce(
                 (acc, card) => {
-                  const key = `${card.title}-${card.등급}`
+                  const key = `${card.심법명}-${card.등급}`
                   if (trackedKeys.has(key)) {
                     if (!acc[key]) {
                       acc[key] = { card, count: 0 }
@@ -652,7 +651,7 @@ export default function MysticSimulatorPage() {
                   if (a.card.등급 !== b.card.등급) {
                     return b.card.등급 - a.card.등급
                   }
-                  return a.card.title.localeCompare(b.card.title)
+                  return a.card.심법명.localeCompare(b.card.심법명)
                 })
 
               if (savedList.length === 0) {
@@ -703,7 +702,7 @@ export default function MysticSimulatorPage() {
                 // 심법별로 그룹핑 (보관된 심법도 포함)
                 const cardGroups = lastResult.reduce(
                   (acc, card) => {
-                    const key = `${card.title}-${card.등급}`
+                    const key = `${card.심법명}-${card.등급}`
                     if (!acc[key]) {
                       acc[key] = {
                         card,
@@ -721,11 +720,11 @@ export default function MysticSimulatorPage() {
                   if (a.card.등급 !== b.card.등급) {
                     return b.card.등급 - a.card.등급
                   }
-                  return a.card.title.localeCompare(b.card.title)
+                  return a.card.심법명.localeCompare(b.card.심법명)
                 })
 
                 return sortedGroups.map(({ card, count }, idx) => {
-                  const key = `${card.title}-${card.등급}`
+                  const key = `${card.심법명}-${card.등급}`
                   const isTracked = trackedKeys.has(key)
 
                   // 이 심법을 보관함으로 이동 (추적 추가)
@@ -827,6 +826,6 @@ export default function MysticSimulatorPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   )
 }

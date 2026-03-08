@@ -29,11 +29,11 @@ export default function MysticCard({
       }`}
     >
       {/* 아이콘 */}
-      {card.심법_img && (
+      {card.심법_이미지_url && (
         <div className="relative w-12 h-12 rounded overflow-hidden bg-black flex-shrink-0">
           <Image
-            src={card.심법_img}
-            alt={card.title}
+            src={card.심법_이미지_url}
+            alt={card.심법명}
             fill
             className="object-contain text-white text-sm"
           />
@@ -42,14 +42,14 @@ export default function MysticCard({
 
       {/* 텍스트 */}
       <div className="flex flex-col flex-1 min-w-0">
-        <div className="font-medium truncate">{card.title}</div>
+        <div className="font-medium truncate">{card.심법명}</div>
 
-        {card.유파_img && (
+        {card.유파_이미지_url && (
           <div className="flex items-center">
             <div className="relative w-8 h-8">
               <Image
-                src={card.유파_img}
-                alt={card.유파 || card.title}
+                src={card.유파_이미지_url}
+                alt={card.유파 || card.심법명}
                 fill
                 className="object-contain"
               />
@@ -90,7 +90,7 @@ export default function MysticCard({
             removeCard()
           }}
           className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-accent hover:bg-accent/10 transition"
-          title={`${card.title} 전체 제거`}
+          title={`${card.심법명} 전체 제거`}
         >
           ✕
         </button>

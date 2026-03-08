@@ -6,12 +6,11 @@ export interface MysticCard {
   id: number
   유파_code: string
   유파: string
-  title: string
-  body: string
+  심법명: string
   순서: number
   등급: MysticRarity
-  심법_img: string | null
-  유파_img: string | null
+  심법_이미지_url: string | null
+  유파_이미지_url: string | null
 }
 
 export interface GachaBanner {
