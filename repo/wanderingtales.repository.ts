@@ -2,7 +2,7 @@
 
 import { query } from '@/lib/db'
 import type { WanderingTales } from '@/types/wanderingtales'
-import type { Lang } from '@/types/martial'
+import type { Lang } from '@/types/base'
 
 export class WanderingTalesRepository {
   private tableName = 'T_naesilBoard'

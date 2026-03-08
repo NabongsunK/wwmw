@@ -1,7 +1,7 @@
 // T_CodeBase 레포지토리 (조회 전용)
 
 import { query } from '@/lib/db'
-import type { Lang } from '@/types/martial'
+import type { Lang } from '@/types/base'
 
 export class CodeBaseRepository {
   private tableName = 'T_CodeBase'

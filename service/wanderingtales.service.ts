@@ -2,7 +2,7 @@
 
 import { WanderingTalesRepository } from '@/repo/wanderingtales.repository'
 import type { WanderingTales } from '@/types/wanderingtales'
-import type { Lang } from '@/types/martial'
+import type { Lang } from '@/types/base'
 import { CodeBaseRepository } from '@/repo/T_CodeBase.repository'
 export class WanderingTalesService {
   private wanderingTalesRepository: WanderingTalesRepository
