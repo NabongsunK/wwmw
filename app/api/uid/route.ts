@@ -24,7 +24,6 @@ const uidService = new UidService()
  */
 export async function POST(_request: NextRequest) {
   try {
-    console.warn('POST /api/uid')
     const data = await uidService.create()
     return responseCreated(data)
   } catch (error) {
