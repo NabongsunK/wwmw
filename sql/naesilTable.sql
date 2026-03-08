@@ -17,3 +17,9 @@ CREATE TABLE IF NOT EXISTS `T_naesilBoard` (
 
 
 
+CREATE TABLE IF NOT EXISTS `T_Region` (
+  `cd1` VARCHAR(7) NOT NULL COMMENT '코드1 (대분류)',
+  `cd2` VARCHAR(7) NOT NULL COMMENT '코드2 (중분류)',
+  `cd3` VARCHAR(7) NOT NULL COMMENT '코드3 (소분류)',
+  PRIMARY KEY (`cd1`, `cd2`, `cd3`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci; 

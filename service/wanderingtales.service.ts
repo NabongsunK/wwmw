@@ -4,12 +4,16 @@ import { WanderingTalesRepository } from '@/repo/wanderingtales.repository'
 import type { WanderingTales } from '@/types/wanderingtales'
 import type { Lang } from '@/types/base'
 import { CodeBaseRepository } from '@/repo/T_CodeBase.repository'
+import { RegionRepository } from '@/repo/T_Region.repositiory'
+import type { WanderingTalesRegion } from '@/types/wanderingtales'
 export class WanderingTalesService {
   private wanderingTalesRepository: WanderingTalesRepository
   private codeBaseRepository: CodeBaseRepository
+  private regionRepository: RegionRepository
   constructor() {
     this.wanderingTalesRepository = new WanderingTalesRepository()
     this.codeBaseRepository = new CodeBaseRepository()
+    this.regionRepository = new RegionRepository()
   }
 
   /**
@@ -40,5 +44,15 @@ export class WanderingTalesService {
     }
 
     return wanderingTales
+  }
+
+  /**
+   * 만사록 지역 조회
+   */
+  async getWanderingTalesRegion(lang: Lang): Promise<WanderingTalesRegion> {
+    return {
+      FirstRegion: await this.regionRepository.FirstRegion(lang),
+      ThirdRegion: await this.regionRepository.ThirdRegion(lang),
+    } as WanderingTalesRegion
   }
 }

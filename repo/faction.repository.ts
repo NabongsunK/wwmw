@@ -1,7 +1,7 @@
 // 유파 레포지토리
 
 import { query } from '@/lib/db'
-import type { Lang } from '@/types/martial'
+import type { Lang } from '@/types/base'
 
 export interface Faction {
   code: string
@@ -20,7 +20,7 @@ export class FactionRepository {
       FROM T_CodeBase
       WHERE code LIKE '1001%' AND lang = ?
       ORDER BY code ASC`,
-      [lang, lang]
+      [lang, lang],
     )
   }
 }

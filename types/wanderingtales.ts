@@ -16,3 +16,13 @@ export interface WanderingTales {
   like_count: number
   comment_count: number
 }
+
+export interface Region {
+  cd1: string
+  cd3: string
+}
+
+export interface WanderingTalesRegion {
+  FirstRegion: string[]
+  ThirdRegion: Region[]
+}

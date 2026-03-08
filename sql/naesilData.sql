@@ -74,3 +74,12 @@ INSERT INTO `T_naesilBoard` (type_code, region_code, subRegion_code, title_code,
 /* 공지 */
 ('2000000', null, null, '5000001', null, 'ko', '공지 내용', NULL, 1)
 ON DUPLICATE KEY UPDATE body = VALUES(body);
+
+
+INSERT INTO `T_Region` (cd1, cd2, cd3) VALUES
+/* 하서-옥문관*/
+('3030000', '3031000', '3031001'),
+('3030000', '3031000', '3031002'),
+('3030000', '3031000', '3031003'),
+('3030000', '3031000', '3031004')
+ON DUPLICATE KEY UPDATE cd1 = VALUES(cd1), cd2 = VALUES(cd2), cd3 = VALUES(cd3);
