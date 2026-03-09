@@ -1,50 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WWMW - 연운 도구
 
-## 프로젝트 구조 (Layered Architecture)
+Next.js 기반 웹 앱. 심법 뽑기, 스무고개족보, 만사록(나사일) 등 게임 연동 도구를 제공합니다.
+
+- **기술 스택**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, MySQL
+- **다국어**: 쿠키 `lang` 기반 (ko/en 등), API·UI 공통 적용
+
+---
+
+## 프로젝트 구조
 
 ```
-WWE/
-├── app/                    # Next.js App Router
-│   ├── api/               # API 라우트 (RESTful endpoints)
-│   │   ├── db/            # 데이터베이스 관련 API
-│   │   │   └── test/
-│   │   │       └── route.ts
-│   │   └── users/         # 사용자 API
-│   │       └── route.ts
-│   ├── components/        # React 컴포넌트
-│   │   ├── BuildList.tsx
-│   │   ├── Footer.tsx
-│   │   ├── Header.tsx
-│   │   └── Layout.tsx
-│   ├── layout.tsx         # 루트 레이아웃
-│   ├── page.tsx           # 메인 페이지
-│   └── globals.css        # 전역 스타일
+wwe/
+├── app/                        # Next.js App Router
+│   ├── api/                    # REST API
+│   │   ├── db/test/            # DB 연결 테스트
+│   │   ├── factions/           # 유파 목록 (다국어)
+│   │   ├── innerways/simulator/# 심법 시뮬레이터용
+│   │   ├── twenty-questions/   # 스무고개
+│   │   ├── uid/                # 방문자 UID 발급·조회
+│   │   └── wanderingtales/     # 만사록 목록·상세
+│   ├── api-doc/                # Swagger API 문서 페이지
+│   ├── builds/                 # 빌드 목록·상세 페이지 (주석 처리됨)
+│   ├── simulator/mystic/       # 심법 뽑기 페이지
+│   ├── twentyquestions/        # 스무고개 페이지
+│   ├── components/             # 공통 컴포넌트 (Header, Footer, Layout, BuildForm 등)
+│   ├── providers/              # LanguageProvider, Providers
+│   ├── layout.tsx
+│   ├── page.tsx                # 메인 (현재 심법 뽑기)
+│   └── globals.css
 │
-├── service/               # Service 레이어 (비즈니스 로직)
-│   └── user.service.ts
+├── repo/                       # Repository (DB 접근)
+│   ├── T_CodeBase.repository.ts
+│   ├── faction.repository.ts
+│   ├── innerway.repository.ts
+│   ├── twenty-questions.repository.ts
+│   ├── uid.repository.ts
+│   └── wanderingtales.repository.ts
 │
-├── repo/                  # Repository 레이어 (데이터 접근)
-│   └── user.repository.ts
+├── service/                    # Service (비즈니스 로직)
+│   ├── faction.service.ts
+│   ├── innerway.service.ts
+│   ├── uid.service.ts
+│   └── wanderingtales.service.ts
 │
-├── types/                 # TypeScript 타입 정의
-│   └── user.ts
+├── types/                      # TypeScript 타입
+│   ├── nav.ts
+│   ├── wanderingtales.ts
+│   ├── innerway.ts
+│   ├── twenty-questions.ts
+│   └── uid.ts
 │
-├── lib/                   # 유틸리티 및 설정
-│   ├── db.ts              # MySQL 연결 풀
-│   └── db.example.ts      # 사용 예시
+├── lib/                        # 유틸·설정
+│   ├── db.ts                   # MySQL 연결 풀 (mysql2)
+│   ├── api-response.ts         # 공통 API 응답 (responseOk, responseServerError 등)
+│   ├── api-lang.ts             # 요청에서 lang 추출 (쿠키)
+│   ├── auth.ts
+│   ├── swagger.ts
+│   └── lang-validator.ts / lang-cookie-client.ts / uid-cookie-client.ts
 │
-└── public/                # 정적 파일
+├── hooks/                      # React 훅
+│   ├── useApi.ts
+│   ├── useUid.ts
+│   ├── useInput.ts
+│   └── useHighlight.tsx
+│
+├── sql/                        # DB 스키마·시드
+│   ├── schema_simple.sql       # 단순화 스키마 (T_CodeBase, 빌드보드 등)
+│   ├── naesilTable.sql         # 만사록 보드 테이블
+│   ├── naesilData.sql          # 만사록 코드·보드 시드
+│   ├── function/UDF_BaseCode.sql
+│   └── 기타 (무술계층, 이미지 등)
+│
+├── doc/                        # 문서
+│   ├── DEPLOYMENT.md           # 맥미니/PM2/Nginx 배포
+│   ├── LANGUAGE_USAGE.md      # 다국어 사용법
+│   ├── EXTERNAL_ACCESS.md
+│   └── fix-db-permissions.md
+│
+├── deploy/                     # 배포용
+│   ├── Dockerfile              # MySQL 이미지
+│   ├── deploy.sh
+│   └── auto_sync.sh
+│
+├── script/                     # 스크립트 (로컬·폴링 배포 등)
+│   └── auto_sync.sh            # WWE Next.js + PM2 폴링 자동 동기화
+│
+├── public/                     # 정적 파일
+├── middleware.ts               # lang 쿠키 → x-lang 헤더 등
+├── ecosystem.config.js         # PM2 설정
+└── next.config.ts / tailwind.config.ts / tsconfig.json
 ```
 
-### 아키텍처 레이어
+### 레이어 요약
 
-1. **API Routes** (`app/api/`) - HTTP 요청/응답 처리
-2. **Services** (`service/`) - 비즈니스 로직 및 검증
-3. **Repositories** (`repo/`) - 데이터베이스 CRUD 작업
-4. **Database** (`lib/db.ts`) - MySQL 연결 관리
-5. **Types** (`types/`) - TypeScript 타입 정의
+| 레이어     | 경로       | 역할                                    |
+| ---------- | ---------- | --------------------------------------- |
+| API Routes | `app/api/` | HTTP 요청/응답, 쿼리 파라미터·쿠키 처리 |
+| Service    | `service/` | 비즈니스 로직, 검증, Repository 호출    |
+| Repository | `repo/`    | MySQL 쿼리 (`lib/db` 사용)              |
+| Types      | `types/`   | DTO·도메인 타입 정의                    |
 
-## Getting Started
+---
+
+## 시작하기
 
 ### 1. 의존성 설치
 
@@ -52,9 +110,9 @@ WWE/
 npm install
 ```
 
-### 2. MySQL 데이터베이스 설정
+### 2. 환경 변수
 
-프로젝트 루트에 `.env.local` 파일을 생성하고 다음 내용을 추가하세요:
+프로젝트 루트에 `.env.local` 생성:
 
 ```env
 MYSQL_HOST=localhost
@@ -64,61 +122,75 @@ MYSQL_PASSWORD=wwe_password
 MYSQL_DATABASE=wwe_db
 ```
 
-**관리자 uid (선택)**  
-빌드 수정/삭제를 모든 글에 할 수 있는 관리자를 두려면, 해당 uid를 쉼표로 나열하세요.  
-(uid는 브라우저에서 한 번 로그인/접속 후 `POST /api/uid`로 발급받은 값입니다.)
+**관리자 UID (선택)**  
+특정 UID를 관리자로 두려면 (빌드 등 전체 수정/삭제 권한):
 
 ```env
 ADMIN_UIDS=발급받은-uuid-1,발급받은-uuid-2
 ```
 
-- 비워두면 **작성자만** 자신의 글 수정/삭제 가능.
-- 설정하면 나열한 uid는 **모든 빌드**에 대해 수정/삭제 가능.
+- uid는 브라우저 접속 후 `POST /api/uid`로 발급
+- 비워두면 작성자만 자신 글 수정/삭제 가능
 
-또는 Docker를 사용하는 경우:
+### 3. DB 준비
 
-```bash
-cd ../deploy
-docker build -t wwe-mysql .
-docker run -d -p 3306:3306 --name wwe-mysql wwe-mysql
+- MySQL 8 사용. `sql/schema_simple.sql`, `sql/naesilTable.sql`, `sql/naesilData.sql` 등으로 스키마·시드 적용
+- Docker 사용 시: `deploy/Dockerfile`로 MySQL 이미지 빌드 후 실행 (자세한 내용은 `doc/DEPLOYMENT.md` 참고)
 
-docker start wwe-mysql
-```
-
-### 3. 개발 서버 실행
+### 4. 개발 서버 실행
 
 ```bash
 cd 'F:\Users\user\project\sideProject\wwe\'
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+브라우저에서 [http://localhost:3000](http://localhost:3000) 접속.
 
-### 4. 데이터베이스 연결 테스트
+### 5. DB 연결 확인
 
-브라우저에서 [http://localhost:3000/api/db/test](http://localhost:3000/api/db/test)를 열어 연결을 테스트할 수 있습니다.
+[http://localhost:3000/api/db/test](http://localhost:3000/api/db/test) 에서 연결 상태 확인.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 주요 API
 
-## Learn More
+| 메서드   | 경로                       | 설명                                             |
+| -------- | -------------------------- | ------------------------------------------------ |
+| GET      | `/api/db/test`             | DB 연결 테스트                                   |
+| GET      | `/api/factions`            | 유파 목록 (다국어, 쿠키 lang)                    |
+| GET      | `/api/wanderingtales`      | 만사록 목록 (쿼리: region, subRegion, 쿠키 lang) |
+| GET      | `/api/wanderingtales/:id`  | 만사록 상세                                      |
+| GET/POST | `/api/uid`                 | UID 조회/발급                                    |
+| GET      | `/api/twenty-questions`    | 스무고개                                         |
+| GET      | `/api/innerways/simulator` | 심법 시뮬레이터용                                |
 
-To learn more about Next.js, take a look at the following resources:
+- 다국어 API는 쿠키 `lang` 또는 `x-lang` 사용. 자세한 사용법은 `doc/LANGUAGE_USAGE.md` 참고.
+- API 문서: 개발 서버 실행 후 [http://localhost:3000/api-doc](http://localhost:3000/api-doc) (Swagger).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 스크립트
 
-## Deploy on Vercel
+| 스크립트                            | 설명                         |
+| ----------------------------------- | ---------------------------- |
+| `npm run dev`                       | 개발 서버 (Next.js)          |
+| `npm run build`                     | 프로덕션 빌드                |
+| `npm run start`                     | 프로덕션 서버 실행 (빌드 후) |
+| `npm run lint` / `npm run lint:fix` | ESLint                       |
+| `npm run type-check`                | TypeScript 검사              |
+| `npm run format`                    | Prettier 포맷                |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 배포
+
+- **맥미니·PM2·Nginx**: `doc/DEPLOYMENT.md`
+- **폴링 자동 동기화** (Git pull → npm ci → build → PM2 restart): `script/auto_sync.sh` (프로젝트 루트에서 실행)
+
+---
+
+## 참고 문서
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- `doc/DEPLOYMENT.md` - 배포 가이드
+- `doc/LANGUAGE_USAGE.md` - 다국어(쿠키·API) 사용법

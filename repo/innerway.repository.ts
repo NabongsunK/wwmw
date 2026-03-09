@@ -2,7 +2,7 @@
 
 import { query } from '@/lib/db'
 import type { Innerway } from '@/types/innerway'
-import type { Lang } from '@/types/martial'
+import type { Lang } from '@/types/base'
 
 export class InnerwayRepository {
   private tableName = 'T_심법'
