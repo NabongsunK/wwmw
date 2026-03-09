@@ -5,10 +5,20 @@ import mediumZoom from 'medium-zoom'
 
 export default function ZoomImage() {
   useEffect(() => {
-    mediumZoom('.prose img', {
-      margin: 24,
-      background: '#000',
+    const zoom = mediumZoom('.prose img', {
+      margin: 0,
+      background: 'transparent',
     })
+    const observer = new MutationObserver(() => {
+      zoom.attach(document.querySelectorAll('.prose img'))
+    })
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    })
+
+    return () => observer.disconnect()
   }, [])
 
   return null
