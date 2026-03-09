@@ -9,6 +9,7 @@ export default function ZoomImage() {
       margin: 0,
       background: 'transparent',
     })
+
     const observer = new MutationObserver(() => {
       zoom.attach(document.querySelectorAll('.prose img'))
     })
@@ -18,7 +19,12 @@ export default function ZoomImage() {
       subtree: true,
     })
 
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+
+      zoom.close()
+      zoom.detach()
+    }
   }, [])
 
   return null
