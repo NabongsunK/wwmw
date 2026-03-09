@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin "@tailwindcss/typography";
 
 @font-face {
   font-family: 'Soonbatang';
@@ -124,4 +125,73 @@ button {
   .container {
     max-width: 1280px;
   }
+}
+
+/* mdx 파일 */
+
+.prose {
+  --tw-prose-headings: rgb(var(--foreground));
+  --tw-prose-body: rgb(var(--foreground));
+  --tw-prose-links: rgb(var(--accent));
+  --tw-prose-bold: rgb(var(--foreground));
+}
+
+.prose h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-top: 2rem;
+}
+
+.prose h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  border-bottom: 1px solid rgb(var(--border));
+  padding-bottom: 0.5rem;
+}
+
+.prose h2 a {
+  opacity: 0;
+  margin-left: 0.5rem;
+  text-decoration: none;
+}
+
+.prose h2:hover a {
+  opacity: 1;
+}
+
+.prose .anchor {
+  opacity: 0;
+  margin-left: 0.5rem;
+  text-decoration: none;
+}
+
+.prose h2:hover .anchor {
+  opacity: 1;
+}
+
+.prose pre {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.prose code {
+  font-size: 0.9rem;
+}
+
+.prose table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.prose table th {
+  background: rgb(var(--muted));
+  font-weight: 600;
+}
+
+.prose table th,
+.prose table td {
+  border: 1px solid rgb(var(--border));
+  padding: 0.5rem 0.75rem;
 }
