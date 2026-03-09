@@ -1,7 +1,7 @@
 import { compileMDX } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
 
-import { WanderingTalesFrontmatter } from '@/types/wttypes'
+import { WanderingTalesFrontmatter } from '@/types/wanderingtales'
 import { mdxComponents } from '@/app/components/mdx/WTMdxComponents'
 
 import rehypeSlug from 'rehype-slug'

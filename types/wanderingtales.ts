@@ -1,4 +1,11 @@
-// 심법 관련 타입 정의
+// 만사록 관련 타입 정의
+
+// 프론트매터
+export interface WanderingTalesFrontmatter {
+  title: string
+  region: string
+  subRegion: string
+}
 
 export interface WanderingTales {
   id: number
