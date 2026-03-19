@@ -6,7 +6,6 @@ import { useParams } from 'next/navigation'
 import { renderMDX } from '@/lib/mdx'
 import { useApi } from '@/hooks/useApi'
 import { WanderingTalesFrontmatter } from '@/types/wanderingtales'
-
 import ZoomImage from '@/app/components/mdx/ZoomImage'
 
 export default function WanderingTalesPage() {
@@ -15,7 +14,7 @@ export default function WanderingTalesPage() {
 
   const postId = params.id
 
-  const [content, setContent] = useState<ReactNode>('로딩 중...')
+  const [content, setContent] = useState<ReactNode>('')
   const [frontmatter, setFrontmatter] = useState<WanderingTalesFrontmatter>({
     title: '',
     region: '',
@@ -27,12 +26,18 @@ export default function WanderingTalesPage() {
       if (!postId) return
       const json = await fetchApi(`/wanderingtales/${postId}`)
       if (json?.success && json?.data) {
-        // const source = getSampleMdx(json.data.region, json.data.subRegion, json.data.title)
-        const { content, frontmatter } = await renderMDX(json.data.body)
+        const { content } = await renderMDX(json.data.body)
+
+        const info = {
+          title: json.data.title,
+          region: json.data.region,
+          subRegion: json.data.subRegion,
+        }
 
         setContent(content)
-        setFrontmatter(frontmatter)
+        setFrontmatter(info)
       } else {
+        setContent('포스트를 불러오는 데 실패했습니다.')
         console.error('Failed to fetch post data')
       }
     }
@@ -46,7 +51,7 @@ export default function WanderingTalesPage() {
 
   return (
     <div className="min-h-screen p-4">
-      <main className="max-w-4xl mx-auto py-8">
+      <main className="max-w-5xl mx-auto py-8">
         <header className="mb-8 border-b pb-4">
           <h1 className="text-4xl font-bold ">
             {frontmatter.title ? String(frontmatter.title) : '가이드'}
@@ -57,9 +62,8 @@ export default function WanderingTalesPage() {
             )}
           </h1>
         </header>
-
         <ZoomImage />
-        <article className="prose dark:prose-invert lg:prose-xl">{content}</article>
+        <article className="prose dark:prose-invert lg:prose-l max-w-full">{content}</article>
       </main>
     </div>
   )

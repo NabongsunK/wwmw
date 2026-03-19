@@ -5,5 +5,5 @@ import { CustomHeader } from './Header'
 export const mdxComponents = {
   Callout,
   GuideImage,
-  CustomHeader,
+  h2: CustomHeader,
 }

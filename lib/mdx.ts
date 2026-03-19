@@ -9,11 +9,11 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypePrettyCode from 'rehype-pretty-code'
 
 export async function renderMDX(source: string) {
-  const { content, frontmatter } = await compileMDX<WanderingTalesFrontmatter>({
+  const { content } = await compileMDX<WanderingTalesFrontmatter>({
     source,
     components: mdxComponents,
     options: {
-      parseFrontmatter: true,
+      parseFrontmatter: false, // 이미 API에서 정보 따로 저장함.
       mdxOptions: {
         remarkPlugins: [[remarkGfm]],
         rehypePlugins: [
@@ -43,5 +43,5 @@ export async function renderMDX(source: string) {
     },
   })
 
-  return { content, frontmatter }
+  return { content }
 }

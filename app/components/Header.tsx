@@ -9,6 +9,11 @@ import { LanguageSwitcher } from './LanguageSwitcherSafe'
 
 export function Header() {
   const pathname = usePathname()
+
+  function isActivePath(pathname: string, href: string) {
+    return pathname === href || pathname.startsWith(`${href}/`)
+  }
+
   return (
     <header
       className="
@@ -34,7 +39,7 @@ export function Header() {
                 // TODO: 나중에 메인페이지 변경 시 수정해줘야함. 26.03.07 - 김무겸
                 className={`
                   relative hover:text-foreground transition
-                  ${item.href === pathname ? 'text-foreground' : pathname === '/' && item.label === '심법 뽑기' ? 'text-foreground' : 'text-muted-foreground'}
+                  ${isActivePath(pathname, item.href) ? 'text-foreground' : 'text-muted-foreground'}
                 `}
               >
                 {item.label}
