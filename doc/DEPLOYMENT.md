@@ -1,6 +1,6 @@
 # 맥미니 배포 가이드
 
-이 문서는 맥미니에서 WWE Next.js 애플리케이션을 배포하는 방법을 설명합니다.
+이 문서는 맥미니에서 wwmw Next.js 애플리케이션을 배포하는 방법을 설명합니다.
 
 ## 필수 요구사항
 
@@ -41,8 +41,8 @@ npm install -g pm2
 프로젝트의 `deploy/` 디렉터리에 MySQL Dockerfile이 있습니다. README와 동일한 방식으로 사용합니다.
 
 ```bash
-# WWE 프로젝트의 deploy 디렉터리에서
-cd ./sideProject/WWE/deploy
+# wwmw 프로젝트의 deploy 디렉터리에서
+cd ./wwmw/deploy
 docker build -t wwe-mysql .
 docker run -d -p 3306:3306 --name wwe-mysql wwe-mysql
 
@@ -51,7 +51,6 @@ docker start wwe-mysql
 ```
 
 Docker 이미지에 이미 `wwe_db`, `wwe_user` / `wwe_password`가 설정되어 있으므로 별도 DB 생성 없이 `.env.production`만 맞추면 됩니다.
-
 
 ### 1.4 환경 변수 (.env.production)
 
@@ -79,17 +78,17 @@ ADMIN_UIDS=발급받은-uuid-1,발급받은-uuid-2
 
 ### 2.1 PM2 설정 파일 수정
 
-프로젝트 루트의 `ecosystem.config.js`에서 `cwd`를 실제 WWE 프로젝트 경로로 변경:
+프로젝트 루트의 `ecosystem.config.js`에서 `cwd`를 실제 wwmw 프로젝트 경로로 변경:
 
 ```javascript
-cwd: '/Users/your-username/sideProject/WWE',  // 실제 경로로 변경
+cwd: '/Users/your-username/wwmw',  // 실제 경로로 변경
 ```
 
 ### 2.2 로그 디렉토리 생성
 
 ```bash
 # 프로젝트 루트에서
-cd /path/to/WWE
+cd /path/to/wwmw
 mkdir -p logs
 ```
 
@@ -97,7 +96,7 @@ mkdir -p logs
 
 ```bash
 # 프로젝트 루트에서
-cd /path/to/WWE
+cd /path/to/wwmw
 
 # 빌드 먼저 실행
 npm run build
@@ -129,14 +128,14 @@ brew install nginx
 sudo mkdir -p /opt/homebrew/etc/nginx/servers
 
 # 설정 파일 복사
-sudo cp nginx.conf.example /opt/homebrew/etc/nginx/servers/wwe
+sudo cp nginx.conf.example /opt/homebrew/etc/nginx/servers/wwmw
 
 # 설정 파일 편집 (도메인 등 수정)
-sudo vi /opt/homebrew/etc/nginx/servers/wwe
+sudo vi /opt/homebrew/etc/nginx/servers/wwmw
 ```
 
-
 **설정 파일 수정 사항:**
+
 - `server_name your-domain.com;` → 실제 도메인 또는 `localhost` (로컬 테스트 시)
 
 ### 3.3 Nginx 시작 및 재시작
@@ -183,6 +182,7 @@ ifconfig | grep "inet " | grep -v 127.0.0.1
 - 예: `http://192.168.0.10`
 
 **참고:**
+
 - `server_name localhost;`로 설정되어 있어도 IP로 접근 가능합니다.
 - 도메인을 사용하려면 `server_name`에 도메인을 추가하거나 `_` (모든 호스트 허용)를 사용할 수 있습니다.
 
@@ -193,7 +193,7 @@ ifconfig | grep "inet " | grep -v 127.0.0.1
 `deploy/deploy.sh`는 의존성 설치 → 빌드 → PM2 재시작까지 수행합니다. **프로젝트 루트(WWE)**에서 실행하세요.
 
 ```bash
-cd /path/to/WWE
+cd /path/to/wwmw
 
 # 실행 권한 부여 (최초 1회)
 chmod +x deploy/deploy.sh
@@ -204,10 +204,35 @@ chmod +x deploy/deploy.sh
 
 코드 반영이 필요하면 `deploy/deploy.sh` 안의 `git pull origin main` 주석을 해제한 뒤 사용하세요.
 
+### 4.1a Git 자동 동기화 (`auto_sync.sh`) 백그라운드 실행
+
+주기적으로 `git fetch`/`pull` 후 빌드·PM2 재기동까지 하려면 `deploy/auto_sync.sh`를 **nohup**으로 띄웁니다. SSH를 닫아도 계속 돌아갑니다.
+
+```bash
+cd /path/to/wwmw
+
+chmod +x deploy/nohup_auto_sync.sh deploy/start_auto_sync_background.sh deploy/stop_auto_sync_background.sh deploy/auto_sync.sh
+
+# 시작 (로그: logs/auto_sync_bg.out, logs/auto_sync.log)
+# 아래 둘은 동일 — nohup_auto_sync.sh 가 start_auto_sync_background.sh 를 호출합니다.
+./deploy/nohup_auto_sync.sh
+# ./deploy/start_auto_sync_background.sh
+
+# 상태 확인
+pgrep -af auto_sync || true
+tail -f logs/auto_sync.log
+
+# 중지
+./deploy/stop_auto_sync_background.sh
+```
+
+- **PID 파일:** `logs/auto_sync.pid` — 중복 실행 방지용입니다.
+- **cloudflared** 는 `auto_sync.sh` 안에서 이미 떠 있으면 스킵하고, 없으면 `logs/cloudflared.log` 로 기동합니다.
+
 ### 4.2 수동 배포
 
 ```bash
-cd /path/to/WWE
+cd /path/to/wwmw
 
 # 1. 코드 업데이트 (Git 사용 시)
 git pull origin main
