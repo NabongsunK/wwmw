@@ -369,7 +369,9 @@ export default function MysticSimulatorPage() {
   return (
     <main className="container max-w-5xl py-6 min-h-screen">
       <header className="mb-8 space-y-4">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">심법 뽑기 시뮬레이터</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          심법 뽑기 시뮬레이터22
+        </h1>
       </header>
 
       {/* 컨트롤 패널 */}
