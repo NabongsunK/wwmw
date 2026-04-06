@@ -4,7 +4,7 @@
 
 import { useLanguage } from '@/app/providers/LanguageProvider'
 import { useState, useEffect, useRef } from 'react'
-import type { Lang } from '@/types/martial'
+import type { Lang } from '@/types/base'
 
 const LANGUAGES = [
   { code: 'ko' as Lang, label: '한국어', flag: '🇰🇷', short: 'KO' },
@@ -22,7 +22,9 @@ export function LanguageSwitcher() {
   const currentLanguage = LANGUAGES.find((l) => l.code === lang) || LANGUAGES[0]
 
   useEffect(() => {
-    setMounted(true)
+    setTimeout(() => {
+      setMounted(true)
+    }, 0)
   }, [])
 
   // 외부 클릭 감지

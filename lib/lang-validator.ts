@@ -1,7 +1,7 @@
 // 언어 유효성 검사 유틸리티
 
 import { responseBadRequest } from '@/lib/api-response'
-import type { Lang } from '@/types/martial'
+import type { Lang } from '@/types/base'
 
 /**
  * 지원하는 언어 목록

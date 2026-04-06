@@ -1,7 +1,7 @@
 // 유파 서비스
 
 import { FactionRepository, type Faction } from '@/repo/faction.repository'
-import type { Lang } from '@/types/martial'
+import type { Lang } from '@/types/base'
 
 export class FactionService {
   private factionRepository: FactionRepository

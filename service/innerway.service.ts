@@ -2,7 +2,7 @@
 
 import { InnerwayRepository } from '@/repo/innerway.repository'
 import type { Innerway } from '@/types/innerway'
-import type { Lang } from '@/types/martial'
+import type { Lang } from '@/types/base'
 
 export class InnerwayService {
   private innerwayRepository: InnerwayRepository

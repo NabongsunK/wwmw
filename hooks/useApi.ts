@@ -3,7 +3,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import type { Lang } from '@/types/martial'
+import type { Lang } from '@/types/base'
 import type { ApiResponse } from '@/types/api'
 import { getLangCookie } from '@/lib/lang-cookie-client'
 

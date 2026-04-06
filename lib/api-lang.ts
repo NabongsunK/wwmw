@@ -1,7 +1,7 @@
 // API 요청에서 언어(lang) 읽기 - 미들웨어가 쿠키 검증 후 x-lang 헤더로 넣어 둠
 
 import { NextRequest } from 'next/server'
-import type { Lang } from '@/types/martial'
+import type { Lang } from '@/types/base'
 import { isValidLang } from './lang-validator'
 
 /** 쿠키 키 (프론트에서 한 번 설정하면 모든 API 요청에 자동 포함) */

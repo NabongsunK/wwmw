@@ -2,7 +2,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import type { Lang } from '@/types/martial'
+import type { Lang } from '@/types/base'
 import { useState, useEffect, useRef } from 'react'
 import { useLanguage } from '@/app/providers/LanguageProvider'
 

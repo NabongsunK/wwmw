@@ -3,7 +3,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import type { Lang } from '@/types/martial'
+import type { Lang } from '@/types/base'
 import { SUPPORTED_LANGS } from '@/lib/lang-validator'
 import { setLangCookie, getLangCookie } from '@/lib/lang-cookie-client'
 import { getUidCookie, setUidCookie } from '@/lib/uid-cookie-client'
