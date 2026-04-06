@@ -140,7 +140,7 @@ ADMIN_UIDS=발급받은-uuid-1,발급받은-uuid-2
 ### 4. 개발 서버 실행
 
 ```bash
-cd 'F:\Users\user\project\sideProject\wwe\'
+cd 'F:\Users\user\project\wwmw\'
 npm run dev
 ```
 
