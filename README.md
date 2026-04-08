@@ -1,49 +1,69 @@
 # WWMW - 연운 도구
 
-Next.js 기반 웹 앱. 심법 뽑기, 스무고개족보, 만사록(나사일) 등 게임 연동 도구를 제공합니다.
+Next.js 기반 웹 연운 심법 뽑기, 스무고개족보, 만사록 등 게임 연동 도구를 제공합니다.
 
-- **기술 스택**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, MySQL
-- **다국어**: 쿠키 `lang` 기반 (ko/en 등), API·UI 공통 적용
+- **기술 스택**: Next.js · TypeScript · Tailwind CSS · MySQL(3306) · docker · PM2 · Nginx · Cloudflare Tunnel
+- **공개 URL**: [https://wwmw.shop](https://wwmw.shop)
 
 ---
 
 ## 아키텍처 / 설계
 
-### 사용자 요청 경로 (운영)
+### 기술 스택
+
+| 구분       | 선택                                                                                      |
+| ---------- | ----------------------------------------------------------------------------------------- |
+| 프레임워크 | Next.js, TypeScript                                                                       |
+| 데이터     | MySQL 8 · 기본 포트 **3306** (`MYSQL_PORT`로 변경 가능)                                   |
+| API·문서   | REST, Swagger                                                                             |
+| 콘텐츠     | MDX , `remark-gfm`, rehype                                                                |
+| 배포·운영  | Node 서버 (next start), PM2로 상시 실행; MySQL은 Docker 등 별도 구성(일반적으로 **3306**) |
+
+### 설계 의도
+
+- **Next.js 선택이유**: 화면과 **REST API(`app/api`)** 를 한 레포에서 다루어, **배포 단위와 코드 탐색**을 단순하게 유지하려고 했습니다.
+- **TypeScript 선택이유**: API·Service·Repository·도메인 타입을 맞춰 **요청/응답·DB 매핑**에서 실수를 줄이고, 리팩터링 시 영향 범위를 추적하기 쉽게 하려고 했습니다.
+- **MySQL + mysql2**:
+  - **도메인 데이터**: 유파·만사록·UID 등 **관계형으로 두기 자연스러운 데이터**를 테이블로 관리하고, `mysql2` **연결 풀**로 안정적으로 쿼리하려고 했습니다.
+  - **다국어**: 언어별 문구·콘텐츠를 **DB에 두고 `lang` 기준으로 조회**해, API가 같은 규칙으로 응답하도록 하려고 **RDB를 썼습니다**
+  - **SQL Server 대비**: 맥미니 한 대에서 Node와 DB를 같이 돌리는 전제에서, **기본 메모리·운영 부담이 상대적으로 작은 편인 조합**으로 가져가기 쉬워 MySQL을 택했습니다.
+- **REST + Swagger**: 클라이언트·외부 소비자와 **HTTP 계약**을 명확히 하고, swagger를 통해 프론트개발자가 쉽게 개발 하려고 했습니다.
+- **MDX + remark/rehype**: 공지·가이드·블로그 성격의 콘텐츠를 **코드와 가까운 형태**로 작성·버전 관리하려고 했습니다.
+- **다국어(앱 계층, 쿠키 `lang`)**: 브라우저의 `lang`을 **미들웨어·헤더**로 API에 넘겨, 위 **DB의 언어별 데이터**와 맞물리게 하려고 했습니다.
+- **Docker(MySQL)**: 로컬·서버에서 **DB 스키마/시드를 재현**하기 쉽게 하려고 했습니다.
+- **PM2 · Nginx · Cloudflare Tunnel**: Node 프로세스는 **상시 실행·재시작**을 PM2로, 같은 머신에서 **경로별로 서비스를 나누는** 역할은 Nginx로, 외부 HTTPS·터널은 Cloudflare로 **역할을 나누려고** 했습니다.
+
+### 아키텍처 다이어그램
 
 ```mermaid
 flowchart TB
-  user[Browser] -->|HTTPS| cf[Cloudflare Tunnel]
-  cf -->|origin 80| nginx[nginx 80]
+  subgraph traffic[사용자 요청]
+    user[Browser] -->|HTTPS| cf[Cloudflare Tunnel]
+    cf -->|origin 80| nginx[nginx 80]
+    nginx -->|루트| wwmw[WWMW Next.js 3000]
+  end
 
-  nginx -->|루트| wwmw[WWMW Next.js 3000]
-  nginx -->|port 하위| port[PORT Next.js 3030]
+  subgraph deploy[배포 루프 WWMW]
+    dev[Developer] -->|git push| gitRemote[Git Remote]
+    sync[auto_sync.sh] -->|git pull| gitRemote
+    sync -->|npm install| deps[node_modules]
+    sync -->|npm run build| build[Next build]
+    build -->|pm2 restart| pm2[PM2]
+    pm2 --> wwmw
+  end
+
+  subgraph dataLayer[WWMW 데이터 접근]
+    api[app api routes] --> svc[service]
+    svc --> repo[repo]
+    repo --> mysql[(MySQL 3306)]
+  end
+
+  wwmw -->|요청 처리| api
 ```
 
-- **의도**: 외부에서는 도메인 하나만 보되, nginx에서 **경로 기준으로 책임을 분리**합니다.
-  - `/` → `wwmw` (Next.js, 예: 3000)
-  - `/port` → 포트폴리오 앱(별도 Next.js, 예: 3030, `basePath: "/port"`)
-
-### 배포 루프 (자동 동기화 + PM2)
-
-```mermaid
-flowchart TB
-  dev[Developer] -->|git push| gitRemote[Git Remote]
-  sync[auto_sync.sh] -->|git pull| gitRemote
-  sync -->|npm install| deps[node_modules]
-  sync -->|npm run build| build[Next build]
-  build -->|pm2 restart| pm2[PM2]
-  pm2 --> wwmwApp[WWMW Next.js]
-```
-
-### 데이터 접근 (MySQL)
-
-```mermaid
-flowchart LR
-  api[app/api/*] --> svc[service/*]
-  svc --> repo[repo/*]
-  repo --> db[(MySQL)]
-```
+- **경로 매핑(요약)**:
+  - `/` → `wwmw` (Next.js, :3000)
+  - `/port` → 포트폴리오 앱(별도 Next.js, :3030, `basePath: "/port"`)
 
 ---
 
