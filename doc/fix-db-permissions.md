@@ -34,7 +34,7 @@ MYSQL_HOST=localhost
 MYSQL_PORT=3306
 MYSQL_USER=wwe_user
 MYSQL_PASSWORD=wwe_password
-MYSQL_DATABASE=wwe_db  # 또는 z (Dockerfile에 설정된 이름)
+MYSQL_DATABASE=wwe_db
 ```
 
 ### 방법 4: Dockerfile 수정 후 재빌드
