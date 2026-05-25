@@ -9,6 +9,7 @@
 3. [보안 강화 방법](#3-보안-강화-방법)
 4. [전체 보안 체크리스트](#4-전체-보안-체크리스트)
 5. [추천 구성](#5-추천-구성)
+6. [문제 해결](#6-문제-해결)
 
 ---
 
@@ -589,6 +590,46 @@ sudo /usr/libexec/ApplicationFirewall/socketfilterfw --listapps
 sudo /usr/libexec/ApplicationFirewall/socketfilterfw --remove /path/to/app
 sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add /path/to/app
 ```
+
+### nginx (Homebrew) — `nginx.pid` 깨짐·502 / Cloudflare Bad Gateway
+
+맥미니에서 **nginx가 안 뜨거나**, Cloudflare 앞에 두었을 때 **502 Bad Gateway**가 나는 경우, 원본(맥미니)에서 **nginx 또는 upstream(Node 등)이 죽어 있음**일 수 있습니다. 아래는 **Homebrew nginx** 기준으로 실제로 겪은 이슈를 정리한 것입니다.
+
+#### 증상
+
+- `brew services info nginx` → **Running: ✘**
+- 에러 로그에 `invalid PID number "" in "/opt/homebrew/var/run/nginx.pid"`
+- 과거 로그에 `open() "/var/log/nginx/wwe-access.log" failed (2: No such file or directory)` → **`[emerg]`** 이면 **기동 자체 실패** (로그 디렉터리/경로 문제)
+- `brew services start nginx` 시 `launchctl bootstrap ... exited with 5` (launchctl·서비스 등록 쪽 문제일 수 있음)
+
+#### 원인: 맥미니 **강제 종료** 등
+
+- 전원 강제 종료 시 nginx가 **PID 파일을 정상적으로 쓰지 못하거나**, 프로세스는 죽었는데 **`nginx.pid`만 비정상 상태**로 남을 수 있음.
+- PID가 비어 있으면 reload/stop 시 **잘못된 상태**로 동작할 수 있음.
+
+#### 로그 경로 (Linux용 경로를 그대로 쓴 경우)
+
+- 설정에 `access_log` / `error_log`를 **`/var/log/nginx/...`** 로 두었는데 맥에 해당 경로가 없으면 **`[emerg]`** 로 nginx가 시작하지 못함.
+- Homebrew nginx는 보통 **`/opt/homebrew/var/log/nginx/`** 아래에 두거나, `/var/log/nginx`를 쓰려면 **`sudo mkdir -p /var/log/nginx`** 후 권한·소유자 맞추기.
+
+#### 대응 순서
+
+1. 설정 검사  
+   `sudo nginx -t`
+2. (프로세스 없음이 확인되었거나 정상 종료 후) **깨진 PID 파일 제거**  
+   ```bash
+   sudo rm -f /opt/homebrew/var/run/nginx.pid
+   ```
+3. 다시 기동  
+   ```bash
+   sudo nginx -t && sudo nginx
+   ```
+   또는 `brew services start nginx` (launchctl이 정상일 때)
+4. 여전히 502면 **upstream 포트** 확인 (예: `curl -I http://127.0.0.1:3000`) — nginx만 살아 있고 Node/Next가 죽어 있어도 502가 남.
+
+#### 예방
+
+- 가능하면 재부팅·전원 끄기 전에 **`sudo nginx -s quit`** 또는 **`brew services stop nginx`** 로 정상 종료.
 
 ---
 

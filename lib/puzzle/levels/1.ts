@@ -1,0 +1,43 @@
+import type { LevelConfig } from '../types'
+
+/** sliding_puzzle/board.py + blocks.py 와 동일한 1번 맵 */
+export const level1: LevelConfig = {
+  id: '1',
+  title: '쓰레기 정리 #1',
+  rows: 8,
+  cols: 6,
+  exit: { row: 6, col: 2 },
+  walls: [
+    [0, 2],
+    [0, 3],
+    [0, 4],
+    [0, 5],
+    [1, 2],
+    [1, 3],
+    [1, 4],
+    [1, 5],
+    [3, 4],
+    [3, 5],
+    [4, 4],
+    [4, 5],
+    [5, 4],
+    [5, 5],
+    [6, 0],
+    [6, 1],
+    [6, 4],
+    [6, 5],
+    [7, 0],
+    [7, 1],
+    [7, 4],
+    [7, 5],
+  ],
+  blocks: [
+    { kind: 'JUNK_2x2', row: 0, col: 0 },
+    { kind: 'YELLOW_V_2x2', row: 2, col: 0 },
+    { kind: 'YELLOW_V_2x2', row: 4, col: 0 },
+    { kind: 'TEAL_H_2x1', row: 2, col: 2 },
+    { kind: 'TEAL_H_2x1', row: 3, col: 2 },
+    { kind: 'TEAL_H_2x1', row: 4, col: 2 },
+    { kind: 'TEAL_H_2x1', row: 5, col: 2 },
+  ],
+}
