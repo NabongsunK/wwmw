@@ -20,11 +20,7 @@ export function getBlockCells(block: Block): [number, number][] {
   return cells
 }
 
-function occupiedCells(
-  blocks: Block[],
-  walls: Set<string>,
-  excludeId: number | null
-): Set<string> {
+function occupiedCells(blocks: Block[], walls: Set<string>, excludeId: number | null): Set<string> {
   const occ = new Set(walls)
   for (const b of blocks) {
     if (b.id === excludeId) continue
@@ -41,7 +37,7 @@ function canMove(
   dc: number,
   occupied: Set<string>,
   rows: number,
-  cols: number
+  cols: number,
 ): boolean {
   for (const [r, c] of getBlockCells(block)) {
     const nr = r + dr
@@ -66,22 +62,14 @@ export function getWallsSet(level: LevelConfig): Set<string> {
   return new Set(level.walls.map(([r, c]) => wallKey(r, c)))
 }
 
-export function blockAtCell(
-  blocks: Block[],
-  row: number,
-  col: number
-): Block | null {
+export function blockAtCell(blocks: Block[], row: number, col: number): Block | null {
   for (const b of blocks) {
     if (getBlockCells(b).some(([r, c]) => r === row && c === col)) return b
   }
   return null
 }
 
-export function selectAt(
-  state: GameState,
-  row: number,
-  col: number
-): GameState {
+export function selectAt(state: GameState, row: number, col: number): GameState {
   const block = blockAtCell(state.blocks, row, col)
   return { ...state, selectedId: block?.id ?? null }
 }
@@ -91,7 +79,7 @@ export function tryMoveSelected(
   level: LevelConfig,
   dr: number,
   dc: number,
-  countMove = true
+  countMove = true,
 ): GameState {
   if (state.won || state.selectedId === null) return state
   const block = state.blocks.find((b) => b.id === state.selectedId)
@@ -104,15 +92,11 @@ export function tryMoveSelected(
   }
 
   const blocks = state.blocks.map((b) =>
-    b.id === block.id ? { ...b, row: b.row + dr, col: b.col + dc } : b
+    b.id === block.id ? { ...b, row: b.row + dr, col: b.col + dc } : b,
   )
   let won: boolean = state.won
   const junk = blocks.find((b) => b.kind === 'JUNK_2x2')
-  if (
-    junk &&
-    junk.row === level.exit.row &&
-    junk.col === level.exit.col
-  ) {
+  if (junk && junk.row === level.exit.row && junk.col === level.exit.col) {
     won = true
   }
 
@@ -129,7 +113,7 @@ export function applyDragMoves(
   level: LevelConfig,
   dr: number,
   dc: number,
-  steps: number
+  steps: number,
 ): GameState {
   let next = state
   let moved = false
@@ -156,19 +140,4 @@ export function cloneGameState(state: GameState): GameState {
 
 export function resetGame(level: LevelConfig): GameState {
   return createGameState(level)
-}
-
-/** 개발용: 쓰레기를 출구에 두고 클리어 처리 */
-export function forceWin(state: GameState, level: LevelConfig): GameState {
-  const blocks = state.blocks.map((b) =>
-    b.kind === 'JUNK_2x2'
-      ? { ...b, row: level.exit.row, col: level.exit.col }
-      : b,
-  )
-  return {
-    blocks,
-    moveCount: state.moveCount,
-    selectedId: null,
-    won: true,
-  }
 }

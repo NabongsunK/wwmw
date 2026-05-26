@@ -1,3 +1,5 @@
+USE `wwe_db`;
+
 CREATE TABLE IF NOT EXISTS `T_naesilBoard` (
  `id` INT AUTO_INCREMENT PRIMARY KEY,
   `type_code` VARCHAR(7) NULL COMMENT '타입 코드 (T_CodeBase.code 참조)',

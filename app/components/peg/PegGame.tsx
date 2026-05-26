@@ -7,14 +7,12 @@ import {
   clickCell,
   clonePegState,
   createPegState,
-  forcePegWin,
   getValidTargets,
   resetPeg,
 } from '@/lib/peg/engine'
 import type { PegGameState } from '@/lib/peg/types'
 import { usePuzzleClearSave } from '@/hooks/usePuzzleClearSave'
 import ClearSaveStatusMessage from '@/app/components/archi/ClearSaveStatus'
-import DevClearButton from '@/app/components/archi/DevClearButton'
 import PuzzlePlayLayout from '@/app/components/archi/PuzzlePlayLayout'
 
 const CELL = 48
@@ -36,7 +34,6 @@ export default function PegGame({ level, puzzleId, nickname, uid }: PegGameProps
     errorMessage: saveError,
     savedNickname,
     saveVersion,
-    devTriggerClear,
   } = usePuzzleClearSave(game.won, puzzleId, nickname, game.moveCount, uid)
 
   const triggerShake = useCallback(() => {
@@ -68,11 +65,6 @@ export default function PegGame({ level, puzzleId, nickname, uid }: PegGameProps
   const handleReset = () => {
     setGame(resetPeg(level))
     setHistory([])
-  }
-
-  const handleDevClear = () => {
-    setGame((g) => forcePegWin(g))
-    devTriggerClear()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -183,7 +175,6 @@ export default function PegGame({ level, puzzleId, nickname, uid }: PegGameProps
           >
             R 리셋
           </button>
-          <DevClearButton onClear={handleDevClear} />
         </div>
 
         <div className="mt-3 rounded-md bg-muted/40 p-3 text-sm text-muted-foreground">

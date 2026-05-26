@@ -9,7 +9,6 @@ import {
   createGameState,
   getBlockSize,
   getWallsSet,
-  forceWin,
   resetGame,
   selectAt,
   tryMoveSelected,
@@ -18,7 +17,6 @@ import type { GameState } from '@/lib/puzzle/types'
 import { dragMoveSteps, dragPreviewOffset } from '@/lib/puzzle/drag'
 import { usePuzzleClearSave } from '@/hooks/usePuzzleClearSave'
 import ClearSaveStatusMessage from '@/app/components/archi/ClearSaveStatus'
-import DevClearButton from '@/app/components/archi/DevClearButton'
 import PuzzlePlayLayout from '@/app/components/archi/PuzzlePlayLayout'
 
 const CELL = 56
@@ -44,7 +42,6 @@ export default function PuzzleGame({ level, puzzleId, nickname, uid }: PuzzleGam
     errorMessage: saveError,
     savedNickname,
     saveVersion,
-    devTriggerClear,
   } = usePuzzleClearSave(game.won, puzzleId, nickname, game.moveCount, uid)
   const [dragging, setDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
@@ -261,12 +258,6 @@ export default function PuzzleGame({ level, puzzleId, nickname, uid }: PuzzleGam
         >
           R 리셋
         </button>
-        <DevClearButton
-          onClear={() => {
-            setGame((g) => forceWin(g, level))
-            devTriggerClear()
-          }}
-        />
       </div>
 
       {game.won && (

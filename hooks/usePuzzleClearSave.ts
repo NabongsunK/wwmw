@@ -48,17 +48,10 @@ export function usePuzzleClearSave(
     saveClearNow()
   }, [won, saveClearNow])
 
-  /** 개발용: 클리어 상태로 맞춘 뒤 저장 (이미 클리어여도 재시도 가능) */
-  const devTriggerClear = useCallback(() => {
-    postedRef.current = false
-    saveClearNow()
-  }, [saveClearNow])
-
   return {
     status,
     errorMessage,
     savedNickname,
     saveVersion,
-    devTriggerClear,
   }
 }

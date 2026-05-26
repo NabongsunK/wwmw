@@ -87,16 +87,6 @@ export function resetPeg(level: PegLevelConfig): PegGameState {
   return createPegState(level)
 }
 
-/** 개발용: 클리어 상태로 전환 */
-export function forcePegWin(state: PegGameState): PegGameState {
-  return {
-    ...state,
-    won: true,
-    stuck: false,
-    selected: null,
-  }
-}
-
 export type PegClickFeedback = 'no_moves' | 'invalid_target'
 
 export interface PegClickResult {
