@@ -7,6 +7,8 @@ const pool = mysql.createPool({
   user: process.env.MYSQL_USER || 'wwe_user',
   password: process.env.MYSQL_PASSWORD || 'wwe_password',
   database: process.env.MYSQL_DATABASE || 'wwe_db',
+  /** MySQL default-time-zone(+09:00)과 동일하게 맞춤 */
+  timezone: '+09:00',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,

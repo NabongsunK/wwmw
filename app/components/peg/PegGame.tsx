@@ -1,18 +1,23 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { PegLevelConfig } from '@/lib/peg/types'
 import { GRID, getMovesFrom, isHole, key } from '@/lib/peg/board'
-import { clickCell, createPegState, forcePegWin, getValidTargets, resetPeg } from '@/lib/peg/engine'
+import {
+  clickCell,
+  clonePegState,
+  createPegState,
+  forcePegWin,
+  getValidTargets,
+  resetPeg,
+} from '@/lib/peg/engine'
+import type { PegGameState } from '@/lib/peg/types'
 import { usePuzzleClearSave } from '@/hooks/usePuzzleClearSave'
 import ClearSaveStatusMessage from '@/app/components/archi/ClearSaveStatus'
 import DevClearButton from '@/app/components/archi/DevClearButton'
 import PuzzlePlayLayout from '@/app/components/archi/PuzzlePlayLayout'
 
 const CELL = 48
-const HINT_MS = 2800
-
-const INVALID_TARGET_HINT = '여기로는 이동할 수 없습니다. 빈 칸(노란 링)을 눌러 주세요.'
 
 interface PegGameProps {
   level: PegLevelConfig
@@ -23,7 +28,7 @@ interface PegGameProps {
 
 export default function PegGame({ level, puzzleId, nickname, uid }: PegGameProps) {
   const [game, setGame] = useState(() => createPegState(level))
-  const [hint, setHint] = useState<string | null>(null)
+  const [history, setHistory] = useState<PegGameState[]>([])
   const [shakeKey, setShakeKey] = useState(0)
   const targets = getValidTargets(game)
   const {
@@ -38,32 +43,31 @@ export default function PegGame({ level, puzzleId, nickname, uid }: PegGameProps
     setShakeKey((k) => k + 1)
   }, [])
 
-  useEffect(() => {
-    if (!hint) return
-    const t = window.setTimeout(() => setHint(null), HINT_MS)
-    return () => window.clearTimeout(t)
-  }, [hint])
+  const handleUndo = useCallback(() => {
+    setHistory((h) => {
+      if (h.length === 0) return h
+      setGame(h[h.length - 1]!)
+      return h.slice(0, -1)
+    })
+  }, [])
 
   const handleCellClick = (row: number, col: number) => {
     if (!isHole(row, col) || game.won || game.stuck) return
 
     const { state, feedback } = clickCell(game, level, row, col)
+    if (state.moveCount > game.moveCount) {
+      setHistory((h) => [...h, clonePegState(game)])
+    }
     setGame(state)
 
-    if (feedback === 'invalid_target') {
-      setHint(INVALID_TARGET_HINT)
+    if (feedback === 'invalid_target' || feedback === 'no_moves') {
       triggerShake()
-    } else if (feedback === 'no_moves') {
-      setHint(null)
-      triggerShake()
-    } else {
-      setHint(null)
     }
   }
 
   const handleReset = () => {
     setGame(resetPeg(level))
-    setHint(null)
+    setHistory([])
   }
 
   const handleDevClear = () => {
@@ -75,6 +79,11 @@ export default function PegGame({ level, puzzleId, nickname, uid }: PegGameProps
     if (e.key === 'r' || e.key === 'R') {
       e.preventDefault()
       handleReset()
+      return
+    }
+    if (e.key === 'e' || e.key === 'E') {
+      e.preventDefault()
+      handleUndo()
     }
   }
 
@@ -92,22 +101,13 @@ export default function PegGame({ level, puzzleId, nickname, uid }: PegGameProps
           <div>
             <h1 className="text-xl font-bold text-foreground">{level.title}</h1>
             <p className="text-sm text-muted-foreground">
-              {nickname} · 구슬 → 빈 칸 · R 리셋 · 남은 {game.pegs.size}개
+              {nickname} · 구슬 → 빈 칸 · E 이전 · R 리셋 · 남은 {game.pegs.size}개
             </p>
           </div>
           <div className="rounded-md border border-amber-800/40 bg-amber-900/30 px-3 py-1 font-mono text-lg font-bold text-amber-100">
             {String(game.moveCount).padStart(3, '0')}
           </div>
         </div>
-
-        {hint && (
-          <p
-            className="mb-3 rounded-md border border-amber-500/50 bg-amber-500/15 px-3 py-2 text-center text-sm font-medium text-amber-200"
-            role="alert"
-          >
-            {hint}
-          </p>
-        )}
 
         <div
           key={shakeKey}
@@ -168,6 +168,14 @@ export default function PegGame({ level, puzzleId, nickname, uid }: PegGameProps
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className="rounded-md bg-muted px-4 py-2 text-sm hover:bg-muted/80 disabled:cursor-not-allowed disabled:opacity-40"
+            onClick={handleUndo}
+            disabled={history.length === 0}
+          >
+            E 이전
+          </button>
           <button
             type="button"
             className="rounded-md bg-muted px-4 py-2 text-sm hover:bg-muted/80"

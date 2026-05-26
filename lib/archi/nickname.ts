@@ -1,5 +1,5 @@
 /** 닉네임 미입력 시 기본값 (archi → 아치) */
-export const DEFAULT_ARCHI_NICKNAME = '테스트아치'
+export const DEFAULT_ARCHI_NICKNAME = '바보아치'
 export const ARCHI_NICKNAME_STORAGE_KEY = 'archi-puzzle-nickname'
 export const ARCHI_NICKNAME_MAX_LENGTH = 32
 
@@ -25,10 +25,7 @@ export function getNicknameBase(nickname: string): string {
 /**
  * 같은 기본 닉네임은 항상 #1, #2 … 붙임 (첫 클리어도 #1).
  */
-export function allocateUniqueNickname(
-  base: string,
-  existingNicknames: string[],
-): string {
+export function allocateUniqueNickname(base: string, existingNicknames: string[]): string {
   let maxSuffix = 0
   for (const name of existingNicknames) {
     if (name === base) {

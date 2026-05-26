@@ -73,6 +73,16 @@ export function getValidTargets(state: PegGameState): Set<string> {
   return new Set(getMovesFrom(state.pegs, state.selected).map((m) => m.toKey))
 }
 
+export function clonePegState(state: PegGameState): PegGameState {
+  return {
+    pegs: new Set(state.pegs),
+    moveCount: state.moveCount,
+    selected: state.selected,
+    won: state.won,
+    stuck: state.stuck,
+  }
+}
+
 export function resetPeg(level: PegLevelConfig): PegGameState {
   return createPegState(level)
 }

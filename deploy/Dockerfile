@@ -7,6 +7,9 @@ ENV MYSQL_DATABASE=wwe_db
 ENV MYSQL_USER=wwe_user
 ENV MYSQL_PASSWORD=wwe_password
 
+# 한국 표준시 (KST)
+COPY mysql/conf.d/timezone.cnf /etc/mysql/conf.d/timezone.cnf
+
 # 포트 노출
 EXPOSE 3306
 

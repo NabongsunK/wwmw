@@ -50,7 +50,23 @@ docker run -d -p 3306:3306 --name wwe-mysql wwe-mysql
 docker start wwe-mysql
 ```
 
-Docker 이미지에 이미 `wwe_db`, `wwe_user` / `wwe_password`가 설정되어 있으므로 별도 DB 생성 없이 `.env.production`만 맞추면 됩니다.
+Docker 이미지에 이미 `wwe_db`, `wwe_user` / `wwe_password`가 설정되어 있으며, `deploy/mysql/conf.d/timezone.cnf`로 **MySQL 기본 시간대는 KST(`+09:00`)** 입니다.
+
+**이미 `wwe-mysql` 컨테이너를 쓰는 경우** — 이미지를 다시 빌드한 뒤 컨테이너를 재생성해야 타임존이 적용됩니다.
+
+```bash
+cd wwmw/deploy
+docker build -t wwe-mysql .
+docker stop wwe-mysql
+docker rm wwe-mysql
+docker run -d -p 3306:3306 --name wwe-mysql wwe-mysql
+
+# 적용 확인
+docker exec wwe-mysql mysql -uroot -prootpassword -e \
+  "SELECT @@global.time_zone, @@session.time_zone, NOW(), UTC_TIMESTAMP();"
+```
+
+`@@global.time_zone` 이 `+09:00` 이고 `NOW()` 가 한국 시각이면 정상입니다. 앱(`lib/db.ts`)도 `timezone: '+09:00'` 으로 맞춰 두었습니다.
 
 ### 1.4 환경 변수 (.env.production)
 

@@ -145,6 +145,15 @@ export function applyDragMoves(
   return next
 }
 
+export function cloneGameState(state: GameState): GameState {
+  return {
+    blocks: state.blocks.map((b) => ({ ...b })),
+    moveCount: state.moveCount,
+    selectedId: state.selectedId,
+    won: state.won,
+  }
+}
+
 export function resetGame(level: LevelConfig): GameState {
   return createGameState(level)
 }

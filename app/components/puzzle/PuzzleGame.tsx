@@ -5,6 +5,7 @@ import type { LevelConfig } from '@/lib/puzzle/types'
 import {
   applyDragMoves,
   blockAtCell,
+  cloneGameState,
   createGameState,
   getBlockSize,
   getWallsSet,
@@ -13,6 +14,7 @@ import {
   selectAt,
   tryMoveSelected,
 } from '@/lib/puzzle/engine'
+import type { GameState } from '@/lib/puzzle/types'
 import { dragMoveSteps, dragPreviewOffset } from '@/lib/puzzle/drag'
 import { usePuzzleClearSave } from '@/hooks/usePuzzleClearSave'
 import ClearSaveStatusMessage from '@/app/components/archi/ClearSaveStatus'
@@ -36,6 +38,7 @@ interface PuzzleGameProps {
 
 export default function PuzzleGame({ level, puzzleId, nickname, uid }: PuzzleGameProps) {
   const [game, setGame] = useState(() => createGameState(level))
+  const [history, setHistory] = useState<GameState[]>([])
   const {
     status: saveStatus,
     errorMessage: saveError,
@@ -49,6 +52,28 @@ export default function PuzzleGame({ level, puzzleId, nickname, uid }: PuzzleGam
   const boardRef = useRef<HTMLDivElement>(null)
 
   const walls = getWallsSet(level)
+
+  const commitMove = useCallback((updater: (g: GameState) => GameState) => {
+    setGame((g) => {
+      const next = updater(g)
+      if (next === g) return g
+      setHistory((h) => [...h, cloneGameState(g)])
+      return next
+    })
+  }, [])
+
+  const handleUndo = useCallback(() => {
+    setHistory((h) => {
+      if (h.length === 0) return h
+      setGame(h[h.length - 1]!)
+      return h.slice(0, -1)
+    })
+  }, [])
+
+  const handleReset = useCallback(() => {
+    setGame(resetGame(level))
+    setHistory([])
+  }, [level])
 
   const cellFromClient = useCallback(
     (clientX: number, clientY: number): [number, number] | null => {
@@ -92,7 +117,7 @@ export default function PuzzleGame({ level, puzzleId, nickname, uid }: PuzzleGam
     const dy = e.clientY - dragStart.y
     const { dr, dc, steps } = dragMoveSteps(dx, dy, CELL)
     if (steps > 0) {
-      setGame((g) => applyDragMoves(g, level, dr, dc, steps))
+      commitMove((g) => applyDragMoves(g, level, dr, dc, steps))
     }
     setDragging(false)
     setDragOffset({ x: 0, y: 0 })
@@ -100,7 +125,13 @@ export default function PuzzleGame({ level, puzzleId, nickname, uid }: PuzzleGam
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'r' || e.key === 'R') {
-      setGame(resetGame(level))
+      e.preventDefault()
+      handleReset()
+      return
+    }
+    if (e.key === 'e' || e.key === 'E') {
+      e.preventDefault()
+      handleUndo()
       return
     }
     let dr = 0
@@ -111,7 +142,7 @@ export default function PuzzleGame({ level, puzzleId, nickname, uid }: PuzzleGam
     else if (e.key === 'ArrowRight' || e.key === 'd') dc = 1
     else return
     e.preventDefault()
-    setGame((g) => tryMoveSelected(g, level, dr, dc, true))
+    commitMove((g) => tryMoveSelected(g, level, dr, dc, true))
   }
 
   const preview = dragging ? dragPreviewOffset(dragOffset.x, dragOffset.y, CELL) : { px: 0, py: 0 }
@@ -131,7 +162,9 @@ export default function PuzzleGame({ level, puzzleId, nickname, uid }: PuzzleGam
       <div className="mb-4 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-foreground">{level.title}</h1>
-          <p className="text-sm text-muted-foreground">{nickname} · 드래그 또는 방향키 · R 리셋</p>
+          <p className="text-sm text-muted-foreground">
+            {nickname} · 드래그/방향키 · E 이전 · R 리셋
+          </p>
         </div>
         <div
           className="rounded-md border-2 border-amber-800/50 bg-amber-700/80 px-3 py-1 font-mono text-lg font-bold text-amber-950"
@@ -213,6 +246,21 @@ export default function PuzzleGame({ level, puzzleId, nickname, uid }: PuzzleGam
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          className="rounded-md bg-muted px-4 py-2 text-sm hover:bg-muted/80 disabled:cursor-not-allowed disabled:opacity-40"
+          onClick={handleUndo}
+          disabled={history.length === 0}
+        >
+          E 이전
+        </button>
+        <button
+          type="button"
+          className="rounded-md bg-muted px-4 py-2 text-sm hover:bg-muted/80"
+          onClick={handleReset}
+        >
+          R 리셋
+        </button>
         <DevClearButton
           onClear={() => {
             setGame((g) => forceWin(g, level))
