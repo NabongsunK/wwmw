@@ -148,3 +148,18 @@ export function applyDragMoves(
 export function resetGame(level: LevelConfig): GameState {
   return createGameState(level)
 }
+
+/** 개발용: 쓰레기를 출구에 두고 클리어 처리 */
+export function forceWin(state: GameState, level: LevelConfig): GameState {
+  const blocks = state.blocks.map((b) =>
+    b.kind === 'JUNK_2x2'
+      ? { ...b, row: level.exit.row, col: level.exit.col }
+      : b,
+  )
+  return {
+    blocks,
+    moveCount: state.moveCount,
+    selectedId: null,
+    won: true,
+  }
+}

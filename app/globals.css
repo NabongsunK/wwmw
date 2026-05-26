@@ -195,3 +195,30 @@ button {
   border: 1px solid rgb(var(--border));
   padding: 0.5rem 0.75rem;
 }
+
+/* 아치 퍼즐 — 구슬 점프 보드 흔들림 */
+@keyframes peg-board-shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  15% {
+    transform: translate(-5px, 1px);
+  }
+  30% {
+    transform: translate(5px, -1px);
+  }
+  45% {
+    transform: translate(-4px, 0);
+  }
+  60% {
+    transform: translate(4px, 1px);
+  }
+  75% {
+    transform: translate(-2px, 0);
+  }
+}
+
+.peg-board-shake {
+  animation: peg-board-shake 0.45s ease-in-out;
+}

@@ -8,11 +8,16 @@ import {
   createGameState,
   getBlockSize,
   getWallsSet,
+  forceWin,
   resetGame,
   selectAt,
   tryMoveSelected,
 } from '@/lib/puzzle/engine'
 import { dragMoveSteps, dragPreviewOffset } from '@/lib/puzzle/drag'
+import { usePuzzleClearSave } from '@/hooks/usePuzzleClearSave'
+import ClearSaveStatusMessage from '@/app/components/archi/ClearSaveStatus'
+import DevClearButton from '@/app/components/archi/DevClearButton'
+import PuzzlePlayLayout from '@/app/components/archi/PuzzlePlayLayout'
 
 const CELL = 56
 
@@ -24,10 +29,20 @@ const BLOCK_COLORS: Record<string, string> = {
 
 interface PuzzleGameProps {
   level: LevelConfig
+  puzzleId: string
+  nickname: string
+  uid?: string | null
 }
 
-export default function PuzzleGame({ level }: PuzzleGameProps) {
+export default function PuzzleGame({ level, puzzleId, nickname, uid }: PuzzleGameProps) {
   const [game, setGame] = useState(() => createGameState(level))
+  const {
+    status: saveStatus,
+    errorMessage: saveError,
+    savedNickname,
+    saveVersion,
+    devTriggerClear,
+  } = usePuzzleClearSave(game.won, puzzleId, nickname, game.moveCount, uid)
   const [dragging, setDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
@@ -47,7 +62,7 @@ export default function PuzzleGame({ level }: PuzzleGameProps) {
       const row = Math.floor(y / CELL)
       return [row, col]
     },
-    []
+    [],
   )
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -99,9 +114,7 @@ export default function PuzzleGame({ level }: PuzzleGameProps) {
     setGame((g) => tryMoveSelected(g, level, dr, dc, true))
   }
 
-  const preview = dragging
-    ? dragPreviewOffset(dragOffset.x, dragOffset.y, CELL)
-    : { px: 0, py: 0 }
+  const preview = dragging ? dragPreviewOffset(dragOffset.x, dragOffset.y, CELL) : { px: 0, py: 0 }
 
   const boardW = level.cols * CELL
   const boardH = level.rows * CELL
@@ -113,17 +126,12 @@ export default function PuzzleGame({ level }: PuzzleGameProps) {
     col < level.exit.col + 2
 
   return (
-    <div
-      className="mx-auto max-w-lg select-none"
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
-    >
+    <PuzzlePlayLayout puzzleId={puzzleId} rankingRefreshKey={saveVersion}>
+    <div className="mx-auto max-w-lg select-none" tabIndex={0} onKeyDown={handleKeyDown}>
       <div className="mb-4 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-foreground">{level.title}</h1>
-          <p className="text-sm text-muted-foreground">
-            레벨 {level.id} · 드래그 또는 방향키 · R 리셋
-          </p>
+          <p className="text-sm text-muted-foreground">{nickname} · 드래그 또는 방향키 · R 리셋</p>
         </div>
         <div
           className="rounded-md border-2 border-amber-800/50 bg-amber-700/80 px-3 py-1 font-mono text-lg font-bold text-amber-950"
@@ -171,8 +179,7 @@ export default function PuzzleGame({ level }: PuzzleGameProps) {
           {game.blocks.map((block) => {
             const { width, height } = getBlockSize(block.kind)
             const isSel = block.id === game.selectedId
-            const off =
-              isSel && dragging ? preview : { px: 0, py: 0 }
+            const off = isSel && dragging ? preview : { px: 0, py: 0 }
             return (
               <div
                 key={block.id}
@@ -205,11 +212,24 @@ export default function PuzzleGame({ level }: PuzzleGameProps) {
         )}
       </div>
 
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <DevClearButton
+          onClear={() => {
+            setGame((g) => forceWin(g, level))
+            devTriggerClear()
+          }}
+        />
+      </div>
+
       {game.won && (
-        <p className="mt-4 text-center text-lg font-semibold text-green-400">
-          수거 완료!
-        </p>
+        <p className="mt-4 text-center text-lg font-semibold text-green-400">수거 완료!</p>
       )}
+      <ClearSaveStatusMessage
+        status={saveStatus}
+        errorMessage={saveError}
+        savedNickname={savedNickname}
+      />
     </div>
+    </PuzzlePlayLayout>
   )
 }
