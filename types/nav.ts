@@ -10,4 +10,5 @@ export const NAV_ITEMS: NavItem[] = [
   { label: '심법 뽑기', href: '/simulator/mystic' },
   { label: '스무고개', href: '/twentyquestions' },
   { label: '만사록', href: '/wandering-tales' },
+  { label: '온디바이스 AI', href: '/chrome-ai' },
 ]

@@ -23,15 +23,15 @@ export function Header() {
       backdrop-blur-md
     "
     >
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex min-h-16 flex-wrap items-center justify-between gap-3 py-2">
         {/* 로고 */}
-        <div className="flex items-center gap-8">
+        <div className="flex min-w-0 flex-wrap items-center gap-4 sm:gap-8">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-xl font-semibold tracking-wide font-soonbatang">위무위</span>
             {/* <span className="text-xs text-muted-foreground">WWE</span> */}
           </Link>
 
-          <nav className="flex items-center gap-6 text-sm">
+          <nav className="flex flex-wrap items-center gap-4 text-sm sm:gap-6">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.label}
