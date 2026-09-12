@@ -30,7 +30,7 @@ export function ApiStatusGrid({
         <div
           key={status.name}
           title={status.detail}
-          className={`rounded-md border px-3 py-2 ${toneClass(status)}`}
+          className={`min-h-[3.25rem] rounded-md border px-3 py-2 ${toneClass(status)}`}
         >
           <p className="text-xs font-medium">{status.label}</p>
           <p className="mt-0.5 text-[11px] opacity-80">{availabilityLabel(status)}</p>

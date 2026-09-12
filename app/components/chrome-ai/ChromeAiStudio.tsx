@@ -30,7 +30,7 @@ export function ChromeAiStudio() {
           서버 없이 · Chrome Gemini Nano
         </p>
         <h1 className="font-soonbatang text-3xl font-bold tracking-tight">온디바이스 AI</h1>
-        <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
+        <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground break-keep">
           Google Chrome Built-in AI를 이 사이트에서 바로 써 봅니다. Prompt API, 요약, 번역, 언어 감지, 작성
           도구가 모두 브라우저 안에서 실행되며 입력은 Google 서버로 올라가지 않습니다. 데스크톱 Chrome과
           충분한 저장공간(약 22GB 여유)·하드웨어가 필요합니다.
