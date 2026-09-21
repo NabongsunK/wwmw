@@ -1,15 +1,15 @@
-import { availabilityLabel } from '@/lib/chrome-ai'
-import type { ChromeAiApiStatus } from '@/types/chrome-ai'
+import { availabilityLabel } from '../lib/chrome-ai.ts'
+import type { ChromeAiApiStatus } from '../types.ts'
 
 function toneClass(status: ChromeAiApiStatus): string {
   switch (status.availability) {
     case 'available':
-      return 'border-accent/40 bg-accent-soft/50 text-foreground'
+      return 'border-accent/40 bg-accent-soft/70 text-foreground'
     case 'downloadable':
     case 'downloading':
-      return 'border-amber-300/70 bg-amber-50 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-100'
+      return 'border-amber-400/40 bg-amber-950/40 text-amber-100'
     default:
-      return 'border-border bg-muted/40 text-muted-foreground'
+      return 'border-border bg-muted/50 text-muted-foreground'
   }
 }
 
@@ -30,7 +30,7 @@ export function ApiStatusGrid({
         <div
           key={status.name}
           title={status.detail}
-          className={`min-h-[3.25rem] rounded-md border px-3 py-2 ${toneClass(status)}`}
+          className={`min-h-[3.25rem] rounded-lg border px-3 py-2 ${toneClass(status)}`}
         >
           <p className="text-xs font-medium">{status.label}</p>
           <p className="mt-0.5 text-[11px] opacity-80">{availabilityLabel(status)}</p>

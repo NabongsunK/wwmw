@@ -1,5 +1,3 @@
-'use client'
-
 import { useState } from 'react'
 
 const FLAGS = [
@@ -31,10 +29,10 @@ const FLAGS = [
 ]
 
 export function SetupGuide() {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(true)
 
   return (
-    <section className="rounded-lg border border-border bg-surface/60">
+    <section className="rounded-xl border border-border bg-surface/70">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
@@ -45,7 +43,7 @@ export function SetupGuide() {
       </button>
       {open ? (
         <div className="space-y-3 border-t border-border px-4 py-3 text-sm text-muted-foreground">
-          <p>
+          <p className="break-keep">
             데스크톱 Chrome 148+ (Prompt API) / 138+ (번역·감지·요약)에서 동작합니다. 모델은 처음 한 번만
             내려받으며, 이후에는 이 기기에서만 실행됩니다.
           </p>
@@ -53,22 +51,22 @@ export function SetupGuide() {
             <li>데스크톱 Chrome을 최신 버전으로 업데이트합니다.</li>
             <li>아래 플래그를 켠 뒤 Chrome을 재시작합니다.</li>
             <li>
-              <code className="rounded bg-muted px-1 py-0.5 text-xs">chrome://on-device-internals</code> 에서
-              모델 상태를 확인합니다.
+              <code className="rounded bg-muted px-1 py-0.5 text-xs">chrome://on-device-internals</code>
+              에서 모델 상태를 확인합니다.
             </li>
-            <li>이 페이지에서 원하는 기능을 누르면 모델 다운로드가 시작됩니다.</li>
+            <li>이 앱에서 원하는 기능을 누르면 모델 다운로드가 시작됩니다.</li>
           </ol>
           <ul className="space-y-2">
             {FLAGS.map((item) => (
-              <li key={item.flag} className="rounded-md border border-border bg-background px-3 py-2">
-                <p className="font-mono text-xs text-foreground break-all">{item.flag}</p>
+              <li key={item.flag} className="rounded-lg border border-border bg-background px-3 py-2">
+                <p className="break-all font-mono text-xs text-foreground">{item.flag}</p>
                 <p className="mt-1 text-xs">
                   {item.value} · {item.note}
                 </p>
               </li>
             ))}
           </ul>
-          <p className="text-xs">
+          <p className="text-xs break-keep">
             Prompt / 요약 / 작성 API는 현재 영어·일본어·스페인어·독일어·프랑스어를 공식 지원합니다. 한국어는
             번역 API로 중계하거나, 번역 탭에서 직접 사용할 수 있습니다.
           </p>

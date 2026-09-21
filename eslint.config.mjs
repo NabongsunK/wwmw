@@ -40,6 +40,7 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "node_modules/**",
     ".next/**",
+    "chrome-ai/**",
   ]),
 ]);
 

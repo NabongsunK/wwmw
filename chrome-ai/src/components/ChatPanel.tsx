@@ -1,7 +1,5 @@
-'use client'
-
 import { useEffect, useMemo, useRef, useState } from 'react'
-import Button from '@/app/components/ui/Button'
+import { Button } from './Button.tsx'
 import {
   LANGUAGE_MODEL_SYSTEM_PROMPT,
   PROMPT_LANGUAGES,
@@ -10,9 +8,9 @@ import {
   languageLabel,
   pickDetectedLanguage,
   toErrorMessage,
-} from '@/lib/chrome-ai'
-import type { ChatMessage, LanguageDetection, PromptLanguage } from '@/types/chrome-ai'
-import { DownloadBar, ErrorText, FieldLabel, SelectField } from './ui'
+} from '../lib/chrome-ai.ts'
+import type { ChatMessage, LanguageDetection, PromptLanguage } from '../types.ts'
+import { DownloadBar, ErrorText, FieldLabel, SelectField } from './ui.tsx'
 
 type LanguageModelSession = {
   prompt: (input: unknown, options?: { signal?: AbortSignal }) => Promise<string>
@@ -174,11 +172,7 @@ export function ChatPanel() {
     setInput('')
     const userMessage: ChatMessage = { id: nextId(), role: 'user', content: text || '(이미지)' }
     const assistantId = nextId()
-    setMessages((prev) => [
-      ...prev,
-      userMessage,
-      { id: assistantId, role: 'assistant', content: '' },
-    ])
+    setMessages((prev) => [...prev, userMessage, { id: assistantId, role: 'assistant', content: '' }])
 
     abortRef.current?.abort()
     const controller = new AbortController()
@@ -283,10 +277,10 @@ export function ChatPanel() {
 
       <div
         ref={listRef}
-        className="h-[28rem] overflow-y-auto rounded-lg border border-border bg-surface/40 p-4 space-y-3"
+        className="h-[28rem] space-y-3 overflow-y-auto rounded-xl border border-border bg-surface/50 p-4"
       >
         {messages.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground break-keep">
             서버로 보내지 않습니다. Chrome에 내려받은 Gemini Nano가 이 기기에서 답합니다.
             {koreanRelay
               ? ' 한국어 중계를 켜면 입력을 감지·번역한 뒤 Nano에 넘기고, 답을 다시 한국어로 돌립니다.'
@@ -296,10 +290,10 @@ export function ChatPanel() {
           messages.map((message) => (
             <article
               key={message.id}
-              className={`max-w-[85%] rounded-lg px-3 py-2 text-sm leading-relaxed ${
+              className={`max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed ${
                 message.role === 'user'
-                  ? 'ml-auto bg-foreground text-background'
-                  : 'bg-background border border-border'
+                  ? 'ml-auto bg-accent text-white'
+                  : 'border border-border bg-background'
               }`}
             >
               <p className="whitespace-pre-wrap">{message.content || (busy ? '...' : '')}</p>
@@ -322,8 +316,7 @@ export function ChatPanel() {
       </div>
 
       {imageUrl ? (
-        <div className="flex items-center gap-3 rounded-md border border-border px-3 py-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
+        <div className="flex items-center gap-3 rounded-lg border border-border px-3 py-2">
           <img src={imageUrl} alt="첨부 이미지" className="h-14 w-14 rounded object-cover" />
           <button type="button" className="text-sm text-muted-foreground" onClick={() => setImage(null)}>
             이미지 제거
@@ -345,11 +338,11 @@ export function ChatPanel() {
             }}
             rows={3}
             placeholder="Shift+Enter로 줄바꿈"
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
         <div className="flex flex-col justify-end gap-2">
-          <label className="cursor-pointer rounded-md border border-border px-4 py-2 text-center text-sm hover:bg-muted">
+          <label className="cursor-pointer rounded-lg border border-border px-4 py-2 text-center text-sm hover:bg-muted">
             이미지
             <input
               type="file"

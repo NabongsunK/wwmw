@@ -1,8 +1,6 @@
-'use client'
-
 import { useCallback, useEffect, useState } from 'react'
-import { readAllChromeAiStatuses } from '@/lib/chrome-ai'
-import type { ChromeAiApiName, ChromeAiApiStatus } from '@/types/chrome-ai'
+import { readAllChromeAiStatuses } from '../lib/chrome-ai.ts'
+import type { ChromeAiApiName, ChromeAiApiStatus } from '../types.ts'
 
 export function useChromeAiAvailability() {
   const [statuses, setStatuses] = useState<ChromeAiApiStatus[]>([])

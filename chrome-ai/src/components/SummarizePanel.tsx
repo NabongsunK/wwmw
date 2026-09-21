@@ -1,11 +1,9 @@
-'use client'
-
 import { useState } from 'react'
-import Button from '@/app/components/ui/Button'
-import { consumeTextStream, createChromeAiSession, toErrorMessage } from '@/lib/chrome-ai'
-import { DownloadBar, ErrorText, OutputBox, SelectField, TextAreaField } from './ui'
+import { Button } from './Button.tsx'
+import { consumeTextStream, createChromeAiSession, toErrorMessage } from '../lib/chrome-ai.ts'
+import { DownloadBar, ErrorText, OutputBox, SelectField, TextAreaField } from './ui.tsx'
 
-const SAMPLE = `Where Winds Meet is a wuxia action RPG set in a living Jianghu. Players wander open landscapes, learn martial arts, and get pulled into faction politics. Instead of a single linear campaign, the game leans on traversal, duels, investigation, and chance encounters that make the world feel inhabited.`
+const SAMPLE = `Chrome Built-in AI runs Gemini Nano locally in the browser. After a one-time model download, prompting, summarizing, and translating can happen on-device. No prompt text is sent to a remote API, which keeps short-lived content on the user's computer.`
 
 type SummarizerSession = {
   summarize: (text: string, options?: { context?: string; signal?: AbortSignal }) => Promise<string>

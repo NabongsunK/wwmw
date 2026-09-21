@@ -1,7 +1,5 @@
-'use client'
-
 import { useState } from 'react'
-import Button from '@/app/components/ui/Button'
+import { Button } from './Button.tsx'
 import {
   TRANSLATOR_LANGUAGES,
   consumeTextStream,
@@ -9,9 +7,9 @@ import {
   languageLabel,
   pickDetectedLanguage,
   toErrorMessage,
-} from '@/lib/chrome-ai'
-import type { LanguageDetection } from '@/types/chrome-ai'
-import { DownloadBar, ErrorText, OutputBox, SelectField, TextAreaField } from './ui'
+} from '../lib/chrome-ai.ts'
+import type { LanguageDetection } from '../types.ts'
+import { DownloadBar, ErrorText, OutputBox, SelectField, TextAreaField } from './ui.tsx'
 
 const SAMPLE = '크롬에 내장된 Gemini Nano로, 서버 없이 이 컴퓨터에서 바로 번역하고 대화할 수 있습니다.'
 

@@ -1,10 +1,8 @@
-'use client'
-
 import { useState } from 'react'
-import Button from '@/app/components/ui/Button'
-import { consumeTextStream, createChromeAiSession, toErrorMessage } from '@/lib/chrome-ai'
-import type { ProofreadCorrection, ProofreadResult } from '@/types/chrome-ai'
-import { DownloadBar, ErrorText, FieldLabel, OutputBox, SelectField, TextAreaField } from './ui'
+import { Button } from './Button.tsx'
+import { consumeTextStream, createChromeAiSession, toErrorMessage } from '../lib/chrome-ai.ts'
+import type { ProofreadCorrection, ProofreadResult } from '../types.ts'
+import { DownloadBar, ErrorText, FieldLabel, OutputBox, SelectField, TextAreaField } from './ui.tsx'
 
 type WriterSession = {
   write: (prompt: string, options?: { context?: string; signal?: AbortSignal }) => Promise<string>
@@ -39,7 +37,9 @@ type Mode = (typeof MODES)[number]['id']
 
 export function WriteAssistPanel() {
   const [mode, setMode] = useState<Mode>('write')
-  const [input, setInput] = useState('A short welcome note for a game-tools site that now includes Chrome on-device AI.')
+  const [input, setInput] = useState(
+    'A short welcome note for a playground that runs Chrome Built-in AI entirely on-device.',
+  )
   const [tone, setTone] = useState('neutral')
   const [length, setLength] = useState('short')
   const [result, setResult] = useState('')
@@ -89,8 +89,11 @@ export function WriteAssistPanel() {
           setProgress,
         )
         try {
-          if (rewriter.rewriteStreaming) await consumeTextStream(rewriter.rewriteStreaming(input), setResult)
-          else setResult(await rewriter.rewrite(input))
+          if (rewriter.rewriteStreaming) {
+            await consumeTextStream(rewriter.rewriteStreaming(input), setResult)
+          } else {
+            setResult(await rewriter.rewrite(input))
+          }
         } finally {
           rewriter.destroy?.()
         }
@@ -130,9 +133,9 @@ export function WriteAssistPanel() {
               setCorrections([])
               setError(null)
             }}
-            className={`rounded-md border px-3 py-1.5 text-sm ${
+            className={`rounded-lg border px-3 py-1.5 text-sm ${
               mode === item.id
-                ? 'border-foreground bg-foreground text-background'
+                ? 'border-accent bg-accent text-white'
                 : 'border-border text-muted-foreground hover:text-foreground'
             }`}
           >
@@ -186,7 +189,7 @@ export function WriteAssistPanel() {
       <Button onClick={() => void run()} isLoading={busy} disabled={!input.trim()}>
         {mode === 'write' ? '작성' : mode === 'rewrite' ? '다듬기' : '교정'} 실행
       </Button>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-muted-foreground break-keep">
         작성·다듬기·교정 API는 Chrome 플래그 또는 Origin Trial이 켜져 있어야 합니다. 공식 지원 언어는 영어 등
         Prompt 계열과 같습니다.
       </p>

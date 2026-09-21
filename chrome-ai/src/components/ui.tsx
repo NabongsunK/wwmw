@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 export function FieldLabel({ children }: { children: ReactNode }) {
-  return <label className="block text-xs font-medium text-muted-foreground mb-1.5">{children}</label>
+  return <label className="mb-1.5 block text-xs font-medium text-muted-foreground">{children}</label>
 }
 
 export function SelectField({
@@ -21,7 +21,7 @@ export function SelectField({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
       >
         {children}
       </select>
@@ -45,7 +45,7 @@ export function TextAreaField({
   disabled?: boolean
 }) {
   return (
-    <div className="flex-1 min-h-0">
+    <div className="min-h-0 flex-1">
       {label ? <FieldLabel>{label}</FieldLabel> : null}
       <textarea
         value={value}
@@ -53,7 +53,7 @@ export function TextAreaField({
         rows={rows}
         placeholder={placeholder}
         disabled={disabled}
-        className="w-full min-h-[8rem] rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-60"
+        className="min-h-[8rem] w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-60"
       />
     </div>
   )
@@ -69,9 +69,9 @@ export function OutputBox({
   empty?: string
 }) {
   return (
-    <div className="flex-1 min-h-0">
+    <div className="min-h-0 flex-1">
       <FieldLabel>{label}</FieldLabel>
-      <div className="min-h-[8rem] rounded-md border border-border bg-surface px-3 py-2 text-sm whitespace-pre-wrap leading-relaxed">
+      <div className="min-h-[8rem] whitespace-pre-wrap rounded-lg border border-border bg-surface px-3 py-2 text-sm leading-relaxed">
         {value || <span className="text-muted-foreground">{empty}</span>}
       </div>
     </div>
@@ -82,7 +82,7 @@ export function DownloadBar({ progress }: { progress: number | null }) {
   if (progress === null) return null
   const percent = Math.min(100, Math.round(progress * 100))
   return (
-    <div className="rounded-md border border-accent/30 bg-accent-soft/40 px-3 py-2 text-sm">
+    <div className="rounded-lg border border-accent/30 bg-accent-soft/60 px-3 py-2 text-sm">
       <div className="mb-1 flex justify-between text-xs text-muted-foreground">
         <span>온디바이스 모델 다운로드</span>
         <span>{percent}%</span>
@@ -97,7 +97,7 @@ export function DownloadBar({ progress }: { progress: number | null }) {
 export function ErrorText({ message }: { message: string | null }) {
   if (!message) return null
   return (
-    <p className="rounded-md border border-red-300/60 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
+    <p className="rounded-lg border border-red-400/40 bg-red-950/50 px-3 py-2 text-sm text-red-200">
       {message}
     </p>
   )

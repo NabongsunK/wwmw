@@ -5,7 +5,7 @@ import type {
   DownloadProgressCallback,
   LanguageDetection,
   PromptLanguage,
-} from '@/types/chrome-ai'
+} from '../types.ts'
 
 export const PROMPT_LANGUAGES: { code: PromptLanguage; label: string }[] = [
   { code: 'en', label: 'English' },
@@ -202,7 +202,9 @@ export function languageLabel(code: string): string {
   return TRANSLATOR_LANGUAGES.find((item) => item.code === code)?.label ?? code
 }
 
-export function pickDetectedLanguage(results: LanguageDetection[] | undefined): LanguageDetection | null {
+export function pickDetectedLanguage(
+  results: LanguageDetection[] | undefined,
+): LanguageDetection | null {
   if (!results?.length) return null
   const first = results.find((item) => item.detectedLanguage && item.detectedLanguage !== 'und')
   return first ?? null
