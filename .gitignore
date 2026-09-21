@@ -40,5 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# standalone Chrome on-device AI app
+/chrome-ai/node_modules
+/chrome-ai/dist
+
 logs/
 

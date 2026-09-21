@@ -1,0 +1,45 @@
+@import 'tailwindcss';
+
+:root {
+  --background: 8 12 24;
+  --foreground: 232 238 252;
+  --surface: 18 24 42;
+  --border: 42 54 84;
+  --muted: 28 36 58;
+  --muted-foreground: 154 168 196;
+  --accent: 79 140 255;
+  --accent-soft: 24 48 92;
+}
+
+@theme inline {
+  --color-background: rgb(var(--background));
+  --color-foreground: rgb(var(--foreground));
+  --color-surface: rgb(var(--surface));
+  --color-border: rgb(var(--border));
+  --color-muted: rgb(var(--muted));
+  --color-muted-foreground: rgb(var(--muted-foreground));
+  --color-accent: rgb(var(--accent));
+  --color-accent-soft: rgb(var(--accent-soft));
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: rgb(var(--background));
+  color: rgb(var(--foreground));
+  font-family:
+    'Pretendard',
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+button {
+  cursor: pointer;
+}
